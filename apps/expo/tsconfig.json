@@ -1,5 +1,5 @@
 {
-  "extends": ["@mealmates/tsconfig/base.json"],
+  "extends": ["../../tooling/typescript/base.json"],
   "compilerOptions": {
     "jsx": "react-native",
     "checkJs": false,
