@@ -17,8 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mealmates/db": "workspace:*",
     "@better-auth/expo": "catalog:",
+    "@mealmates/db": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",
     "better-auth": "catalog:",
     "next": "^15.5.4",
@@ -27,10 +27,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@better-auth/cli": "catalog:",
     "@mealmates/eslint-config": "workspace:*",
     "@mealmates/prettier-config": "workspace:*",
     "@mealmates/tsconfig": "workspace:*",
-    "@better-auth/cli": "catalog:",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "prettier": "catalog:",
