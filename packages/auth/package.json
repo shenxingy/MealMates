@@ -1,5 +1,5 @@
 {
-  "name": "@acme/auth",
+  "name": "@mealmates/auth",
   "private": true,
   "type": "module",
   "exports": {
@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@acme/db": "workspace:*",
+    "@mealmates/db": "workspace:*",
     "@better-auth/expo": "catalog:",
     "@t3-oss/env-nextjs": "^0.13.8",
     "better-auth": "catalog:",
@@ -27,14 +27,14 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@mealmates/eslint-config": "workspace:*",
+    "@mealmates/prettier-config": "workspace:*",
+    "@mealmates/tsconfig": "workspace:*",
     "@better-auth/cli": "catalog:",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@mealmates/prettier-config"
 }
