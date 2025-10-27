@@ -20,13 +20,16 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#c03484",
+            backgroundColor: "rgba(255,255,255,0)",
           },
           contentStyle: {
-            backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
+            backgroundColor: colorScheme === "dark" ? "#000" : "#fff",
           },
+          headerShown: false,
         }}
-      />
+      >
+        <Stack.Screen name="index" options={{ title: "Login Page" }} />
+      </Stack>
       <StatusBar />
     </QueryClientProvider>
   );
