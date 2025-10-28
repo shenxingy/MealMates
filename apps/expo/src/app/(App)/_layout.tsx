@@ -1,23 +1,37 @@
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { Icon, Label, NativeTabs, VectorIcon } from "expo-router/unstable-native-tabs";
+import { Platform } from "react-native";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function HomePageLayout() {
   return <>
     <NativeTabs>
       <NativeTabs.Trigger name="(Home)">
         <Label>Home</Label>
-        <Icon sf={{default: "house", selected: "house.fill"}} drawable="custom_android_drawable" />
+        {Platform.select({
+          ios: <Icon sf={{default: "house", selected: "house.fill"}} drawable="custom_android_drawable" />,
+          android: <Icon src={<VectorIcon family={MaterialIcons} name="home" />} />,
+        })}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(Posts)">
         <Label>Posts</Label>
-        <Icon sf={{default: "scribble", selected: "scribble.variable"}} drawable="custom_android_drawable" />
+        {Platform.select({
+          ios: <Icon sf={{default: "scribble", selected: "scribble.variable"}} drawable="custom_android_drawable" />,
+          android: <Icon src={<VectorIcon family={MaterialIcons} name="post-add" />} />,
+        })}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(You)">
         <Label>You</Label>
-        <Icon sf={{default: "person", selected: "person.fill"}} drawable="custom_android_drawable" />
+        {Platform.select({
+          ios: <Icon sf={{default: "person", selected: "person.fill"}} drawable="custom_android_drawable" />,
+          android: <Icon src={<VectorIcon family={MaterialIcons} name="person" />} />,
+        })}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search" role="search">
         <Label>Search</Label>
-        <Icon sf={{default: "magnifyingglass", selected: "magnifyingglass"}} drawable="custom_android_drawable" />
+        {Platform.select({
+          ios: <Icon sf={{default: "magnifyingglass", selected: "magnifyingglass"}} drawable="custom_android_drawable" />,
+          android: <Icon src={<VectorIcon family={MaterialIcons} name="search" />} />,
+        })}
       </NativeTabs.Trigger>
     </NativeTabs>
   </>
