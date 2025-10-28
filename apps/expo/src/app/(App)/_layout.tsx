@@ -15,6 +15,10 @@ export default function HomePageLayout() {
         <Label>You</Label>
         <Icon sf={{default: "person", selected: "person.fill"}} drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="search" role="search">
+        <Label>Search</Label>
+        <Icon sf={{default: "magnifyingglass", selected: "magnifyingglass"}} drawable="custom_android_drawable" />
+      </NativeTabs.Trigger>
     </NativeTabs>
   </>
 }
