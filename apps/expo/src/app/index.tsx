@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 export default function Index() {
   const router = useRouter();
   const handleFakeLogin = () => {
-    router.replace("/(Home)");
+    router.replace("/(App)/(Home)");
   }
 
   return <SafeAreaView style={{flex: 1, backgroundColor: "white"}}>
