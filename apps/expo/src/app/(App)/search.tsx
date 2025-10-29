@@ -1,16 +1,14 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, View } from "react-native";
+import AnimatedPageFrame from "../../../components/frame/AnimatedPageFrame";
 
 export default function SearchPage() {
+  const baseColor = "255,120,0";
+  const header = "Search";
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
-        <View style={{flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white"}}>
-          <Text style={{fontSize: 24}}>
-            Search Page
-          </Text>
-        </View>
-      </SafeAreaView>
+      <AnimatedPageFrame baseColor={baseColor} headerTitle={header} scrollEnabled={false}>
+        <>
+        </>
+      </AnimatedPageFrame>
     </>
   );
 }

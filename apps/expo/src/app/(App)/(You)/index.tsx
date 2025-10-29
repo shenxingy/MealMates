@@ -1,14 +1,14 @@
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 
 export default function YouPage() {
+  const baseColor = "0,136,255";
+  const header = "Welcome,\nChipmunk Bar"; // Should be username
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
-        <View style={{flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white"}}>
-          <Text style={{fontSize: 24}}>You Page</Text>
-        </View>
-      </SafeAreaView>
+      <AnimatedPageFrame baseColor={baseColor} scrollEnabled={false} headerTitle={header}>
+        <>
+        </>
+      </AnimatedPageFrame>
     </>
   );
 }

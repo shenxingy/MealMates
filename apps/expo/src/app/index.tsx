@@ -8,7 +8,7 @@ export default function Index() {
     router.replace("/(App)/(Home)");
   }
 
-  return <SafeAreaView style={{flex: 1, backgroundColor: "white"}}>
+  return <SafeAreaView style={{flex: 1}}>
     <View style={{flex: 1, justifyContent: "center", alignItems: "center", width: "100%", height: "100%"}}>
       <Text style={{textAlign: "center", fontSize: 40, color: "black"}}>
         Login Page
