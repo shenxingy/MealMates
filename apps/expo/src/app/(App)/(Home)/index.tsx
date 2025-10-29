@@ -32,6 +32,19 @@ export default function HomePage() {
     extrapolate: "clamp",
   });
 
+  // Header fade transition at 58px scroll threshold
+  const contentHeaderOpacity = scrollY.interpolate({
+    inputRange: [0, 58],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  const topHeaderOpacity = scrollY.interpolate({
+    inputRange: [0, 58],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   return (
     <LinearGradientBackground
       startColor="rgba(255,120,0,0.5)"
@@ -49,9 +62,11 @@ export default function HomePage() {
           )}
           scrollEventThrottle={16}
         >
-          {/* Actual Content Started */}
-          <View style={{ paddingTop: insets.top + 60, paddingHorizontal: 20 }}>
-            <Text style={styles.contentTitle}>Content</Text>
+          <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
+            <Animated.Text style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}>
+              Header
+            </Animated.Text>
+            {/* Actual Content Started */}
             <Text style={styles.contentText}>
               Scroll up to see the blur effect. When the content scrolls into the Header area, a gradient blur effect will become visible.
             </Text>
@@ -100,7 +115,7 @@ export default function HomePage() {
         </Animated.View>
 
         {/* Header on top */}
-        <View
+        <Animated.View
           pointerEvents="none"
           style={{
             position: "absolute",
@@ -108,10 +123,11 @@ export default function HomePage() {
             left: 0,
             right: 0,
             alignItems: "center",
+            opacity: topHeaderOpacity,
           }}
         >
-          <Text style={{ fontSize: 24 }}>Home Page Header</Text>
-        </View>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>Header</Text>
+        </Animated.View>
       </View>
     </LinearGradientBackground>
   );
@@ -123,7 +139,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "flex-start",
   },
-  contentTitle: {
+  contentHeader: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 10,
