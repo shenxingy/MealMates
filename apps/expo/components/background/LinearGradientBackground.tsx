@@ -1,26 +1,41 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Animated } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type React from "react";
+
+const BACKDROP_HEIGHT = 450; // large enough to cover translate range
+const BACKDROP_TOP = -200; // center the tall backdrop on screen
 
 const LinearGradientBackground = (props: {
   children: React.ReactNode,
   startColor: string,
   endColor: string,
+  scrollY?: Animated.Value,
+  speed?: number
 }) => {
-  const { children, startColor, endColor } = props;
+  // Default speed to 1 so background moves with content unless specified otherwise
+  const { children, startColor, endColor, scrollY, speed = 1 } = props;
+
+  const animatedStyle = scrollY ? {
+    transform: [
+      { translateY: Animated.multiply(scrollY, -speed) },
+    ],
+  } : undefined;
+
   return (
-    <>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.background, { top: BACKDROP_TOP, height: BACKDROP_HEIGHT }, animatedStyle]}
+      >
         <LinearGradient
           // Background Linear Gradient
           colors={[startColor, endColor]}
-          style={styles.background}
+          style={StyleSheet.absoluteFill}
+          locations={[0.5, 1]}
         />
-        <View style={styles.children}>
-          {children}
-        </View>
-      </View>
-    </>
+      </Animated.View>
+      <View style={styles.children}>{children}</View>
+    </View>
   );
 }
 
@@ -37,7 +52,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 0,
     height: 400,
   },
   children: {
