@@ -5,18 +5,15 @@ import { BlurView } from "expo-blur";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 
-
-
 import LinearGradientBackground from "../background/LinearGradientBackground";
-
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export default function AnimatedPageFrame(props: {
-  children: React.ReactNode,
-  baseColor: string,
-  headerTitle?: string,
-  scrollEnabled?: boolean,
+  children: React.ReactNode;
+  baseColor: string;
+  headerTitle?: string;
+  scrollEnabled?: boolean;
 }) {
   const { children, baseColor, headerTitle, scrollEnabled = true } = props;
   // Create a single Animated.Value instance without accessing ref.current during render
@@ -33,14 +30,14 @@ export default function AnimatedPageFrame(props: {
   const HEADER_BLUR_HEIGHT = 80;
   const overlayHeight = insets.top + HEADER_BLUR_HEIGHT;
 
-  // Fade in
+  // Blur fade in
   const blurOpacity = scrollY.interpolate({
     inputRange: [0, 50],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
 
-  // Blur intensity based on scroll position
+  // Blur intensity
   const blurIntensity = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 100],
@@ -49,16 +46,22 @@ export default function AnimatedPageFrame(props: {
 
   // Header fade transition at 58px scroll threshold
   const contentHeaderOpacity = scrollY.interpolate({
-    inputRange: [0, 58],
+    inputRange: [50, 66],
     outputRange: [1, 0],
     extrapolate: "clamp",
   });
 
   const topHeaderOpacity = scrollY.interpolate({
-    inputRange: [0, 58],
+    inputRange: [53, 71],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
+
+  const topHeaderTranslateY = scrollY.interpolate({
+      inputRange: [53, 71],
+      outputRange: [20, 0],
+      extrapolate: "clamp",
+    });
 
   return (
     <LinearGradientBackground
@@ -132,6 +135,11 @@ export default function AnimatedPageFrame(props: {
             right: 0,
             alignItems: "center",
             opacity: topHeaderOpacity,
+            transform: [
+              {
+                translateY: topHeaderTranslateY
+              },
+            ],
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
