@@ -3,17 +3,16 @@ import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 
-
-
-
-
 const EventView = (props: {
   scheduleTime: string;
+  username: string;
+  mood?: string;
   meetPoint: string;
   restaurantName: string;
   message?: string;
 }) => {
-  const { scheduleTime, meetPoint, restaurantName, message } = props;
+  const { scheduleTime, username, mood, meetPoint, restaurantName, message } =
+    props;
 
   return (
     <GlassView
@@ -27,14 +26,25 @@ const EventView = (props: {
       <View style={styles.contentContainer}>
         <View style={styles.infoContainer}>
           <View style={styles.profileGroup}>
-            <GlassView style={styles.selfieContainer}>
+            <GlassView style={styles.avatarContainer}>
               <Image
                 src="https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_1.jpeg"
-                alt="Selfie"
-                style={styles.selfie}
+                alt="Avatar"
+                style={styles.avatar}
               />
+              {mood && (
+                <GlassView
+                  style={
+                    isLiquidGlassAvailable()
+                      ? styles.moodBadgeGlassContainer
+                      : styles.moodBadgeNonGlassContainer
+                  }
+                >
+                  <Text style={{ fontSize: 20 }}>{mood}</Text>
+                </GlassView>
+              )}
             </GlassView>
-            <Text style={styles.userNameText}>Toshi Li</Text>
+            <Text style={styles.userNameText}>{username}</Text>
           </View>
           <View style={styles.scheduleTimeContainer}>
             {Platform.OS === "ios" ? (
@@ -45,13 +55,10 @@ const EventView = (props: {
             <Text style={styles.normalText}>{scheduleTime}</Text>
           </View>
         </View>
-        <View style={[styles.detailedInfoContainer, { marginTop: 5}]}>
+        <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
-              <SymbolView
-                name="mappin"
-                style={{ width: 24, height: 24 }}
-              />
+              <SymbolView name="mappin" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="location" size={24} color="#ff7800" />
             )}
@@ -61,17 +68,14 @@ const EventView = (props: {
         <View style={styles.detailedInfoContainer}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
-              <SymbolView
-                name="storefront"
-                style={{ width: 24, height: 24 }}
-              />
+              <SymbolView name="storefront" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="restaurant" size={24} color="#ff7800" />
             )}
             <Text style={styles.normalText}>{restaurantName}</Text>
           </View>
         </View>
-        {message &&
+        {message && (
           <GlassView
             style={
               isLiquidGlassAvailable()
@@ -91,7 +95,7 @@ const EventView = (props: {
               {message}
             </Text>
           </GlassView>
-        }
+        )}
       </View>
     </GlassView>
   );
@@ -131,12 +135,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 18,
   },
-  selfieContainer: {
+  avatarContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
+    position: "relative",
   },
-  selfie: {
+  moodBadgeGlassContainer: {
+    position: "absolute",
+    bottom: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  moodBadgeNonGlassContainer: {
+    position: "absolute",
+    bottom: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  avatar: {
     width: "100%",
     height: "100%",
     borderRadius: 24,
