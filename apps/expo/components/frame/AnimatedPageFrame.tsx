@@ -58,10 +58,10 @@ export default function AnimatedPageFrame(props: {
   });
 
   const topHeaderTranslateY = scrollY.interpolate({
-      inputRange: [53, 71],
-      outputRange: [20, 0],
-      extrapolate: "clamp",
-    });
+    inputRange: [53, 71],
+    outputRange: [20, 0],
+    extrapolate: "clamp",
+  });
 
   return (
     <LinearGradientBackground
@@ -137,7 +137,7 @@ export default function AnimatedPageFrame(props: {
             opacity: topHeaderOpacity,
             transform: [
               {
-                translateY: topHeaderTranslateY
+                translateY: topHeaderTranslateY,
               },
             ],
           }}
@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexDirection: "column",
     justifyContent: "flex-start",
+    paddingBottom: 200,
   },
   contentHeader: {
     fontSize: 32,
