@@ -2,10 +2,13 @@ import { useMemo } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
+import MaskedView from "@react-native-masked-view/masked-view";
+
+
 
 import LinearGradientBackground from "../../../../components/background/LinearGradientBackground";
+
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -13,6 +16,12 @@ export default function HomePage() {
   // Create a single Animated.Value instance without accessing ref.current during render
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
+
+  // Gradient color
+  const startColor = "rgba(255,120,0,0.5)"
+  const endColor = "rgba(255,120,0,0)"
+  const maskGradientColor = "rgba(255,120,0,0.8)";
+  const gradientColor = "rgba(255,120,0,1)";
 
   // Height of the blurred area
   const HEADER_BLUR_HEIGHT = 80;
@@ -47,8 +56,8 @@ export default function HomePage() {
 
   return (
     <LinearGradientBackground
-      startColor="rgba(255,120,0,0.5)"
-      endColor="rgba(255,120,0,0)"
+      startColor={startColor}
+      endColor={endColor}
       scrollY={scrollY}
       speed={1}
     >
@@ -63,12 +72,15 @@ export default function HomePage() {
           scrollEventThrottle={16}
         >
           <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
-            <Animated.Text style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}>
+            <Animated.Text
+              style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
+            >
               Header
             </Animated.Text>
             {/* Actual Content Started */}
             <Text style={styles.contentText}>
-              Scroll up to see the blur effect. When the content scrolls into the Header area, a gradient blur effect will become visible.
+              Scroll up to see the blur effect. When the content scrolls into
+              the Header area, a gradient blur effect will become visible.
             </Text>
             {Array.from({ length: 20 }, (_, i) => (
               <View key={i} style={styles.contentBlock}>
@@ -98,7 +110,7 @@ export default function HomePage() {
             maskElement={
               <MaskGradient
                 // Change blur settings here
-                colors={["rgba(0,0,0,1)", "rgba(0,0,0,0.8)", "rgba(0,0,0,0)"]}
+                colors={[gradientColor, maskGradientColor, endColor]}
                 locations={[0, 0.7, 1]}
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 1 }}
@@ -108,7 +120,7 @@ export default function HomePage() {
           >
             <AnimatedBlurView
               intensity={blurIntensity}
-              tint="systemMaterial"
+              tint="systemChromeMaterial"
               style={StyleSheet.absoluteFill}
             />
           </MaskedView>
