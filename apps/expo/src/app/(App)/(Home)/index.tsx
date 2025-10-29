@@ -18,10 +18,11 @@ export default function HomePage() {
   const insets = useSafeAreaInsets();
 
   // Gradient color
-  const startColor = "rgba(255,120,0,0.5)"
-  const endColor = "rgba(255,120,0,0)"
-  const maskGradientColor = "rgba(255,120,0,0.8)";
-  const gradientColor = "rgba(255,120,0,1)";
+  const baseColor = "rgba(255,120,0,";
+  const startColor = `${baseColor}0.5)`;
+  const endColor = `${baseColor}0)`;
+  const maskGradientColor = `${baseColor}0.8)`;
+  const gradientColor = `${baseColor}1)`;
 
   // Height of the blurred area
   const HEADER_BLUR_HEIGHT = 80;
