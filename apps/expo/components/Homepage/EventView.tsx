@@ -2,16 +2,18 @@ import { Image, Platform, StyleSheet, Text, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
+import { DEFAULT_USER_AVATAR } from "~/utils/api";
 
 const EventView = (props: {
   scheduleTime: string;
+  avatarUrl?: string;
   username: string;
   mood?: string;
   meetPoint: string;
   restaurantName: string;
   message?: string;
 }) => {
-  const { scheduleTime, username, mood, meetPoint, restaurantName, message } =
+  const { scheduleTime, username, avatarUrl, mood, meetPoint, restaurantName, message } =
     props;
 
   return (
@@ -28,7 +30,7 @@ const EventView = (props: {
           <View style={styles.profileGroup}>
             <GlassView style={styles.avatarContainer}>
               <Image
-                src="https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_1.jpeg"
+                src={avatarUrl ?? DEFAULT_USER_AVATAR}
                 alt="Avatar"
                 style={styles.avatar}
               />
