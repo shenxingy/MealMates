@@ -5,9 +5,12 @@ export default function SearchPage() {
   const header = "Search";
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header} scrollEnabled={false}>
-        <>
-        </>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={header}
+        scrollEnabled={false}
+      >
+        <></>
       </AnimatedPageFrame>
     </>
   );
