@@ -49,7 +49,7 @@ const EventView = (props: EventViewProps) => {
           ? styles.glassContainer
           : styles.nonGlassContainer
       }
-      isInteractive
+      isInteractive={!isLoading}
     >
       <View style={styles.contentContainer}>
         <View style={styles.infoContainer}>
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#424242",
+    color: "#636363",
   },
   scheduleTimeContainer: {
     flexDirection: "row",
