@@ -22,6 +22,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "catalog:",
+    "axios": "^1.13.1",
     "better-auth": "catalog:",
     "expo": "~54.0.13",
     "expo-blur": "~15.0.7",
