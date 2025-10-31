@@ -3,17 +3,20 @@ import type { SimpleEventDTO } from "~/app/definition";
 export const simpleEventMockData: SimpleEventDTO[] = [
   {
     id: 1,
-    avatarUrl: "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_1.jpeg",
+    avatarUrl:
+      "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_1.jpeg",
     username: "Nagasaki Soyo",
     scheduleTime: "12:20",
     mood: "🤓",
     meetPoint: "Tsuki no mori Girls' School",
     restaurantName: "RING",
-    message: "Hello! Let's have lunch together. Let me know if you're interested. Could be fun!",
+    message:
+      "Hello! Let's have lunch together. Let me know if you're interested. Could be fun!",
   },
   {
     id: 2,
-    avatarUrl: "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_2.jpeg",
+    avatarUrl:
+      "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_2.jpeg",
     username: "Tanaka Hiroshi",
     scheduleTime: "12:30",
     mood: "😎",
@@ -23,7 +26,8 @@ export const simpleEventMockData: SimpleEventDTO[] = [
   },
   {
     id: 3,
-    avatarUrl: "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_3.jpeg",
+    avatarUrl:
+      "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_user_3.jpeg",
     username: "Yamamoto Aiko",
     scheduleTime: "12:40",
     meetPoint: "City Library",
@@ -47,5 +51,5 @@ export const simpleEventMockData: SimpleEventDTO[] = [
     meetPoint: "University Campus",
     restaurantName: "Green Bites",
     message: "Healthy lunch meetup, anyone?",
-  }
-]
+  },
+];

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-
-
-
-
 
 const Skeleton = (props: {
   isLoading: boolean;
@@ -13,7 +15,6 @@ const Skeleton = (props: {
   end: number;
   duration?: number;
 }) => {
-
   const { isLoading, start, end, duration = 1000 } = props;
 
   // Shimmer animation
@@ -24,13 +25,17 @@ const Skeleton = (props: {
       shimmerPosition.value = withRepeat(
         withTiming(1, { duration }),
         -1,
-        false
+        false,
       );
     }
   }, [duration, isLoading, shimmerPosition]);
 
   const animatedGradientStyle = useAnimatedStyle(() => {
-    const translateX = interpolate(shimmerPosition.value, [-1, 1], [start, end]);
+    const translateX = interpolate(
+      shimmerPosition.value,
+      [-1, 1],
+      [start, end],
+    );
     return {
       transform: [{ translateX }],
     };
@@ -50,7 +55,7 @@ const Skeleton = (props: {
       <View style={styles.shimmerBase} />
     </View>
   );
-}
+};
 
 export default Skeleton;
 
@@ -80,4 +85,4 @@ const styles = StyleSheet.create({
     width: "200%",
     height: "100%",
   },
-})
+});

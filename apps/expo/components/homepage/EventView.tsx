@@ -139,8 +139,8 @@ const EventView = (props: EventViewProps) => {
           </View>
         </View>
         {isLoading ? (
-          <View style={{width: "100%", height: 80}}>
-            <Skeleton isLoading={isLoading} start={-600} end={300}/>
+          <View style={{ width: "100%", height: 80 }}>
+            <Skeleton isLoading={isLoading} start={-600} end={300} />
           </View>
         ) : (
           <>
