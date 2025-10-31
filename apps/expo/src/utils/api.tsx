@@ -1,7 +1,7 @@
+import type { AxiosError, AxiosResponse } from "axios";
 import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import type { AxiosError, AxiosResponse } from "axios";
 import axios from "axios";
 import superjson from "superjson";
 
@@ -11,7 +11,8 @@ import type { ApiResponse, SimpleEventDTO } from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 
-export const DEFAULT_USER_AVATAR = "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_default.png";
+export const DEFAULT_USER_AVATAR =
+  "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_default.png";
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -114,7 +115,7 @@ export { type RouterInputs, type RouterOutputs } from "@mealmates/api";
 export const fetchSimpleEventList = async () => {
   await new Promise((resolve) => {
     setTimeout(resolve, 3000);
-  })
+  });
   const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/events/list");
   return res.data.data;
 };
