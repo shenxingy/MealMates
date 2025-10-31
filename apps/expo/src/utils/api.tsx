@@ -112,6 +112,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 export { type RouterInputs, type RouterOutputs } from "@mealmates/api";
 
 export const fetchSimpleEventList = async () => {
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  })
   const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/events/list");
   return res.data.data;
 };

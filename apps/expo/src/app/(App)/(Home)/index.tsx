@@ -1,9 +1,9 @@
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { Pressable, StyleSheet, View, Text } from "react-native";
 
-import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import EventView from "../../../../components/Homepage/EventView";
 import { fetchSimpleEventList } from "~/utils/api";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
+import EventView from "../../../../components/homepage/EventView";
 
 export default function HomePage() {
   // Gradient color
@@ -18,8 +18,17 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-        <Text>Loading...</Text>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={header}
+        scrollEnabled={false}
+      >
+        <View style={styles.emptySpace} />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <View style={{ marginBottom: 20 }} key={i}>
+            <EventView isLoading={true} />
+          </View>
+        ))}
       </AnimatedPageFrame>
     );
   }
@@ -34,7 +43,7 @@ export default function HomePage() {
 
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-      <View style={styles.emptySpace}></View>
+      <View style={styles.emptySpace} />
 
       {data?.map((event, i) => (
         <View key={i} style={{ marginBottom: 20 }}>
@@ -51,6 +60,7 @@ export default function HomePage() {
               meetPoint={event.meetPoint}
               restaurantName={event.restaurantName}
               message={event.message}
+              isLoading={isLoading}
             />
           </Pressable>
         </View>
