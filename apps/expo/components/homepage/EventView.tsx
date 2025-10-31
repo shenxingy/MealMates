@@ -2,9 +2,23 @@ import { Image, Platform, StyleSheet, Text, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
-import { DEFAULT_USER_AVATAR } from "~/utils/api";
 
-const EventView = (props: {
+import { DEFAULT_USER_AVATAR } from "~/utils/api";
+import Skeleton from "../frame/Skeleton";
+
+interface LoadingProps {
+  isLoading: true;
+  scheduleTime?: string;
+  avatarUrl?: string;
+  username?: string;
+  mood?: string;
+  meetPoint?: string;
+  restaurantName?: string;
+  message?: string;
+}
+
+interface LoadedProps {
+  isLoading?: false; // 关键：设为可选的 false
   scheduleTime: string;
   avatarUrl?: string;
   username: string;
@@ -12,9 +26,21 @@ const EventView = (props: {
   meetPoint: string;
   restaurantName: string;
   message?: string;
-}) => {
-  const { scheduleTime, username, avatarUrl, mood, meetPoint, restaurantName, message } =
-    props;
+}
+
+type EventViewProps = LoadingProps | LoadedProps;
+
+const EventView = (props: EventViewProps) => {
+  const {
+    scheduleTime,
+    username,
+    avatarUrl,
+    mood,
+    meetPoint,
+    restaurantName,
+    message,
+    isLoading = false,
+  } = props;
 
   return (
     <GlassView
@@ -29,24 +55,41 @@ const EventView = (props: {
         <View style={styles.infoContainer}>
           <View style={styles.profileGroup}>
             <GlassView style={styles.avatarContainer}>
-              <Image
-                src={avatarUrl ?? DEFAULT_USER_AVATAR}
-                alt="Avatar"
-                style={styles.avatar}
-              />
-              {mood && (
-                <GlassView
-                  style={
-                    isLiquidGlassAvailable()
-                      ? styles.moodBadgeGlassContainer
-                      : styles.moodBadgeNonGlassContainer
-                  }
-                >
-                  <Text style={{ fontSize: 20 }}>{mood}</Text>
-                </GlassView>
+              {isLoading ? (
+                <Skeleton isLoading={isLoading} start={-96} end={48} />
+              ) : (
+                <>
+                  <Image
+                    src={avatarUrl ?? DEFAULT_USER_AVATAR}
+                    alt="Avatar"
+                    style={styles.avatar}
+                  />
+                  {mood && (
+                    <GlassView
+                      style={
+                        isLiquidGlassAvailable()
+                          ? styles.moodBadgeGlassContainer
+                          : styles.moodBadgeNonGlassContainer
+                      }
+                    >
+                      <Text style={{ fontSize: 20 }}>{mood}</Text>
+                    </GlassView>
+                  )}
+                </>
               )}
             </GlassView>
-            <Text style={styles.userNameText}>{username}</Text>
+            {isLoading ? (
+              <View style={{ width: 150, height: 30 }}>
+                <Skeleton
+                  isLoading={isLoading}
+                  start={-400}
+                  end={200}
+                  duration={1000}
+                />
+              </View>
+            ) : (
+              <Text style={styles.userNameText}>{username}</Text>
+            )}
           </View>
           <View style={styles.scheduleTimeContainer}>
             {Platform.OS === "ios" ? (
@@ -54,7 +97,13 @@ const EventView = (props: {
             ) : (
               <Ionicons name="time" size={24} color="#ff7800" />
             )}
-            <Text style={styles.normalText}>{scheduleTime}</Text>
+            {isLoading ? (
+              <View style={{ width: 50, height: 24 }}>
+                <Skeleton isLoading={isLoading} start={-100} end={50} />
+              </View>
+            ) : (
+              <Text style={styles.normalText}>{scheduleTime}</Text>
+            )}
           </View>
         </View>
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
@@ -64,7 +113,13 @@ const EventView = (props: {
             ) : (
               <Ionicons name="location" size={24} color="#ff7800" />
             )}
-            <Text style={styles.normalText}>{meetPoint}</Text>
+            {isLoading ? (
+              <View style={{ width: 200, height: 30 }}>
+                <Skeleton isLoading={isLoading} start={-400} end={200} />
+              </View>
+            ) : (
+              <Text style={styles.normalText}>{meetPoint}</Text>
+            )}
           </View>
         </View>
         <View style={styles.detailedInfoContainer}>
@@ -74,29 +129,43 @@ const EventView = (props: {
             ) : (
               <Ionicons name="restaurant" size={24} color="#ff7800" />
             )}
-            <Text style={styles.normalText}>{restaurantName}</Text>
+            {isLoading ? (
+              <View style={{ width: 180, height: 30 }}>
+                <Skeleton isLoading={isLoading} start={-360} end={180} />
+              </View>
+            ) : (
+              <Text style={styles.normalText}>{restaurantName}</Text>
+            )}
           </View>
         </View>
-        {message && (
-          <GlassView
-            style={
-              isLiquidGlassAvailable()
-                ? styles.glassMessageContainer
-                : styles.nonGlassMessageContainer
-            }
-          >
-            {Platform.OS === "ios" ? (
-              <SymbolView
-                name="message.badge"
-                style={{ width: 24, height: 24 }}
-              />
-            ) : (
-              <Ionicons name="chatbubbles" size={24} color="#ff7800" />
+        {isLoading ? (
+          <View style={{width: "100%", height: 80}}>
+            <Skeleton isLoading={isLoading} start={-600} end={300}/>
+          </View>
+        ) : (
+          <>
+            {message && (
+              <GlassView
+                style={
+                  isLiquidGlassAvailable()
+                    ? styles.glassMessageContainer
+                    : styles.nonGlassMessageContainer
+                }
+              >
+                {Platform.OS === "ios" ? (
+                  <SymbolView
+                    name="message.badge"
+                    style={{ width: 24, height: 24 }}
+                  />
+                ) : (
+                  <Ionicons name="chatbubbles" size={24} color="#ff7800" />
+                )}
+                <Text style={{ flex: 1, fontSize: 16, fontWeight: "normal" }}>
+                  {message}
+                </Text>
+              </GlassView>
             )}
-            <Text style={{ flex: 1, fontSize: 16, fontWeight: "normal" }}>
-              {message}
-            </Text>
-          </GlassView>
+          </>
         )}
       </View>
     </GlassView>
@@ -170,6 +239,31 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 24,
+  },
+  shimmerContainer: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 24,
+    overflow: "hidden",
+    position: "relative",
+  },
+  shimmerBase: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#E6E6E6",
+    borderRadius: 24,
+  },
+  shimmerGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  shimmerOverlay: {
+    width: "200%",
+    height: "100%",
   },
   userNameText: {
     fontSize: 20,
