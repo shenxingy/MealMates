@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@mealmates/eslint-config": "workspace:*",

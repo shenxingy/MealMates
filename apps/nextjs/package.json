@@ -29,7 +29,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "superjson": "2.2.2",
-    "zod": "catalog:"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@mealmates/eslint-config": "workspace:*",

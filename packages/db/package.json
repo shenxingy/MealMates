@@ -30,9 +30,10 @@
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
+    "better-sqlite3": "^12.4.1",
     "drizzle-orm": "^0.44.6",
     "drizzle-zod": "^0.8.3",
-    "zod": "catalog:"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@mealmates/eslint-config": "workspace:*",
