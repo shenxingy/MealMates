@@ -5,9 +5,12 @@ export default function YouPage() {
   const header = "Welcome,\nChipmunk Bar"; // Should be username
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} scrollEnabled={false} headerTitle={header}>
-        <>
-        </>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        scrollEnabled={false}
+        headerTitle={header}
+      >
+        <></>
       </AnimatedPageFrame>
     </>
   );

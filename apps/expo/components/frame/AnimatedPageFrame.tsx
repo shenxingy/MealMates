@@ -1,11 +1,14 @@
 import { useMemo } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
+import { GlassView } from "expo-glass-effect";
+import { SymbolView } from "expo-symbols";
+import { useRouter } from "expo-router";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -14,8 +17,10 @@ export default function AnimatedPageFrame(props: {
   baseColor: string;
   headerTitle?: string;
   scrollEnabled?: boolean;
+  enableReturnButton?: boolean;
+  returnButtonText?: string;
 }) {
-  const { children, baseColor, headerTitle, scrollEnabled = true } = props;
+  const { children, baseColor, headerTitle, scrollEnabled = true, enableReturnButton = false, returnButtonText } = props;
   // Create a single Animated.Value instance without accessing ref.current during render
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
@@ -58,10 +63,15 @@ export default function AnimatedPageFrame(props: {
   });
 
   const topHeaderTranslateY = scrollY.interpolate({
-      inputRange: [53, 71],
-      outputRange: [20, 0],
-      extrapolate: "clamp",
-    });
+    inputRange: [53, 71],
+    outputRange: [20, 0],
+    extrapolate: "clamp",
+  });
+
+  const router = useRouter();
+  const handleReturnButton = () => {
+    router.back();
+  }
 
   return (
     <LinearGradientBackground
@@ -137,7 +147,7 @@ export default function AnimatedPageFrame(props: {
             opacity: topHeaderOpacity,
             transform: [
               {
-                translateY: topHeaderTranslateY
+                translateY: topHeaderTranslateY,
               },
             ],
           }}
@@ -147,6 +157,22 @@ export default function AnimatedPageFrame(props: {
           </Text>
         </Animated.View>
       </View>
+      {/* Return button */}
+      {enableReturnButton && (
+        <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
+          <GlassView style={styles.returnButton} isInteractive>
+            <View style={styles.returnButtonContainer}>
+              <SymbolView name="chevron.backward" size={17} tintColor="black" />
+              {returnButtonText && (
+                <Text style={styles.returnButtonText}>
+                  {returnButtonText}
+                </Text>
+              )
+              }
+            </View>
+          </GlassView>
+        </Pressable>
+      )}
     </LinearGradientBackground>
   );
 }
@@ -156,10 +182,31 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexDirection: "column",
     justifyContent: "flex-start",
+    paddingBottom: 200,
   },
   contentHeader: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  returnPressable: {
+    position: "absolute",
+    top: 60,
+    left: 20,
+  },
+  returnButton: {
+    height: 48,
+    minWidth: 48,
+    borderRadius: 24,
+  },
+  returnButtonContainer: {
+    height: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  returnButtonText: {
+    fontSize: 17,
   },
 });
