@@ -1,10 +1,10 @@
 import { Pressable, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchSimpleEventList } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EventView from "../../../../components/homepage/EventView";
-import { useRouter } from "expo-router";
 
 export default function HomePage() {
   // Gradient color
@@ -22,7 +22,7 @@ export default function HomePage() {
     console.log("Event", eventId, "Pressed!");
     // Navigate to event details page
     router.push(`/event/${eventId}`);
-  }
+  };
 
   if (isLoading) {
     return (
@@ -43,7 +43,11 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header} scrollEnabled={false}>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={header}
+        scrollEnabled={false}
+      >
         <View style={styles.emptySpace} />
         {Array.from({ length: 3 }).map((_, i) => (
           <View style={{ marginBottom: 20 }} key={i}>
