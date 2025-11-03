@@ -18,13 +18,15 @@
   },
   "dependencies": {
     "@better-auth/expo": "catalog:",
+    "@expo/metro-runtime": "6.1.2",
     "@mealmates/db": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",
     "better-auth": "catalog:",
+    "better-sqlite3": "^12.4.1",
     "next": "^15.5.4",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "zod": "catalog:"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@better-auth/cli": "catalog:",
