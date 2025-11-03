@@ -1,14 +1,18 @@
 import { useMemo } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
-import { LinearGradient as MaskGradient } from "expo-linear-gradient";
-import MaskedView from "@react-native-masked-view/masked-view";
+import { Ionicons } from "@expo/vector-icons";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
-import { GlassView } from "expo-glass-effect";
-import { SymbolView } from "expo-symbols";
 import { useRouter } from "expo-router";
+import {
+  BlurView,
+  GlassView,
+  SymbolView,
+  LinearGradient as MaskGradient,
+  MaskedView,
+  hasSymbolModule,
+} from "~/utils/nativeViews";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -162,7 +166,15 @@ export default function AnimatedPageFrame(props: {
         <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
           <GlassView style={styles.returnButton} isInteractive>
             <View style={styles.returnButtonContainer}>
-              <SymbolView name="chevron.backward" size={17} tintColor="black" />
+              {hasSymbolModule ? (
+                <SymbolView
+                  name="chevron.backward"
+                  size={17}
+                  tintColor="black"
+                />
+              ) : (
+                <Ionicons name="chevron-back" size={20} color="black" />
+              )}
               {returnButtonText && (
                 <Text style={styles.returnButtonText}>
                   {returnButtonText}
