@@ -1,10 +1,11 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchSimpleEventList } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EventView from "../../../../components/homepage/EventView";
+import EmptySpace from "../../../../components/frame/EmptySpace";
 
 export default function HomePage() {
   // Gradient color
@@ -31,7 +32,7 @@ export default function HomePage() {
         headerTitle={header}
         scrollEnabled={false}
       >
-        <View style={styles.emptySpace} />
+        <EmptySpace marginTop={30}/>
         {Array.from({ length: 3 }).map((_, i) => (
           <View style={{ marginBottom: 20 }} key={i}>
             <EventView isLoading={true} />
@@ -48,7 +49,7 @@ export default function HomePage() {
         headerTitle={header}
         scrollEnabled={false}
       >
-        <View style={styles.emptySpace} />
+        <EmptySpace marginTop={30}/>
         {Array.from({ length: 3 }).map((_, i) => (
           <View style={{ marginBottom: 20 }} key={i}>
             <EventView isLoading={true} />
@@ -60,7 +61,7 @@ export default function HomePage() {
 
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-      <View style={styles.emptySpace} />
+      <EmptySpace marginTop={30}/>
 
       {data?.map((event, _) => (
         <View key={event.id} style={{ marginBottom: 20 }}>
@@ -85,14 +86,3 @@ export default function HomePage() {
     </AnimatedPageFrame>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    flexDirection: "column",
-    justifyContent: "flex-start",
-  },
-  emptySpace: {
-    marginTop: 30,
-  },
-});
