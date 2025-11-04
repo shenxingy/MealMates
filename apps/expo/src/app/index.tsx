@@ -1,15 +1,14 @@
-import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 import { useRouter } from "expo-router";
-
+import LinearGradientBackground from "../../components/background/LinearGradientBackground";
 import {
-  Divider,
+  LoginForm,
   DukeRegisterButton,
   LoginButton,
-  LoginForm,
+  Divider,
 } from "../../components/auth";
-import LinearGradientBackground from "../../components/background/LinearGradientBackground";
 
 export default function Index() {
   const router = useRouter();
