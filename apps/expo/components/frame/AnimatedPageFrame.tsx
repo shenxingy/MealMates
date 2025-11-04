@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
+import { GlassView } from "expo-glass-effect";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
-import { GlassView } from "expo-glass-effect";
-import { SymbolView } from "expo-symbols";
-import { useRouter } from "expo-router";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -20,7 +20,14 @@ export default function AnimatedPageFrame(props: {
   enableReturnButton?: boolean;
   returnButtonText?: string;
 }) {
-  const { children, baseColor, headerTitle, scrollEnabled = true, enableReturnButton = false, returnButtonText } = props;
+  const {
+    children,
+    baseColor,
+    headerTitle,
+    scrollEnabled = true,
+    enableReturnButton = false,
+    returnButtonText,
+  } = props;
   // Create a single Animated.Value instance without accessing ref.current during render
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
@@ -71,7 +78,7 @@ export default function AnimatedPageFrame(props: {
   const router = useRouter();
   const handleReturnButton = () => {
     router.back();
-  }
+  };
 
   return (
     <LinearGradientBackground
@@ -164,11 +171,8 @@ export default function AnimatedPageFrame(props: {
             <View style={styles.returnButtonContainer}>
               <SymbolView name="chevron.backward" size={17} tintColor="black" />
               {returnButtonText && (
-                <Text style={styles.returnButtonText}>
-                  {returnButtonText}
-                </Text>
-              )
-              }
+                <Text style={styles.returnButtonText}>{returnButtonText}</Text>
+              )}
             </View>
           </GlassView>
         </Pressable>

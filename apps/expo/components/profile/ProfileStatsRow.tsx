@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { StyleSheet, View } from "react-native";
+
 import type { ProfileStat } from "./ProfileStatCard";
 import ProfileStatCard from "./ProfileStatCard";
 
@@ -31,4 +32,3 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
 });
-

@@ -1,12 +1,13 @@
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import type { ProfileStat } from "../../../../components/profile";
 import LinearGradientBackground from "../../../../components/background/LinearGradientBackground";
 import {
   ProfileHeader,
   ProfileInfoCard,
   ProfileStatsRow,
 } from "../../../../components/profile";
-import type { ProfileStat } from "../../../../components/profile";
 
 export default function YouPage() {
   const stats: ProfileStat[] = [
