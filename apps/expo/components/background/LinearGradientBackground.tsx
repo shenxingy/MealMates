@@ -1,5 +1,6 @@
 import type React from "react";
 import { Animated, StyleSheet, View } from "react-native";
+
 import { LinearGradient } from "~/utils/nativeViews";
 
 const BACKDROP_HEIGHT = 1000; // large enough to cover translate range

@@ -64,7 +64,7 @@ export function loadNativeModule<T>(
   moduleName: string,
   loader: Loader<T>,
   fallback: T,
-  options?: LoadNativeOptions
+  options?: LoadNativeOptions,
 ): { module: T; isAvailable: boolean } {
   if (options?.skipPlatforms?.includes(Platform.OS)) {
     return { module: fallback, isAvailable: false };

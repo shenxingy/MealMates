@@ -2,13 +2,13 @@ import { Image, Platform, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { DEFAULT_USER_AVATAR } from "~/utils/api";
-import Skeleton from "../frame/Skeleton";
 import {
   GlassView,
+  hasSymbolModule,
   isLiquidGlassAvailable,
   SymbolView,
-  hasSymbolModule,
 } from "~/utils/nativeViews";
+import Skeleton from "../frame/Skeleton";
 
 interface LoadingProps {
   isLoading: true;

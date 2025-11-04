@@ -1,14 +1,10 @@
-import type { ComponentType, PropsWithChildren, ReactNode } from "react";
-import { Platform, UIManager, View } from "react-native";
-import type { ViewProps } from "react-native";
-
 import type { BlurViewProps } from "expo-blur";
-import type {
-  GlassContainerProps,
-  GlassViewProps,
-} from "expo-glass-effect";
+import type { GlassContainerProps, GlassViewProps } from "expo-glass-effect";
 import type { LinearGradientProps } from "expo-linear-gradient";
 import type { SymbolViewProps } from "expo-symbols";
+import type { ComponentType, PropsWithChildren, ReactNode } from "react";
+import type { ViewProps } from "react-native";
+import { Platform, UIManager, View } from "react-native";
 
 import { loadNativeModule } from "./nativeViewLoader";
 
@@ -32,18 +28,20 @@ const GlassContainerFallback: ComponentType<GlassContainerProps> = ({
   ...viewProps
 }) => <BaseView {...viewProps}>{children}</BaseView>;
 
-const BlurFallback: ComponentType<BlurViewProps> = ({ children, ...viewProps }) => (
-  <BaseView {...viewProps}>{children}</BaseView>
-);
+const BlurFallback: ComponentType<BlurViewProps> = ({
+  children,
+  ...viewProps
+}) => <BaseView {...viewProps}>{children}</BaseView>;
 
 const LinearGradientFallback: ComponentType<LinearGradientProps> = ({
   children,
   ...viewProps
 }) => <BaseView {...viewProps}>{children}</BaseView>;
 
-const SymbolFallback: ComponentType<SymbolViewProps> = ({ children, ...viewProps }) => (
-  <BaseView {...viewProps}>{children}</BaseView>
-);
+const SymbolFallback: ComponentType<SymbolViewProps> = ({
+  children,
+  ...viewProps
+}) => <BaseView {...viewProps}>{children}</BaseView>;
 
 const MaskedViewFallback: ComponentType<MaskedViewProps> = ({
   children,
@@ -115,15 +113,11 @@ const loadMaskedViewModule = (): MaskedViewModule => {
 };
 
 const { module: glassModule, isAvailable: isGlassEffectAvailable } =
-  loadNativeModule<GlassEffectModule>(
-    "ExpoGlassEffect",
-    loadGlassModule,
-    {
-      GlassView: GlassFallback,
-      GlassContainer: GlassContainerFallback,
-      isLiquidGlassAvailable: () => false,
-    }
-  );
+  loadNativeModule<GlassEffectModule>("ExpoGlassEffect", loadGlassModule, {
+    GlassView: GlassFallback,
+    GlassContainer: GlassContainerFallback,
+    isLiquidGlassAvailable: () => false,
+  });
 
 const { module: blurModule, isAvailable: isBlurViewAvailable } =
   loadNativeModule<BlurModule>("ExpoBlurView", loadBlurModule, {
@@ -136,7 +130,7 @@ const { module: linearGradientModule, isAvailable: isLinearGradientAvailable } =
     loadLinearGradientModule,
     {
       LinearGradient: LinearGradientFallback,
-    }
+    },
   );
 
 const { module: symbolsModule, isAvailable: isSymbolModuleAvailable } =
@@ -163,11 +157,10 @@ const { module: maskedViewModule, isAvailable: isMaskedViewAvailable } =
           return false;
         }
       },
-    }
+    },
   );
 
-export const GlassView =
-  glassModule.GlassView ?? GlassFallback;
+export const GlassView = glassModule.GlassView ?? GlassFallback;
 export const GlassContainer =
   glassModule.GlassContainer ?? GlassContainerFallback;
 export const isLiquidGlassAvailable = (): boolean =>
@@ -186,6 +179,5 @@ export const hasLinearGradient = isLinearGradientAvailable;
 export const SymbolView = symbolsModule.SymbolView ?? SymbolFallback;
 export const hasSymbolModule = isSymbolModuleAvailable;
 
-export const MaskedView =
-  maskedViewModule.default ?? MaskedViewFallback;
+export const MaskedView = maskedViewModule.default ?? MaskedViewFallback;
 export const hasMaskedView = isMaskedViewAvailable;
