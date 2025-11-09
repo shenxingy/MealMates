@@ -1,36 +1,73 @@
-import { Pressable, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 import { useRouter } from "expo-router";
+import LinearGradientBackground from "../../components/background/LinearGradientBackground";
+import {
+  LoginForm,
+  DukeRegisterButton,
+  LoginButton,
+  Divider,
+} from "../../components/auth";
 
 export default function Index() {
   const router = useRouter();
-  const handleFakeLogin = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
     router.replace("/(App)/(Home)");
   };
 
+  const handleRegister = () => {
+    // TODO: Implement Duke registration flow
+    console.log("Register with Duke");
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        <Text style={{ textAlign: "center", fontSize: 40, color: "black" }}>
-          Login Page
-        </Text>
-        <Pressable
-          onPress={handleFakeLogin}
-          style={{ marginTop: 20, backgroundColor: "blue", borderRadius: 10 }}
-        >
-          <Text style={{ color: "white", padding: 10, fontSize: 20 }}>
-            Fake Login
-          </Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+    <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Welcome Back,</Text>
+
+          <LoginForm
+            email={email}
+            password={password}
+            onEmailChange={setEmail}
+            onPasswordChange={setPassword}
+          />
+
+          <DukeRegisterButton onPress={handleRegister} />
+
+          <Divider />
+
+          <View style={styles.loginRow}>
+            <LoginButton onPress={handleLogin} />
+          </View>
+        </View>
+      </SafeAreaView>
+    </LinearGradientBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 48,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: "700",
+    color: "#0F172A",
+    letterSpacing: 0.4,
+  },
+  loginRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
