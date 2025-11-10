@@ -6,9 +6,12 @@ const renderPost = (listItem : any) => {
   const post: PostProps = listItem.item;
   return(
     <PostItem
+      id={post.id}
       title={post.title}
+      content={post.content}
       image={post.image}
       user={post.user}
+      time={post.time}
       likes={post.likes}
       liked={post.liked}
     />
@@ -62,7 +65,8 @@ export default function PostList({data, numColumns} : { data: PostProps[], numCo
           contentContainerStyle={[styles.columeContent]}
           data={list}
           renderItem={renderPost}
-        />))}
+        />
+      ))}
     </View>
   )
 }
