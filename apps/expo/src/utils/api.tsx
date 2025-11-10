@@ -7,7 +7,7 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@mealmates/api";
 
-import type { ApiResponse, SimpleEventDTO } from "~/definition";
+import type { ApiResponse, DetailedEventDTO, SimpleEventDTO } from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 
@@ -113,9 +113,18 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 export { type RouterInputs, type RouterOutputs } from "@mealmates/api";
 
 export const fetchSimpleEventList = async () => {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 3000);
-  });
+  // await new Promise((resolve) => {
+  //   setTimeout(resolve, 3000);
+  // });
   const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/events/list");
   return res.data.data;
 };
+
+export const fetchDetailedEvent = async (eventId: string) => {
+  // await new Promise((resolve) => {
+  //   setTimeout(resolve, 2000);
+  // });
+  const res = await api.get<ApiResponse<DetailedEventDTO>>(`/events/${eventId}/details`);
+  console.log(res.data.data);
+  return res.data.data;
+}

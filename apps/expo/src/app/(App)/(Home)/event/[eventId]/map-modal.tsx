@@ -18,19 +18,21 @@ import SymbolButton from "../../../../../../components/frame/SymbolButton";
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const eventId = params.eventId as string;
+  const _eventId = params.eventId as string;
   const shared = params.shared === "true";
-  const latitude = parseFloat(params.latitude as string);
-  const longitude = parseFloat(params.longitude as string);
-  const meetPlaceCoord: Coordinates = { latitude, longitude };
-  const zoom = parseFloat(params.zoom as string);
-  const handleDismiss = () => {
-    router.back();
-  };
+  const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
+  const meetPointLongitude = parseFloat(params.meetPointLongitude as string);
+  const meetPointCoord: Coordinates = { latitude: meetPointLatitude, longitude: meetPointLongitude };
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
   const [meetPointView, setMeetPointView] = useState(true);
+
+  console.log("Map Modal Params:", params);
+
+  const handleDismiss = () => {
+    router.back();
+  };
 
   const alartLocationPerm = () => {
     Alert.alert(
@@ -118,20 +120,20 @@ export default function MapModalPage() {
       };
       const centerCoord = calculateCenterCoordinates([
         currentCoord,
-        meetPlaceCoord,
+        meetPointCoord,
       ]);
       if (meetPointView) {
         if (centerCoord && Platform.OS === "ios") {
           appleMap.current?.setCameraPosition({
             coordinates: centerCoord,
-            zoom: calculateZoomLevel([currentCoord, meetPlaceCoord]),
+            zoom: calculateZoomLevel([currentCoord, meetPointCoord]),
           });
         }
       } else {
         if (Platform.OS === "ios") {
           appleMap.current?.setCameraPosition({
-            coordinates: meetPlaceCoord,
-            zoom: zoom,
+            coordinates: meetPointCoord,
+            zoom: calculateZoomLevel([meetPointCoord]),
           });
         }
       }
@@ -139,8 +141,8 @@ export default function MapModalPage() {
     } else {
       if (Platform.OS === "ios") {
         appleMap.current?.setCameraPosition({
-          coordinates: meetPlaceCoord,
-          zoom: zoom,
+          coordinates: meetPointCoord,
+          zoom: calculateZoomLevel([meetPointCoord]),
         });
       }
     }
@@ -169,10 +171,10 @@ export default function MapModalPage() {
       {Platform.OS === "ios" ? (
         <AppleMaps.View
           style={{ flex: 1 }}
-          cameraPosition={{ coordinates: meetPlaceCoord, zoom }}
+          cameraPosition={{ coordinates: meetPointCoord, zoom: calculateZoomLevel([meetPointCoord]) }}
           circles={[
             {
-              center: meetPlaceCoord,
+              center: meetPointCoord,
               radius: 20,
               lineColor: "#F2F2F2",
               lineWidth: 3,

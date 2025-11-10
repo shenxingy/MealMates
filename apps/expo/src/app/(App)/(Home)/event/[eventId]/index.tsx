@@ -1,19 +1,34 @@
-import { useState } from "react";
 import { Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 
+import { fetchDetailedEvent } from "~/utils/api";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
+import { calculateZoomLevel } from "~/utils/map";
+import type { Coordinates } from "expo-maps/src/shared.types";
 
 const EventDetailsPage = () => {
-  const {eventId} = useLocalSearchParams<{eventId: string}>();
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const baseColor = "255,140,0";
   const router = useRouter();
 
-  const [latitude, setLatitude] = useState(36.001877);
-  const [longitude, setLongitude] = useState(-78.940232);
-  const [zoom, setZoom] = useState(18);
+  const {
+    data,
+    isLoading,
+    error: _error,
+  } = useQuery({
+    queryKey: ["eventDetails", eventId],
+    queryFn: () => fetchDetailedEvent(eventId),
+    enabled: !!eventId,
+  });
+
+  const meetPointCoord: Coordinates | undefined = data?.meetPointCoordinates ?? undefined;
+  const meetPointLatitude = meetPointCoord?.latitude ?? 0;
+  const meetPointLongitude = meetPointCoord?.longitude ?? 0;
+
+  console.log("Meet Point Coordinates:", meetPointLatitude, meetPointLongitude);
 
   const shareLocationCallback = () => {
     console.log("Share location button pressed");
@@ -22,7 +37,7 @@ const EventDetailsPage = () => {
       return;
     }
     router.push(
-      `/(App)/(Home)/event/${eventId}/map-modal?shared=true&latitude=${latitude}&longitude=${longitude}&zoom=${zoom}`,
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=true&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}`,
     );
   };
 
@@ -33,9 +48,26 @@ const EventDetailsPage = () => {
       return;
     }
     router.push(
-      `/(App)/(Home)/event/${eventId}/map-modal?shared=false&latitude=${latitude}&longitude=${longitude}&zoom=${zoom}`,
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=false&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}`,
     );
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <AnimatedPageFrame
+          baseColor={baseColor}
+          headerTitle={`Event #${eventId}`}
+          scrollEnabled={false}
+          enableReturnButton={true}
+          returnButtonText="Home"
+        >
+          <EmptySpace marginTop={30} />
+          <Text style={{ fontSize: 18 }}>Loading event details...</Text>
+        </AnimatedPageFrame>
+      </>
+    );
+  }
 
   return (
     <AnimatedPageFrame
@@ -50,13 +82,15 @@ const EventDetailsPage = () => {
         Content holder for Event ID: {eventId}
       </Text>
       <EmptySpace marginTop={20} />
-      <MiniMap
-        coordinates={{ latitude, longitude }}
-        zoom={18}
-        joined={true}
-        shareLocationCallback={shareLocationCallback}
-        onMapPressedCallback={handleOpenMapModal}
-      />
+      {meetPointCoord && (
+        <MiniMap
+          coordinates={meetPointCoord}
+          zoom={calculateZoomLevel([meetPointCoord])}
+          joined={true}
+          shareLocationCallback={shareLocationCallback}
+          onMapPressedCallback={handleOpenMapModal}
+        />
+      )}
     </AnimatedPageFrame>
   );
 };
