@@ -1,20 +1,32 @@
-import { Platform, StyleSheet } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
+import { GlassView } from "expo-glass-effect";
 
-interface MiniMapProps {
-  coordinates?: { latitude: number; longitude: number },
-  zoom?: number,
+interface NotJoinedMiniMapProps {
+  coordinates?: { latitude: number; longitude: number };
+  zoom?: number;
+  joined?: false;
+  shareLocationCallback?: () => void;
 }
 
+interface JoinedMiniMapProps {
+  coordinates?: { latitude: number; longitude: number };
+  zoom?: number;
+  joined: true;
+  shareLocationCallback: () => void;
+}
+
+type MiniMapProps = NotJoinedMiniMapProps | JoinedMiniMapProps;
+
 export default function MiniMap(props: MiniMapProps) {
-  const { coordinates, zoom } = props;
+  const { coordinates, zoom, joined, shareLocationCallback } = props;
   return (
     <>
       {Platform.OS === "ios" ? (
-        <>
+        <View style={styles.mapContainer}>
           <AppleMaps.View
-            style={styles.mapContainer}
+            style={styles.map}
             cameraPosition={{
               coordinates,
               zoom,
@@ -87,11 +99,20 @@ export default function MiniMap(props: MiniMapProps) {
                   AppleMapPointOfInterestCategory.VOLLEYBALL,
                   AppleMapPointOfInterestCategory.WINERY,
                   AppleMapPointOfInterestCategory.ZOO,
-                ]
-              }
+                ],
+              },
             }}
           />
-        </>
+          {joined && (
+            <Pressable style={styles.shareLocationButton} onPress={shareLocationCallback}>
+              <GlassView style={styles.glassContainer} glassEffectStyle="regular" isInteractive>
+                <Text style={styles.shareLocationText}>
+                  Share Location
+                </Text>
+              </GlassView>
+            </Pressable>
+          )}
+        </View>
       ) : (
         <>
           <GoogleMaps.View style={{ flex: 1 }} />
@@ -107,7 +128,33 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 30,
     overflow: "hidden",
+    position: "relative",
+  },
+  map: {
+    width: "100%",
+    height: "100%",
+    top: 0,
+    left: 0,
+    position: "absolute",
+  },
+  shareLocationButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  glassContainer: {
+    borderRadius: 25,
+    overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
   },
+  shareLocationText: {
+    width: "100%",
+    height: "100%",
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#000",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+  }
 });

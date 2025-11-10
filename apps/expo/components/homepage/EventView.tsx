@@ -18,7 +18,7 @@ interface LoadingProps {
 }
 
 interface LoadedProps {
-  isLoading?: false; // 关键：设为可选的 false
+  isLoading?: false;
   scheduleTime: string;
   avatarUrl?: string;
   username: string;

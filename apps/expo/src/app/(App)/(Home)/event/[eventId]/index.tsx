@@ -9,6 +9,11 @@ const EventDetailsPage = () => {
   const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
   const baseColor = "255,140,0";
+
+  const shareLocationCallback = () => {
+    console.log("Share location button pressed");
+  }
+
   return (
     <AnimatedPageFrame
       baseColor={baseColor}
@@ -22,7 +27,7 @@ const EventDetailsPage = () => {
         Content holder for Event ID: {eventId}
       </Text>
       <EmptySpace marginTop={20} />
-      <MiniMap coordinates={{ latitude: 36.001877, longitude: -78.940232 }} zoom={18} />
+      <MiniMap coordinates={{ latitude: 36.001877, longitude: -78.940232 }} zoom={18} joined={true} shareLocationCallback={shareLocationCallback} />
     </AnimatedPageFrame>
   );
 };
