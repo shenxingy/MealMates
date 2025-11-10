@@ -1,26 +1,46 @@
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { GlassView } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
-import { GlassView } from "expo-glass-effect";
+import { Coordinates } from "expo-maps/src/shared.types";
+
+interface NoPropMiniMapProps {
+  coordinates?: Coordinates;
+  zoom?: number;
+  joined?: boolean;
+  shareLocationCallback?: () => void;
+  onMapPressedCallback: () => void;
+}
 
 interface NotJoinedMiniMapProps {
-  coordinates?: { latitude: number; longitude: number };
-  zoom?: number;
-  joined?: false;
+  coordinates: Coordinates;
+  zoom: number;
+  joined: false;
+  onMapPressedCallback: () => void;
   shareLocationCallback?: () => void;
 }
 
 interface JoinedMiniMapProps {
-  coordinates?: { latitude: number; longitude: number };
-  zoom?: number;
+  coordinates: Coordinates;
+  zoom: number;
   joined: true;
+  onMapPressedCallback: () => void;
   shareLocationCallback: () => void;
 }
 
-type MiniMapProps = NotJoinedMiniMapProps | JoinedMiniMapProps;
+type MiniMapProps =
+  | NoPropMiniMapProps
+  | NotJoinedMiniMapProps
+  | JoinedMiniMapProps;
 
 export default function MiniMap(props: MiniMapProps) {
-  const { coordinates, zoom, joined, shareLocationCallback } = props;
+  const {
+    coordinates,
+    zoom,
+    joined,
+    shareLocationCallback,
+    onMapPressedCallback,
+  } = props;
   return (
     <>
       {Platform.OS === "ios" ? (
@@ -31,15 +51,19 @@ export default function MiniMap(props: MiniMapProps) {
               coordinates,
               zoom,
             }}
-            circles={[
-              {
-                center: { latitude: 36.001877, longitude: -78.940232 },
-                radius: 20,
-                lineColor: "#F2F2F2",
-                lineWidth: 3,
-                color: "#FF8C004C",
-              },
-            ]}
+            circles={
+              coordinates
+                ? [
+                    {
+                      center: coordinates,
+                      radius: 20,
+                      lineColor: "#F2F2F2",
+                      lineWidth: 3,
+                      color: "#FF8C004C",
+                    },
+                  ]
+                : []
+            }
             uiSettings={{
               myLocationButtonEnabled: false,
               togglePitchEnabled: false,
@@ -103,12 +127,18 @@ export default function MiniMap(props: MiniMapProps) {
               },
             }}
           />
+          <Pressable style={styles.mapMask} onPress={onMapPressedCallback} />
           {joined && (
-            <Pressable style={styles.shareLocationButton} onPress={shareLocationCallback}>
-              <GlassView style={styles.glassContainer} glassEffectStyle="regular" isInteractive>
-                <Text style={styles.shareLocationText}>
-                  Share Location
-                </Text>
+            <Pressable
+              style={styles.shareLocationButton}
+              onPress={shareLocationCallback}
+            >
+              <GlassView
+                style={styles.glassContainer}
+                glassEffectStyle="regular"
+                isInteractive
+              >
+                <Text style={styles.shareLocationText}>Share Location</Text>
               </GlassView>
             </Pressable>
           )}
@@ -137,6 +167,14 @@ const styles = StyleSheet.create({
     left: 0,
     position: "absolute",
   },
+  mapMask: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#FFFFFF00",
+  },
   shareLocationButton: {
     position: "absolute",
     top: 10,
@@ -155,6 +193,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     paddingVertical: 15,
-    paddingHorizontal: 15,
-  }
+    paddingHorizontal: 18,
+  },
 });
