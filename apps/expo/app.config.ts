@@ -21,6 +21,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       light: "./assets/icon-light.png",
       dark: "./assets/icon-dark.png",
     },
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        "Allow MealMates to access your location to share it to your mates and help you navigate to them.",
+    }
   },
   android: {
     package: "com.mealmates.app",
@@ -61,6 +65,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         "requestLocationPermission": true,
         "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+      }
+    ],
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
       }
     ],
   ],
