@@ -27,6 +27,9 @@ const EventDetailsPage = () => {
   const meetPointCoord: Coordinates | undefined = data?.meetPointCoordinates ?? undefined;
   const meetPointLatitude = meetPointCoord?.latitude ?? 0;
   const meetPointLongitude = meetPointCoord?.longitude ?? 0;
+  const restaurantCoord: Coordinates | undefined = data?.restaurantCoordinates ?? undefined;
+  const restaurantLatitude = restaurantCoord?.latitude ?? 0;
+  const restaurantLongitude = restaurantCoord?.longitude ?? 0;
 
   console.log("Meet Point Coordinates:", meetPointLatitude, meetPointLongitude);
 
@@ -37,7 +40,7 @@ const EventDetailsPage = () => {
       return;
     }
     router.push(
-      `/(App)/(Home)/event/${eventId}/map-modal?shared=true&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}`,
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=true&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}${restaurantCoord ? `&restaurantLatitude=${restaurantLatitude}&restaurantLongitude=${restaurantLongitude}` : ""}`,
     );
   };
 
@@ -48,7 +51,7 @@ const EventDetailsPage = () => {
       return;
     }
     router.push(
-      `/(App)/(Home)/event/${eventId}/map-modal?shared=false&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}`,
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=false&meetPointLatitude=${meetPointLatitude}&meetPointLongitude=${meetPointLongitude}${restaurantCoord ? `&restaurantLatitude=${restaurantLatitude}&restaurantLongitude=${restaurantLongitude}` : ""}`,
     );
   };
 

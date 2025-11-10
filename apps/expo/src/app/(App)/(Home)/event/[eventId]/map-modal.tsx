@@ -22,11 +22,22 @@ export default function MapModalPage() {
   const shared = params.shared === "true";
   const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
   const meetPointLongitude = parseFloat(params.meetPointLongitude as string);
-  const meetPointCoord: Coordinates = { latitude: meetPointLatitude, longitude: meetPointLongitude };
+  const meetPointCoord: Coordinates = {
+    latitude: meetPointLatitude,
+    longitude: meetPointLongitude,
+  };
+  const restaurantLatitude = params.restaurantLatitude ? parseFloat(params.restaurantLatitude as string) : null;
+  const restaurantLongitude = params.restaurantLongitude ? parseFloat(params.restaurantLongitude as string) : null;
+  const restaurantCoord: Coordinates | null = (restaurantLatitude !== null && restaurantLongitude !== null) ? {
+    latitude: restaurantLatitude,
+    longitude: restaurantLongitude,
+  } : null;
+
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
   const [meetPointView, setMeetPointView] = useState(true);
+  const [restaurantView, setRestaurantView] = useState(0);
 
   console.log("Map Modal Params:", params);
 
@@ -53,7 +64,7 @@ export default function MapModalPage() {
         },
       ],
     );
-  }
+  };
 
   useEffect(() => {
     const requestPermissionAndLocation = async () => {
@@ -148,6 +159,35 @@ export default function MapModalPage() {
     }
   };
 
+  const handleCameraToRestaurant = () => {
+    if (restaurantCoord) {
+      if (restaurantView === 0) {
+        appleMap.current?.setCameraPosition({coordinates: restaurantCoord, zoom: calculateZoomLevel([restaurantCoord])});
+        setRestaurantView(1);
+      } else if (restaurantView === 1) {
+        const centerCoord = calculateCenterCoordinates([meetPointCoord, restaurantCoord]);
+        if (centerCoord) {
+          appleMap.current?.setCameraPosition({coordinates: centerCoord, zoom: calculateZoomLevel([meetPointCoord, restaurantCoord])});
+        }
+        if (locationPerm && currentLocation) {
+          setRestaurantView(2);
+        } else {
+          setRestaurantView(0);
+        }
+      } else if (restaurantView === 2 && locationPerm && currentLocation) {
+        const currentCoord = {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        };
+        const centerCoord = calculateCenterCoordinates([meetPointCoord, restaurantCoord, currentCoord]);
+        if (centerCoord) {
+          appleMap.current?.setCameraPosition({coordinates: centerCoord, zoom: calculateZoomLevel([meetPointCoord, restaurantCoord, currentCoord])});
+        }
+        setRestaurantView(0);
+      }
+    }
+  }
+
   return (
     <>
       <SymbolButton
@@ -168,10 +208,21 @@ export default function MapModalPage() {
         glassViewStyle={styles.meetPointGlassView}
         SFSymbolName="flag"
       />
+      {restaurantCoord && (
+        <SymbolButton
+          onPress={handleCameraToRestaurant}
+          pressableStyle={styles.restaurantButtonContainer}
+          glassViewStyle={styles.restaurantGlassView}
+          SFSymbolName="fork.knife"
+        />
+      )}
       {Platform.OS === "ios" ? (
         <AppleMaps.View
           style={{ flex: 1 }}
-          cameraPosition={{ coordinates: meetPointCoord, zoom: calculateZoomLevel([meetPointCoord]) }}
+          cameraPosition={{
+            coordinates: meetPointCoord,
+            zoom: calculateZoomLevel([meetPointCoord]),
+          }}
           circles={[
             {
               center: meetPointCoord,
@@ -294,4 +345,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  restaurantButtonContainer: {
+    position: "absolute",
+    top: 135,
+    right: 15,
+    zIndex: 1,
+  },
+  restaurantGlassView: {
+    width: 45,
+    height: 45,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });
