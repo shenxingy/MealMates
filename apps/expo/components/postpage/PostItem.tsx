@@ -1,10 +1,15 @@
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Image, Text, StyleSheet, ImageSize } from 'react-native'
+import { View, Image, Text, StyleSheet, ImageSize, Pressable } from 'react-native'
+import Like from './Like';
 
 export interface PostProps {
+  id: number;
   title: string;
+  content: string;
   image: string;
   user: string;
+  time: Date;
   likes: number;
   liked: boolean;
 }
@@ -17,9 +22,16 @@ export default function PostItem(props: PostProps) {
     setWidth(size.width);
     setHeight(size.height);
   }
+  const router = useRouter();
+  const seeDetails = () => {
+    router.push({ pathname: '/(App)/(Posts)/detail', params: {id: props.id} });
+  }
   getSize();
   return (
-    <View style={[ styles.container]} >
+    <Pressable
+      style={[ styles.container]}
+      onPress={seeDetails}
+    >
       <Image
         style={ [styles.image, {aspectRatio: width / height}] }
         source={{ uri: props.image }}
@@ -27,15 +39,16 @@ export default function PostItem(props: PostProps) {
       <Text style={styles.title} >{props.title}</Text>
       <View style={[styles.bottom]} >
         <Text style={styles.grayText} >{props.user}</Text>
-        <View style={styles.like} >
+        {/* <View style={styles.like} >
           { props.liked?
             (<Image source={require('../../assets/filled-heart.png')} />) :
             (<Image source={require('../../assets/empty-heart.png')} />)
           }
           <Text> {props.likes}</Text>
-        </View>
+        </View> */}
+        <Like likes={props.likes} liked={props.liked} border={true} />
       </View>
-    </View>
+    </Pressable>
   )
 }
 
@@ -43,9 +56,6 @@ const styles = StyleSheet.create({
   container: {
     width: '80%',
     borderRadius: 20
-  },
-  content: {
-    width: '90%'
   },
   image: {
     width: '100%',
@@ -55,7 +65,8 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: 10,
     marginRight: 10,
-    fontSize: 15
+    fontSize: 15,
+    fontWeight: 'bold'
   },
   bottom: {
     margin: 10,
