@@ -1,4 +1,4 @@
-import type { SimpleEventDTO } from "~/app/definition";
+import type { DetailedEventDTO, SimpleEventDTO } from "~/app/definition";
 
 export const simpleEventMockData: SimpleEventDTO[] = [
   {
@@ -53,3 +53,18 @@ export const simpleEventMockData: SimpleEventDTO[] = [
     message: "Healthy lunch meetup, anyone?",
   },
 ];
+
+export const detailedEventMockData: DetailedEventDTO[] =
+  simpleEventMockData.map((event): DetailedEventDTO => {
+    return {
+      ...event,
+      meetPointCoordinates: {
+        latitude: 36.00181,
+        longitude: -78.940232,
+      },
+      restaurantCoordinates: {
+        latitude: 36.00088,
+        longitude: -78.940232,
+      },
+    };
+  });

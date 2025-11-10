@@ -8,3 +8,14 @@ export interface SimpleEventDTO {
   restaurantName: string;
   message?: string;
 }
+
+export interface DetailedEventDTO extends SimpleEventDTO {
+  meetPointCoordinates: {
+    latitude: number,
+    longitude: number,
+  };
+  restaurantCoordinates?: {
+    latitude: number,
+    longitude: number,
+  };
+}
