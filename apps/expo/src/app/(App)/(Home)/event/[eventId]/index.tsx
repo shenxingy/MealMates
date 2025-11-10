@@ -1,18 +1,41 @@
+import { useState } from "react";
 import { Text } from "react-native";
-import { useSearchParams } from "expo-router/build/hooks";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
+import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
-import MiniMap from "../../../../../../components/eventpage/MiniMap";
 
 const EventDetailsPage = () => {
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
+  const {eventId} = useLocalSearchParams<{eventId: string}>();
   const baseColor = "255,140,0";
+  const router = useRouter();
+
+  const [latitude, setLatitude] = useState(36.001877);
+  const [longitude, setLongitude] = useState(-78.940232);
+  const [zoom, setZoom] = useState(18);
 
   const shareLocationCallback = () => {
     console.log("Share location button pressed");
-  }
+    if (!eventId) {
+      console.error("No event ID found in search params");
+      return;
+    }
+    router.push(
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=true&latitude=${latitude}&longitude=${longitude}&zoom=${zoom}`,
+    );
+  };
+
+  const handleOpenMapModal = () => {
+    console.log("Map pressed, opening modal");
+    if (!eventId) {
+      console.error("No event ID found in search params");
+      return;
+    }
+    router.push(
+      `/(App)/(Home)/event/${eventId}/map-modal?shared=false&latitude=${latitude}&longitude=${longitude}&zoom=${zoom}`,
+    );
+  };
 
   return (
     <AnimatedPageFrame
@@ -27,7 +50,13 @@ const EventDetailsPage = () => {
         Content holder for Event ID: {eventId}
       </Text>
       <EmptySpace marginTop={20} />
-      <MiniMap coordinates={{ latitude: 36.001877, longitude: -78.940232 }} zoom={18} joined={true} shareLocationCallback={shareLocationCallback} />
+      <MiniMap
+        coordinates={{ latitude, longitude }}
+        zoom={18}
+        joined={true}
+        shareLocationCallback={shareLocationCallback}
+        onMapPressedCallback={handleOpenMapModal}
+      />
     </AnimatedPageFrame>
   );
 };
