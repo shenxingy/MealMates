@@ -14,6 +14,7 @@ export default function EventDetailsLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ title: "Event Details" }} />
+        <Stack.Screen name="map-modal" options={{presentation: "modal", title: "Event Map"}} />
       </Stack>
     </>
   );
