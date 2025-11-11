@@ -20,6 +20,8 @@ export const auth = initAuth({
   secret: env.AUTH_SECRET,
   discordClientId: env.AUTH_DISCORD_ID,
   discordClientSecret: env.AUTH_DISCORD_SECRET,
+  dukeClientId: env.AUTH_DUKE_ID,
+  dukeClientSecret: env.AUTH_DUKE_SECRET,
 });
 
 export const getSession = cache(async () =>

@@ -13,6 +13,8 @@ export function initAuth(options: {
 
   discordClientId: string;
   discordClientSecret: string;
+  dukeClientId: string;
+  dukeClientSecret: string;
 }) {
   const config = {
     database: drizzleAdapter(db, {
@@ -31,6 +33,17 @@ export function initAuth(options: {
         clientId: options.discordClientId,
         clientSecret: options.discordClientSecret,
         redirectURI: `${options.baseUrl}/api/auth/callback/discord`,
+      },
+      // @ts-expect-error - Custom OIDC provider for Duke
+      duke: {
+        clientId: options.dukeClientId,
+        clientSecret: options.dukeClientSecret,
+        discoveryUrl:
+          "https://oauth.oit.duke.edu/oidc/.well-known/openid-configuration",
+        redirectURI: `${options.baseUrl}/api/auth/callback/duke`,
+        scopes: ["openid", "email", "profile", "offline_access"],
+        pkce: true,
+        tokenEndpointAuthMethod: "client_secret_basic",
       },
     },
     trustedOrigins: ["expo://", "mealmates://"],
