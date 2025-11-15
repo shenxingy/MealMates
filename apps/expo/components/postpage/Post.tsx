@@ -15,8 +15,9 @@ export default function Post(props: PostProps) {
   const router = useRouter();
   const timePassed = () => {
     const date1: Date = new Date();
-    const date2: Date = props.time;
-    // console.log(date.getTime() - props.time.getTime());
+    const date2: Date = new Date(props.time);
+    console.log(date1);
+    console.log(props.time);
     // return 'time passed';
     const year: number = date1.getFullYear() - date2.getFullYear();
     if (year > 0) return year > 1 ? year + ' years ago' : '1 year ago';

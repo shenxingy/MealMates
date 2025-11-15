@@ -13,3 +13,22 @@ export interface SimpleEventDTO {
   restaurantName: string;
   message?: string;
 }
+
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  image: string;
+  user: string;
+  time: string;
+  likes: number;
+  liked: boolean;
+}
+
+export interface PostComment {
+  content: string;
+  image: string | undefined;
+  user: string;
+  likes: number;
+  liked: boolean;
+}
