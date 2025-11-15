@@ -62,6 +62,7 @@ export default function PostList({data, numColumns} : { data: PostProps[], numCo
         <FlatList
           key={idx}
           style={ [styles.colume] }
+          scrollEnabled={false}
           contentContainerStyle={[styles.columeContent]}
           data={list}
           renderItem={renderPost}

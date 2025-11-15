@@ -7,7 +7,7 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@mealmates/api";
 
-import type { ApiResponse, SimpleEventDTO } from "~/definition";
+import type { ApiResponse, SimpleEventDTO, Post, PostComment } from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 
@@ -117,5 +117,20 @@ export const fetchSimpleEventList = async () => {
     setTimeout(resolve, 3000);
   });
   const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/events/list");
+  return res.data.data;
+};
+
+export const fetchPostList = async () => {
+  const res = await api.get<ApiResponse<Post[]>>("/posts/list");
+  return res.data.data;
+};
+
+export const fetchPost = async (id: number) => {
+  const res = await api.get<ApiResponse<Post>>("/posts/" + id);
+  return res.data.data;
+};
+
+export const fetchPostComments = async (id: number) => {
+  const res = await api.get<ApiResponse<PostComment[]>>("/posts/" + id + "/comments");
   return res.data.data;
 };

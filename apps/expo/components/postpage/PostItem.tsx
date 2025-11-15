@@ -9,7 +9,7 @@ export interface PostProps {
   content: string;
   image: string;
   user: string;
-  time: Date;
+  time: string;
   likes: number;
   liked: boolean;
 }
@@ -54,11 +54,12 @@ export default function PostItem(props: PostProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '100%',
+    backgroundColor: '#fff',
     borderRadius: 20
   },
   image: {
-    width: '100%',
+    width: '90%',
     margin: 10,
     borderRadius: 20
   },
