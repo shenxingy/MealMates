@@ -1,11 +1,19 @@
 import { useMemo } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { GlassView } from "expo-glass-effect";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
@@ -167,9 +175,17 @@ export default function AnimatedPageFrame(props: {
       {/* Return button */}
       {enableReturnButton && (
         <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
-          <GlassView style={styles.returnButton} isInteractive>
+          <GlassView style={Platform.OS === "ios" ? styles.returnGlassButton : styles.returnButton} isInteractive>
             <View style={styles.returnButtonContainer}>
-              <SymbolView name="chevron.backward" size={17} tintColor="black" />
+              {Platform.OS === "ios" ? (
+                <SymbolView
+                  name="chevron.backward"
+                  size={17}
+                  tintColor="black"
+                />
+              ) : (
+                <MaterialIcons name="arrow-back-ios" size={17} color="black" />
+              )}
               {returnButtonText && (
                 <Text style={styles.returnButtonText}>{returnButtonText}</Text>
               )}
@@ -198,10 +214,16 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
   },
+  returnGlassButton: {
+    height: 48,
+    minWidth: 48,
+    borderRadius: 24,
+  },
   returnButton: {
     height: 48,
     minWidth: 48,
     borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.6)",
   },
   returnButtonContainer: {
     height: "100%",
