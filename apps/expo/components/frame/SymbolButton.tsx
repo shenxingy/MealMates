@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Platform, Pressable } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
@@ -34,7 +34,7 @@ export default function SymbolButton(props: SymbolButtonProps) {
     return (
       <>
         <Pressable style={pressableStyle} onPress={onPress}>
-          <GlassView style={glassViewStyle} isInteractive>
+          <GlassView style={isLiquidGlassAvailable() ? glassViewStyle : [glassViewStyle, {backgroundColor: "rgba(255,255,255,0.85)"}]} isInteractive>
             <SymbolView
               name={SFSymbolName}
               size={21}

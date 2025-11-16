@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import { GlassView } from "expo-glass-effect";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { LinearGradient as MaskGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
@@ -175,7 +175,7 @@ export default function AnimatedPageFrame(props: {
       {/* Return button */}
       {enableReturnButton && (
         <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
-          <GlassView style={Platform.OS === "ios" ? styles.returnGlassButton : styles.returnButton} isInteractive>
+          <GlassView style={isLiquidGlassAvailable() ? styles.returnGlassButton : styles.returnButton} isInteractive>
             <View style={styles.returnButtonContainer}>
               {Platform.OS === "ios" ? (
                 <SymbolView

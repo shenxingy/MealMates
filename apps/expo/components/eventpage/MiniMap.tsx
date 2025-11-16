@@ -5,7 +5,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
@@ -136,7 +136,7 @@ export default function MiniMap(props: MiniMapProps) {
               onPress={shareLocationCallback}
             >
               <GlassView
-                style={styles.glassContainer}
+                style={isLiquidGlassAvailable() ? styles.glassContainer : styles.androidContainer}
                 glassEffectStyle="regular"
                 isInteractive
               >
