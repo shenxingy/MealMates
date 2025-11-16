@@ -28,7 +28,7 @@ export default function Index() {
 
   // TEMPORARY: Clear auth on mount for testing registration
   useEffect(() => {
-    logout();
+    void logout();
   }, []);
 
   // Navigate to home when authenticated
