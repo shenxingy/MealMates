@@ -23,7 +23,13 @@ export default function Index() {
     userInfo,
     error,
     login,
+    logout,
   } = useDukeAuth();
+
+  // TEMPORARY: Clear auth on mount for testing registration
+  useEffect(() => {
+    logout();
+  }, []);
 
   // Navigate to home when authenticated
   useEffect(() => {

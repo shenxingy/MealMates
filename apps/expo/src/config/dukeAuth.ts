@@ -29,8 +29,9 @@ export interface DukeUserInfo {
   family_name: string;
   email: string;
   email_verified: boolean;
-  netid?: string;
+  dukeNetID?: string;
   dukeUniqueID?: string;
+  dukePrimaryAffiliation?: string;
 }
 
 export interface TokenResponse {

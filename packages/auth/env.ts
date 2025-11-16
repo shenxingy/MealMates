@@ -6,8 +6,8 @@ export function authEnv() {
     server: {
       AUTH_DISCORD_ID: z.string().min(1),
       AUTH_DISCORD_SECRET: z.string().min(1),
-      AUTH_DUKE_ID: z.string().min(1),
-      AUTH_DUKE_SECRET: z.string().min(1),
+      // Duke OAuth is handled separately via expo-auth-session, not through better-auth
+      // AUTH_DUKE_ID and AUTH_DUKE_SECRET are not needed
       AUTH_SECRET:
         process.env.NODE_ENV === "production"
           ? z.string().min(1)

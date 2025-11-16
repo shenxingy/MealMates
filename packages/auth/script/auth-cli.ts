@@ -24,6 +24,4 @@ export const auth = initAuth({
   secret: "secret",
   discordClientId: "1234567890",
   discordClientSecret: "1234567890",
-  dukeClientId: "1234567890",
-  dukeClientSecret: "1234567890",
 });

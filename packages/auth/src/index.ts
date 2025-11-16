@@ -13,8 +13,8 @@ export function initAuth(options: {
 
   discordClientId: string;
   discordClientSecret: string;
-  dukeClientId: string;
-  dukeClientSecret: string;
+  // Note: Duke OAuth credentials are not needed here since Duke auth
+  // is handled separately via expo-auth-session on the client
 }) {
   const config = {
     database: drizzleAdapter(db, {
@@ -34,17 +34,9 @@ export function initAuth(options: {
         clientSecret: options.discordClientSecret,
         redirectURI: `${options.baseUrl}/api/auth/callback/discord`,
       },
-      // @ts-expect-error - Custom OIDC provider for Duke
-      duke: {
-        clientId: options.dukeClientId,
-        clientSecret: options.dukeClientSecret,
-        discoveryUrl:
-          "https://oauth.oit.duke.edu/oidc/.well-known/openid-configuration",
-        redirectURI: `${options.baseUrl}/api/auth/callback/duke`,
-        scopes: ["openid", "email", "profile", "offline_access"],
-        pkce: true,
-        tokenEndpointAuthMethod: "client_secret_basic",
-      },
+      // Note: Duke OAuth is handled separately via expo-auth-session on the client
+      // and syncs to the database via the user.syncDukeUser tRPC endpoint.
+      // Duke is NOT handled by better-auth because it requires custom OIDC configuration.
     },
     trustedOrigins: ["expo://", "mealmates://"],
     onAPIError: {

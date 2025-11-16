@@ -8,6 +8,7 @@ import {
 } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 import { DUKE_AUTH_CONFIG, DukeUserInfo, TokenResponse } from "../config/dukeAuth";
+import { trpcClient } from "../utils/api";
 
 const TOKEN_KEY = "duke_access_token";
 const REFRESH_TOKEN_KEY = "duke_refresh_token";
@@ -71,8 +72,19 @@ export function useDukeAuth() {
         if (currentTime < expiryTime) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
+          
           // Fetch user info with stored token
-          await fetchUserInfo(storedAccessToken);
+          const userInfo = await fetchUserInfo(storedAccessToken);
+          
+          // Sync to database with stored token info
+          if (userInfo) {
+            const remainingSeconds = Math.floor((expiryTime - currentTime) / 1000);
+            await syncUserToDatabase(userInfo, {
+              accessToken: storedAccessToken,
+              refreshToken: storedRefreshToken || undefined,
+              expiresIn: remainingSeconds,
+            });
+          }
         } else if (storedRefreshToken) {
           // Token expired, try to refresh
           await refreshAccessToken(storedRefreshToken);
@@ -129,8 +141,17 @@ export function useDukeAuth() {
           tokenResponse.expiresIn
         );
 
-        // Fetch user information
-        await fetchUserInfo(tokenResponse.accessToken);
+        // Fetch user information and sync to database with token data
+        const userInfo = await fetchUserInfo(tokenResponse.accessToken);
+        
+        // Sync again with full token information from the exchange
+        if (userInfo) {
+          await syncUserToDatabase(userInfo, {
+            accessToken: tokenResponse.accessToken,
+            refreshToken: tokenResponse.refreshToken,
+            expiresIn: tokenResponse.expiresIn,
+          });
+        }
       }
     } catch (err: any) {
       console.error("Error exchanging code for token:", err);
@@ -164,11 +185,53 @@ export function useDukeAuth() {
 
       const data: DukeUserInfo = await response.json();
       setUserInfo(data);
+      
+      // Note: syncUserToDatabase is called by the caller with full token info
+      // Don't call it here to avoid duplicate syncs
+      
       return data;
     } catch (err: any) {
       console.error("Error fetching user info:", err);
       setError(err.message || "Failed to fetch user information");
       return null;
+    }
+  };
+
+  // Sync Duke user data to the database
+  const syncUserToDatabase = async (dukeUserInfo: DukeUserInfo, tokenData?: {
+    accessToken: string;
+    refreshToken?: string;
+    expiresIn?: number;
+  }) => {
+    try {
+      console.log("[DUKE AUTH] Syncing user to database:", dukeUserInfo);
+      
+      const result = await trpcClient.user.syncDukeUser.mutate({
+        sub: dukeUserInfo.sub,
+        email: dukeUserInfo.email,
+        name: dukeUserInfo.name,
+        given_name: dukeUserInfo.given_name,
+        family_name: dukeUserInfo.family_name,
+        email_verified: dukeUserInfo.email_verified,
+        dukeNetID: dukeUserInfo.dukeNetID,
+        dukeUniqueID: dukeUserInfo.dukeUniqueID,
+        dukePrimaryAffiliation: dukeUserInfo.dukePrimaryAffiliation,
+        // Include OAuth tokens for server-side operations
+        accessToken: tokenData?.accessToken,
+        refreshToken: tokenData?.refreshToken,
+        expiresIn: tokenData?.expiresIn,
+      });
+
+      if (result.success) {
+        console.log(
+          `[DUKE AUTH] User ${result.isNewUser ? "created" : "updated"} in database:`,
+          result.user.id
+        );
+        console.log("[DUKE AUTH] Tokens stored in database for server-side access");
+      }
+    } catch (err: any) {
+      console.error("[DUKE AUTH] Error syncing user to database:", err);
+      // Don't throw - authentication can still succeed even if DB sync fails
     }
   };
 
@@ -206,7 +269,15 @@ export function useDukeAuth() {
           tokenResponse.expiresIn
         );
 
-        await fetchUserInfo(tokenResponse.accessToken);
+        // Fetch user info and sync refreshed tokens to database
+        const userInfo = await fetchUserInfo(tokenResponse.accessToken);
+        if (userInfo) {
+          await syncUserToDatabase(userInfo, {
+            accessToken: tokenResponse.accessToken,
+            refreshToken: tokenResponse.refreshToken || tokenToUse,
+            expiresIn: tokenResponse.expiresIn,
+          });
+        }
       }
     } catch (err: any) {
       console.error("Error refreshing token:", err);
