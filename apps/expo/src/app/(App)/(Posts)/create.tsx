@@ -40,17 +40,18 @@ export default function Create() {
     const formData = new FormData();
     const uriParts = image.split(".");
     const fileType = uriParts[uriParts.length - 1];
+    const imageType = "image/" + fileType;
+    console.log("adding image");
     formData.append("image", {
         uri: image,
-        name: "upload.${fileType}", // any name is fine
-        type: "image/${fileType}",
+        name: "image name", // any name is fine
+        type: imageType,
     } as any);
 
     // Add other text fields
     formData.append("title", title);
     formData.append("content", content);
     formData.append("user", "current user");
-    console.log("===============posting=================");
     // const msg: string = await createPost(formData);
     const host: string = Platform.OS === "android"? "10.0.2.2" : "localhost"
     const res = await fetch("http://" + host + ":3000/api/posts", {
@@ -64,7 +65,7 @@ export default function Create() {
       router.back();
     }
     else {
-      setAlert("psot failed");
+      setAlert("post failed");
     }
   }
 
