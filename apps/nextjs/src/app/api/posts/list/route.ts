@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { postMockData } from "~/app/mock/mock";
+import { postData } from "../route";
 
 export function GET() {
+  console.log(postData);
   return NextResponse.json({
-    data: postMockData,
+    data: postData,
     message: "Success",
   });
 }

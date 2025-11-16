@@ -41,18 +41,17 @@ export default function Create() {
     const uriParts = image.split(".");
     const fileType = uriParts[uriParts.length - 1];
     const imageType = "image/" + fileType;
-    console.log("adding image");
-    formData.append("image", {
-        uri: image,
-        name: "image name", // any name is fine
-        type: imageType,
-    } as any);
-
-    // Add other text fields
     formData.append("title", title);
     formData.append("content", content);
+    formData.append("image", {
+      uri: image,
+      name: "img", // any name is fine
+      type: imageType,
+    } as any);
     formData.append("user", "current user");
-    // const msg: string = await createPost(formData);
+    formData.append("time", new Date().toString());
+    formData.append("likes", 0);
+    formData.append("liked", false);
     const host: string = Platform.OS === "android"? "10.0.2.2" : "localhost"
     const res = await fetch("http://" + host + ":3000/api/posts", {
       method: "POST",

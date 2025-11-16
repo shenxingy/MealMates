@@ -121,7 +121,7 @@ export const fetchSimpleEventList = async () => {
 };
 
 export const fetchPostList = async () => {
-  const res = await api.get<ApiResponse<Post[]>>("/posts/list");
+  const res = await api.get<ApiResponse<Post[]>>("/posts");
   return res.data.data;
 };
 
