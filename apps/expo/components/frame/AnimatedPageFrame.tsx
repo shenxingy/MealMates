@@ -175,7 +175,14 @@ export default function AnimatedPageFrame(props: {
       {/* Return button */}
       {enableReturnButton && (
         <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
-          <GlassView style={Platform.OS === "ios" ? styles.returnGlassButton : styles.returnButton} isInteractive>
+          <GlassView
+            style={
+              Platform.OS === "ios"
+                ? styles.returnGlassButton
+                : styles.returnButton
+            }
+            isInteractive
+          >
             <View style={styles.returnButtonContainer}>
               {Platform.OS === "ios" ? (
                 <SymbolView

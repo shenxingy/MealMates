@@ -17,14 +17,8 @@ export default function Index() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const {
-    isLoading,
-    isAuthenticated,
-    userInfo,
-    error,
-    login,
-    logout,
-  } = useDukeAuth();
+  const { isLoading, isAuthenticated, userInfo, error, login, logout } =
+    useDukeAuth();
 
   // TEMPORARY: Clear auth on mount for testing registration
   useEffect(() => {
@@ -44,7 +38,7 @@ export default function Index() {
             text: "Continue",
             onPress: () => router.replace("/(App)/(Home)"),
           },
-        ]
+        ],
       );
     }
   }, [isAuthenticated, userInfo, router]);
@@ -78,7 +72,9 @@ export default function Index() {
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0F172A" />
-              <Text style={styles.loadingText}>Authenticating with Duke...</Text>
+              <Text style={styles.loadingText}>
+                Authenticating with Duke...
+              </Text>
             </View>
           ) : (
             <>

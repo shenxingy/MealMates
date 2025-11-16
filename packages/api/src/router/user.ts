@@ -27,7 +27,7 @@ export const userRouter = {
   // Get current user profile
   me: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    
+
     const userData = await ctx.db.query.user.findFirst({
       where: eq(user.id, userId),
     });
@@ -41,11 +41,11 @@ export const userRouter = {
     .mutation(async ({ ctx, input }) => {
       // Extract NetID from sub (e.g., "xs90@duke.edu" -> "xs90")
       const netId = input.dukeNetID ?? input.sub.split("@")[0];
-      
+
       if (!netId) {
         throw new Error("Could not extract NetID from user data");
       }
-      
+
       // Use NetID as the user ID for consistency
       const userId: string = netId;
 
@@ -73,7 +73,7 @@ export const userRouter = {
 
         // Calculate token expiry times
         const now = new Date();
-        const accessTokenExpiresAt = input.expiresIn 
+        const accessTokenExpiresAt = input.expiresIn
           ? new Date(now.getTime() + input.expiresIn * 1000)
           : null;
         // Refresh tokens typically expire in 90 days, but Duke doesn't specify
@@ -110,7 +110,8 @@ export const userRouter = {
               accessToken: input.accessToken,
               refreshToken: input.refreshToken ?? existingAccount.refreshToken, // Keep old refresh token if not provided
               accessTokenExpiresAt,
-              refreshTokenExpiresAt: refreshTokenExpiresAt ?? existingAccount.refreshTokenExpiresAt,
+              refreshTokenExpiresAt:
+                refreshTokenExpiresAt ?? existingAccount.refreshTokenExpiresAt,
               updatedAt: new Date(),
             })
             .where(eq(account.id, existingAccount.id));
@@ -118,7 +119,7 @@ export const userRouter = {
         }
 
         console.log(`[USER] Updated existing Duke user: ${netId}`);
-        
+
         return {
           success: true,
           isNewUser: false,
@@ -152,7 +153,7 @@ export const userRouter = {
 
         // Calculate token expiry times
         const now = new Date();
-        const accessTokenExpiresAt = input.expiresIn 
+        const accessTokenExpiresAt = input.expiresIn
           ? new Date(now.getTime() + input.expiresIn * 1000)
           : null;
         // Refresh tokens typically expire in 90 days, but Duke doesn't specify
@@ -201,7 +202,7 @@ export const userRouter = {
       z.object({
         name: z.string().optional(),
         image: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -217,4 +218,3 @@ export const userRouter = {
       return { success: true };
     }),
 } satisfies TRPCRouterRecord;
-

@@ -7,7 +7,11 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@mealmates/api";
 
-import type { ApiResponse, DetailedEventDTO, SimpleEventDTO } from "~/definition";
+import type {
+  ApiResponse,
+  DetailedEventDTO,
+  SimpleEventDTO,
+} from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 
@@ -130,7 +134,9 @@ export const fetchDetailedEvent = async (eventId: string) => {
   // await new Promise((resolve) => {
   //   setTimeout(resolve, 2000);
   // });
-  const res = await api.get<ApiResponse<DetailedEventDTO>>(`/api/events/${eventId}/details`);
+  const res = await api.get<ApiResponse<DetailedEventDTO>>(
+    `/api/events/${eventId}/details`,
+  );
   console.log(res.data.data);
   return res.data.data;
-}
+};

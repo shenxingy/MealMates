@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import * as AuthSession from "expo-auth-session";
-import { 
-  exchangeCodeAsync, 
-  refreshAsync, 
+import {
+  exchangeCodeAsync,
+  refreshAsync,
+  ResponseType,
   revokeAsync,
-  ResponseType 
 } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
+
 import type { DukeUserInfo } from "../config/dukeAuth";
 import { DUKE_AUTH_CONFIG } from "../config/dukeAuth";
 import { trpcClient } from "../utils/api";
@@ -39,14 +40,16 @@ export function useDukeAuth() {
       redirectUri: DUKE_AUTH_CONFIG.redirectUri,
       usePKCE: false,
     },
-    discovery
+    discovery,
   );
 
   // Handle the OAuth response
   useEffect(() => {
     if (response?.type === "success") {
       const { code } = response.params;
-      void exchangeCodeForToken(code);
+      if (code) {
+        void exchangeCodeForToken(code);
+      }
     } else if (response?.type === "error") {
       setError(response.error?.message ?? "Authentication failed");
       setIsLoading(false);
@@ -64,7 +67,8 @@ export function useDukeAuth() {
   const loadStoredTokens = async () => {
     try {
       const storedAccessToken = await SecureStore.getItemAsync(TOKEN_KEY);
-      const storedRefreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+      const storedRefreshToken =
+        await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
       const storedExpiry = await SecureStore.getItemAsync(TOKEN_EXPIRY_KEY);
 
       if (storedAccessToken && storedExpiry) {
@@ -75,13 +79,15 @@ export function useDukeAuth() {
         if (currentTime < expiryTime) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
-          
+
           // Fetch user info with stored token
           const userInfo = await fetchUserInfo(storedAccessToken);
-          
+
           // Sync to database with stored token info
           if (userInfo) {
-            const remainingSeconds = Math.floor((expiryTime - currentTime) / 1000);
+            const remainingSeconds = Math.floor(
+              (expiryTime - currentTime) / 1000,
+            );
             await syncUserToDatabase(userInfo, {
               accessToken: storedAccessToken,
               refreshToken: storedRefreshToken ?? undefined,
@@ -102,7 +108,7 @@ export function useDukeAuth() {
   const storeTokens = async (
     access: string,
     refresh?: string,
-    expiresIn?: number
+    expiresIn?: number,
   ) => {
     try {
       await SecureStore.setItemAsync(TOKEN_KEY, access);
@@ -131,22 +137,22 @@ export function useDukeAuth() {
           code,
           redirectUri: DUKE_AUTH_CONFIG.redirectUri,
         },
-        discovery
+        discovery,
       );
 
       if (tokenResponse.accessToken) {
         setAccessToken(tokenResponse.accessToken);
-        setRefreshToken(tokenResponse.refreshToken);
-        
+        setRefreshToken(tokenResponse.refreshToken ?? null);
+
         await storeTokens(
           tokenResponse.accessToken,
           tokenResponse.refreshToken,
-          tokenResponse.expiresIn
+          tokenResponse.expiresIn,
         );
 
         // Fetch user information and sync to database with token data
         const userInfo = await fetchUserInfo(tokenResponse.accessToken);
-        
+
         // Sync again with full token information from the exchange
         if (userInfo) {
           await syncUserToDatabase(userInfo, {
@@ -158,7 +164,10 @@ export function useDukeAuth() {
       }
     } catch (err: unknown) {
       console.error("Error exchanging code for token:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to exchange authorization code";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to exchange authorization code";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -166,9 +175,11 @@ export function useDukeAuth() {
   };
 
   // Fetch user information from Duke
-  const fetchUserInfo = async (token?: string): Promise<DukeUserInfo | null> => {
+  const fetchUserInfo = async (
+    token?: string,
+  ): Promise<DukeUserInfo | null> => {
     const tokenToUse = token ?? accessToken;
-    
+
     if (!tokenToUse) {
       setError("No access token available");
       return null;
@@ -189,28 +200,32 @@ export function useDukeAuth() {
 
       const data = (await response.json()) as DukeUserInfo;
       setUserInfo(data);
-      
+
       // Note: syncUserToDatabase is called by the caller with full token info
       // Don't call it here to avoid duplicate syncs
-      
+
       return data;
     } catch (err: unknown) {
       console.error("Error fetching user info:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch user information";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch user information";
       setError(errorMessage);
       return null;
     }
   };
 
   // Sync Duke user data to the database
-  const syncUserToDatabase = async (dukeUserInfo: DukeUserInfo, tokenData?: {
-    accessToken: string;
-    refreshToken?: string;
-    expiresIn?: number;
-  }) => {
+  const syncUserToDatabase = async (
+    dukeUserInfo: DukeUserInfo,
+    tokenData?: {
+      accessToken: string;
+      refreshToken?: string;
+      expiresIn?: number;
+    },
+  ) => {
     try {
       console.log("[DUKE AUTH] Syncing user to database:", dukeUserInfo);
-      
+
       const result = await trpcClient.user.syncDukeUser.mutate({
         sub: dukeUserInfo.sub,
         email: dukeUserInfo.email,
@@ -230,9 +245,11 @@ export function useDukeAuth() {
       if (result.success) {
         console.log(
           `[DUKE AUTH] User ${result.isNewUser ? "created" : "updated"} in database:`,
-          result.user.id
+          result.user.id,
         );
-        console.log("[DUKE AUTH] Tokens stored in database for server-side access");
+        console.log(
+          "[DUKE AUTH] Tokens stored in database for server-side access",
+        );
       }
     } catch (err: unknown) {
       console.error("[DUKE AUTH] Error syncing user to database:", err);
@@ -243,7 +260,7 @@ export function useDukeAuth() {
   // Refresh the access token
   const refreshAccessToken = async (token?: string) => {
     const tokenToUse = token ?? refreshToken;
-    
+
     if (!tokenToUse) {
       setError("No refresh token available");
       return;
@@ -259,7 +276,7 @@ export function useDukeAuth() {
           clientSecret: DUKE_AUTH_CONFIG.clientSecret,
           refreshToken: tokenToUse,
         },
-        { tokenEndpoint: DUKE_AUTH_CONFIG.tokenEndpoint }
+        { tokenEndpoint: DUKE_AUTH_CONFIG.tokenEndpoint },
       );
 
       if (tokenResponse.accessToken) {
@@ -267,11 +284,11 @@ export function useDukeAuth() {
         if (tokenResponse.refreshToken) {
           setRefreshToken(tokenResponse.refreshToken);
         }
-        
+
         await storeTokens(
           tokenResponse.accessToken,
           tokenResponse.refreshToken,
-          tokenResponse.expiresIn
+          tokenResponse.expiresIn,
         );
 
         // Fetch user info and sync refreshed tokens to database
@@ -286,7 +303,8 @@ export function useDukeAuth() {
       }
     } catch (err: unknown) {
       console.error("Error refreshing token:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to refresh access token";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to refresh access token";
       setError(errorMessage);
       // Clear tokens if refresh fails
       await logout();
@@ -303,7 +321,8 @@ export function useDukeAuth() {
       await promptAsync();
     } catch (err: unknown) {
       console.error("Error initiating login:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to initiate login";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initiate login";
       setError(errorMessage);
       setIsLoading(false);
     }
@@ -324,7 +343,7 @@ export function useDukeAuth() {
               clientSecret: DUKE_AUTH_CONFIG.clientSecret,
               token: accessToken,
             },
-            { revocationEndpoint: DUKE_AUTH_CONFIG.revocationEndpoint }
+            { revocationEndpoint: DUKE_AUTH_CONFIG.revocationEndpoint },
           );
         } catch (err) {
           console.error("Error revoking token:", err);
@@ -343,7 +362,8 @@ export function useDukeAuth() {
       await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
     } catch (err: unknown) {
       console.error("Error during logout:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to logout";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to logout";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -358,7 +378,7 @@ export function useDukeAuth() {
     refreshToken,
     userInfo,
     error,
-    
+
     // Methods
     login,
     logout,
@@ -366,4 +386,3 @@ export function useDukeAuth() {
     fetchUserInfo,
   };
 }
-
