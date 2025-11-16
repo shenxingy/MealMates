@@ -217,4 +217,46 @@ export const userRouter = {
 
       return { success: true };
     }),
+
+  updateProfileById: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        image: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, name, image } = input;
+      const updates: {
+        name?: string;
+        image?: string | null;
+        updatedAt?: Date;
+      } = {};
+
+      if (typeof name === "string") {
+        updates.name = name;
+      }
+
+      if (typeof image === "string") {
+        updates.image = image.length > 0 ? image : null;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return { success: false, user: null };
+      }
+
+      updates.updatedAt = new Date();
+
+      const [updatedUser] = await ctx.db
+        .update(user)
+        .set(updates)
+        .where(eq(user.id, id))
+        .returning();
+
+      return {
+        success: !!updatedUser,
+        user: updatedUser ?? null,
+      };
+    }),
 } satisfies TRPCRouterRecord;

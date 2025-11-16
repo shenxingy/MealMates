@@ -11,10 +11,16 @@ import * as SecureStore from "expo-secure-store";
 import type { DukeUserInfo } from "../config/dukeAuth";
 import { DUKE_AUTH_CONFIG } from "../config/dukeAuth";
 import { trpcClient } from "../utils/api";
+import { clearStoredUserId, setStoredUserId } from "../utils/user-storage";
 
 const TOKEN_KEY = "duke_access_token";
 const REFRESH_TOKEN_KEY = "duke_refresh_token";
 const TOKEN_EXPIRY_KEY = "duke_token_expiry";
+
+const extractNetIdFromSub = (sub: string) => {
+  const separatorIndex = sub.indexOf("@");
+  return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
+};
 
 export function useDukeAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -226,6 +232,9 @@ export function useDukeAuth() {
     try {
       console.log("[DUKE AUTH] Syncing user to database:", dukeUserInfo);
 
+      const fallbackId =
+        dukeUserInfo.dukeNetID ?? extractNetIdFromSub(dukeUserInfo.sub);
+
       const result = await trpcClient.user.syncDukeUser.mutate({
         sub: dukeUserInfo.sub,
         email: dukeUserInfo.email,
@@ -250,10 +259,18 @@ export function useDukeAuth() {
         console.log(
           "[DUKE AUTH] Tokens stored in database for server-side access",
         );
+        await setStoredUserId(result.user.id);
+      } else if (fallbackId) {
+        await setStoredUserId(fallbackId);
       }
     } catch (err: unknown) {
       console.error("[DUKE AUTH] Error syncing user to database:", err);
       // Don't throw - authentication can still succeed even if DB sync fails
+      const fallbackId =
+        dukeUserInfo.dukeNetID ?? extractNetIdFromSub(dukeUserInfo.sub);
+      if (fallbackId) {
+        await setStoredUserId(fallbackId);
+      }
     }
   };
 
@@ -360,6 +377,7 @@ export function useDukeAuth() {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
+      await clearStoredUserId();
     } catch (err: unknown) {
       console.error("Error during logout:", err);
       const errorMessage =

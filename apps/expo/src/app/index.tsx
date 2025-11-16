@@ -17,14 +17,7 @@ export default function Index() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { isLoading, isAuthenticated, userInfo, error, login, logout } =
-    useDukeAuth();
-
-  // TEMPORARY: Clear auth on mount for testing registration
-  useEffect(() => {
-    void logout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { isLoading, isAuthenticated, userInfo, error, login } = useDukeAuth();
 
   // Navigate to home when authenticated
   useEffect(() => {

@@ -1,7 +1,27 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { ProfileStat } from "../../../../components/profile";
+import type { RouterInputs, RouterOutputs } from "~/utils/api";
+import { useDukeAuth } from "~/hooks/useDukeAuth";
+import { DEFAULT_USER_AVATAR, trpcClient } from "~/utils/api";
+import {
+  getStoredUserId,
+  setStoredUserId as persistUserId,
+} from "~/utils/user-storage";
 import LinearGradientBackground from "../../../../components/background/LinearGradientBackground";
 import {
   ProfileHeader,
@@ -9,20 +29,163 @@ import {
   ProfileStatsRow,
 } from "../../../../components/profile";
 
+type UserProfile = RouterOutputs["user"]["byId"];
+type UpdateProfileInput = RouterInputs["user"]["updateProfileById"];
+
+const getNetIdFromSub = (sub: string) => {
+  const separatorIndex = sub.indexOf("@");
+  return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
+};
+
 export default function YouPage() {
+  const router = useRouter();
+  const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
+  const [isLoadingUserId, setIsLoadingUserId] = useState(true);
+  const [isEditVisible, setIsEditVisible] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [avatarInput, setAvatarInput] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
+  const {
+    logout,
+    isLoading: isAuthMutating,
+    userInfo,
+    isAuthenticated,
+  } = useDukeAuth();
+
   const stats: ProfileStat[] = [
     { label: "Invitations", value: 10, icon: "mail-open-outline" },
     { label: "Acceptances", value: 8, icon: "checkmark-circle-outline" },
     { label: "Posts", value: 5, icon: "planet-outline" },
   ];
 
+  const loadUserId = useCallback(async () => {
+    setIsLoadingUserId(true);
+    try {
+      const storedId = await getStoredUserId();
+      if (storedId) {
+        setStoredUserIdState(storedId);
+        return;
+      }
+
+      if (userInfo) {
+        const fallback = userInfo.dukeNetID ?? getNetIdFromSub(userInfo.sub);
+        if (fallback) {
+          setStoredUserIdState(fallback);
+          await persistUserId(fallback);
+          return;
+        }
+      }
+
+      setStoredUserIdState(null);
+    } catch (error) {
+      console.error("[YOU PAGE] Failed to load stored user id:", error);
+    } finally {
+      setIsLoadingUserId(false);
+    }
+  }, [userInfo]);
+
+  useEffect(() => {
+    void loadUserId();
+  }, [loadUserId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadUserId();
+    }, [loadUserId]),
+  );
+
+  const {
+    data: userProfile,
+    isLoading: isProfileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+  } = useQuery<UserProfile>({
+    queryKey: ["userProfile", storedUserId],
+    enabled: Boolean(storedUserId),
+    queryFn: async () => {
+      if (!storedUserId) {
+        throw new Error("Missing user id");
+      }
+      return trpcClient.user.byId.query({ id: storedUserId });
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (input: UpdateProfileInput) =>
+      trpcClient.user.updateProfileById.mutate(input),
+  });
+
   const handleEditProfile = () => {
-    // TODO: Navigate to profile edit screen
+    if (!userProfile || !storedUserId) {
+      Alert.alert(
+        "Profile unavailable",
+        "We could not load your profile information. Please sign in again.",
+      );
+      return;
+    }
+
+    setNameInput(userProfile.name);
+    setAvatarInput(userProfile.image ?? "");
+    setModalError(null);
+    setIsEditVisible(true);
   };
 
   const handleOpenSettings = () => {
-    // TODO: Navigate to settings
+    // TODO: Navigate to settings page
   };
+
+  const handleSaveProfile = async () => {
+    if (!storedUserId) {
+      setModalError("You need to sign in before editing your profile.");
+      return;
+    }
+
+    const trimmedName = nameInput.trim();
+
+    if (!trimmedName) {
+      setModalError("Please provide a display name.");
+      return;
+    }
+
+    try {
+      const result = await updateProfileMutation.mutateAsync({
+        id: storedUserId,
+        name: trimmedName,
+        image: avatarInput.trim(),
+      });
+      if (!result.success) {
+        setModalError("We couldn't update your profile. Please try again.");
+        return;
+      }
+      await refetchProfile();
+      setIsEditVisible(false);
+    } catch (error: unknown) {
+      console.error("[YOU PAGE] Failed to update profile:", error);
+      setModalError("Unable to save your changes. Please try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setStoredUserIdState(null);
+      setIsEditVisible(false);
+      await loadUserId();
+      router.replace("/");
+    } catch (error) {
+      console.error("[YOU PAGE] Failed to logout:", error);
+      Alert.alert("Logout failed", "Please try again.");
+    }
+  };
+
+  const isFetchingProfile = isLoadingUserId || isProfileLoading;
+  const shouldPromptSignIn =
+    !storedUserId && !isLoadingUserId && !isAuthenticated;
+  const profileMissing =
+    storedUserId && !userProfile && !isFetchingProfile && !profileError;
+  const greetingName = userProfile?.name ?? "Meal Mate";
+  const profileEmail = userProfile?.email ?? "Sign in to view your email";
+  const profileAvatar = userProfile?.image ?? DEFAULT_USER_AVATAR;
 
   return (
     <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
@@ -31,22 +194,138 @@ export default function YouPage() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <ProfileHeader
-            greetingName="Chipmunk Bar"
-            onEditPress={handleEditProfile}
-            onSettingsPress={handleOpenSettings}
-          />
+          {isFetchingProfile ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0F172A" />
+              <Text style={styles.loadingLabel}>Loading your profile...</Text>
+            </View>
+          ) : profileError ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.errorText}>
+                We could not load your profile. Pull to refresh or try again
+                later.
+              </Text>
+              <Pressable
+                style={styles.retryButton}
+                onPress={() => {
+                  void loadUserId();
+                  if (storedUserId) {
+                    void refetchProfile();
+                  }
+                }}
+              >
+                <Text style={styles.retryLabel}>Try Again</Text>
+              </Pressable>
+            </View>
+          ) : shouldPromptSignIn ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.errorText}>
+                Sign in with your Duke account to view your profile.
+              </Text>
+            </View>
+          ) : profileMissing ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.errorText}>
+                We couldn&apos;t find your profile record. Please sign out and
+                sign back in.
+              </Text>
+              <Pressable style={styles.retryButton} onPress={handleLogout}>
+                <Text style={styles.retryLabel}>Sign Out</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <ProfileHeader
+                greetingName={greetingName}
+                onEditPress={handleEditProfile}
+                onSettingsPress={handleOpenSettings}
+              />
 
-          <ProfileInfoCard
-            name="Chipmunk Bar"
-            email="cb123@duke.edu"
-            avatarEmoji="🐿️"
-          />
+              <ProfileInfoCard
+                name={greetingName}
+                email={profileEmail}
+                avatarUrl={profileAvatar}
+                fallbackLabel={userProfile?.name ?? userProfile?.email ?? "?"}
+              />
+            </>
+          )}
 
           <ProfileStatsRow stats={stats} />
 
+          <Pressable
+            style={[
+              styles.logoutButton,
+              (isAuthMutating || isFetchingProfile) && styles.disabledButton,
+            ]}
+            onPress={handleLogout}
+            disabled={isAuthMutating || isFetchingProfile}
+          >
+            {isAuthMutating ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.logoutLabel}>Logout</Text>
+            )}
+          </Pressable>
+
           <View style={styles.bottomSpacer} />
         </ScrollView>
+
+        <Modal
+          transparent
+          visible={isEditVisible}
+          animationType="slide"
+          onRequestClose={() => setIsEditVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TextInput
+                style={styles.textInput}
+                value={nameInput}
+                placeholder="Display name"
+                onChangeText={setNameInput}
+              />
+              <TextInput
+                style={styles.textInput}
+                value={avatarInput}
+                placeholder="Avatar image URL"
+                onChangeText={setAvatarInput}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {modalError ? (
+                <Text style={styles.modalError}>{modalError}</Text>
+              ) : null}
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={[styles.button, styles.secondaryButton]}
+                  onPress={() => setIsEditVisible(false)}
+                  disabled={updateProfileMutation.isPending}
+                >
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.button,
+                    styles.primaryButton,
+                    (!nameInput.trim() || updateProfileMutation.isPending) &&
+                      styles.disabledButton,
+                  ]}
+                  onPress={handleSaveProfile}
+                  disabled={
+                    !nameInput.trim() || updateProfileMutation.isPending
+                  }
+                >
+                  {updateProfileMutation.isPending ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Save</Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </LinearGradientBackground>
   );
@@ -61,7 +340,110 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 36,
   },
+  loadingContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 24,
+    alignItems: "center",
+    gap: 8,
+  },
+  loadingLabel: {
+    fontSize: 16,
+    color: "#1F2937",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#B91C1C",
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "#1F2937",
+  },
+  retryLabel: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
   bottomSpacer: {
     height: 120,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 24,
+    gap: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#CBD5F5",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#111827",
+  },
+  modalError: {
+    color: "#B91C1C",
+    fontSize: 14,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  button: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 110,
+  },
+  secondaryButton: {
+    backgroundColor: "#E2E8F0",
+  },
+  secondaryButtonText: {
+    color: "#1F2937",
+    fontWeight: "600",
+  },
+  primaryButton: {
+    backgroundColor: "#2563EB",
+  },
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  logoutButton: {
+    marginTop: 16,
+    backgroundColor: "#DC2626",
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoutLabel: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
