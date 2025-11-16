@@ -1,8 +1,18 @@
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GlassView } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
-import { Coordinates } from "expo-maps/src/shared.types";
+import type { Coordinates } from "expo-maps/src/shared.types";
+
+
+
+
 
 interface NoPropMiniMapProps {
   coordinates?: Coordinates;
@@ -51,19 +61,11 @@ export default function MiniMap(props: MiniMapProps) {
               coordinates,
               zoom,
             }}
-            circles={
-              coordinates
-                ? [
-                    {
-                      center: coordinates,
-                      radius: 20,
-                      lineColor: "#F2F2F2",
-                      lineWidth: 3,
-                      color: "#FF8C004C",
-                    },
-                  ]
-                : []
-            }
+            markers={[
+              {
+                coordinates: coordinates,
+              }
+            ]}
             uiSettings={{
               myLocationButtonEnabled: false,
               togglePitchEnabled: false,
@@ -144,9 +146,35 @@ export default function MiniMap(props: MiniMapProps) {
           )}
         </View>
       ) : (
-        <>
-          <GoogleMaps.View style={{ flex: 1 }} />
-        </>
+        <View style={styles.mapContainer}>
+          <GoogleMaps.View
+            style={styles.map}
+            cameraPosition={{ coordinates, zoom }}
+            uiSettings={{
+              mapToolbarEnabled: false,
+              scaleBarEnabled: false,
+              zoomControlsEnabled: false,
+            }}
+            markers={[
+              {
+                coordinates: coordinates,
+              }
+            ]}
+          />
+          <Pressable style={styles.mapMask} onPress={onMapPressedCallback} />
+          {joined && (
+            <Pressable
+              style={styles.shareLocationButton}
+              onPress={shareLocationCallback}
+            >
+              <View
+                style={styles.androidContainer}
+              >
+                <Text style={styles.shareLocationText}>Share Location</Text>
+              </View>
+            </Pressable>
+          )}
+        </View>
       )}
     </>
   );
@@ -181,6 +209,13 @@ const styles = StyleSheet.create({
     right: 10,
   },
   glassContainer: {
+    borderRadius: 25,
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  androidContainer: {
+    backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 25,
     overflow: "hidden",
     justifyContent: "center",

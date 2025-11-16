@@ -34,22 +34,28 @@ export const calculateZoomLevel = (coordinates: Coordinates[]): number => {
   if (maxSpan >= 40) {
     zoom = 2;
   } else if (maxSpan >= 5) {
-    zoom = 7;
+    zoom = 4;
   } else if (maxSpan >= 2) {
-    zoom = 9;
+    zoom = 5;
   } else if (maxSpan >= 1) {
-    zoom = 11;
+    zoom = 6;
   } else if (maxSpan >= 0.5) {
-    zoom = 13;
+    zoom = 8;
   } else if (maxSpan >= 0.1) {
-    zoom = 15;
+    zoom = 10;
   } else if (maxSpan >= 0.05) {
-    zoom = 16;
+    zoom = 12;
   } else if (maxSpan >= 0.01) {
-    zoom = 17;
+    zoom = 14;
+  } else if (maxSpan >= 0.005){
+    zoom = 15;
+  } else if (maxSpan >= 0.001) {
+    zoom = 16;
   } else {
-    zoom = 18;
+    zoom = 17;
   }
+
+  console.log("Calculated zoom level:", zoom, "for maxSpan:", maxSpan);
 
   return zoom;
 }

@@ -1,32 +1,58 @@
-import type { SFSymbol } from "sf-symbols-typescript";
-import { Pressable } from "react-native";
+import type { ComponentProps } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
+import { Platform, Pressable } from "react-native";
 import { GlassView } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface GlassSymbolButtonProps {
   onPress: () => void;
-  pressableStyle: object;
-  glassViewStyle: object;
-  SFSymbolName: SFSymbol;
+  pressableStyle: StyleProp<ViewStyle>;
+  glassViewStyle: StyleProp<ViewStyle>;
+  SFSymbolName: ComponentProps<typeof SymbolView>["name"];
 }
 
-type SymbolButtonProps = GlassSymbolButtonProps;
+interface AndroidSymbolButtonProps {
+  onPress: () => void;
+  androidStyle: StyleProp<ViewStyle>;
+  MaterialSymbolName: ComponentProps<typeof MaterialIcons>["name"];
+}
+
+type SymbolButtonProps = GlassSymbolButtonProps & AndroidSymbolButtonProps;
 
 export default function SymbolButton(props: SymbolButtonProps) {
-  const { onPress, pressableStyle, glassViewStyle, SFSymbolName } = props;
+  const {
+    onPress,
+    pressableStyle,
+    androidStyle,
+    glassViewStyle,
+    SFSymbolName,
+    MaterialSymbolName,
+  } = props;
 
-  return (
-    <>
-      <Pressable style={pressableStyle} onPress={onPress}>
-        <GlassView style={glassViewStyle} isInteractive>
-          <SymbolView
-            name={SFSymbolName}
-            size={21}
-            colors="black"
-            weight="medium"
-          />
-        </GlassView>
-      </Pressable>
-    </>
-  );
+  if (Platform.OS === "ios") {
+    return (
+      <>
+        <Pressable style={pressableStyle} onPress={onPress}>
+          <GlassView style={glassViewStyle} isInteractive>
+            <SymbolView
+              name={SFSymbolName}
+              size={21}
+              colors="black"
+              weight="medium"
+            />
+          </GlassView>
+        </Pressable>
+      </>
+    );
+  }
+  if (Platform.OS === "android") {
+    return (
+      <>
+        <Pressable style={androidStyle} onPress={onPress}>
+          <MaterialIcons name={MaterialSymbolName} size={21} color="black" />
+        </Pressable>
+      </>
+    );
+  }
 }

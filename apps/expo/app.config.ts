@@ -33,6 +33,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
     edgeToEdgeEnabled: true,
+    config: {
+      googleMaps: {
+        apiKey: "GOOGLE_MAPS_API_KEY",
+      }
+    }
   },
   extra: {
     eas: {
