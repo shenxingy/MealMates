@@ -56,6 +56,7 @@ export default function PostList({data, numColumns} : { data: PostProps[], numCo
     }
     func(data, numColumns);
   }, [data, numColumns]);
+  console.log("lists length: " + lists.length);
   return (
     <View style={ [styles.container] } >
       { lists.length > 0 && lists.map((list, idx) => (
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   colume: {
-    // width: '90%'
+    width: '100%'
   },
   bg: {
     backgroundColor: '#0f0'

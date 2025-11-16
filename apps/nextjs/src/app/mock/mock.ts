@@ -54,7 +54,7 @@ export const simpleEventMockData: SimpleEventDTO[] = [
   },
 ];
 
-export const postMockData: Post[] = [
+export let postMockData: Post[] = [
   {
     id: 0,
     title: 'Today\'s Skillet!',
