@@ -1,17 +1,17 @@
 import type { FC } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 interface ProfileInfoCardProps {
   name: string;
   email: string;
-  avatarUrl?: string | null;
+  avatarEmoji?: string | null;
   fallbackLabel?: string;
 }
 
 const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   name,
   email,
-  avatarUrl,
+  avatarEmoji,
   fallbackLabel,
 }) => {
   const trimmedName = name.trim();
@@ -20,15 +20,14 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   const nameInitial = trimmedName.at(0);
   const fallbackInitial = labelInitial ?? nameInitial ?? "?";
   const displayInitial = fallbackInitial.toUpperCase();
+  const trimmedEmoji = avatarEmoji?.trim();
+  const avatarDisplay =
+    trimmedEmoji && trimmedEmoji.length > 0 ? trimmedEmoji : displayInitial;
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
-        ) : (
-          <Text style={styles.avatarInitial}>{displayInitial}</Text>
-        )}
+        <Text style={styles.avatarEmoji}>{avatarDisplay}</Text>
       </View>
       <View>
         <Text style={styles.nameText}>{name}</Text>
@@ -63,16 +62,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#F5F7FB",
     marginRight: 18,
-    overflow: "hidden",
   },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 32,
-  },
-  avatarInitial: {
-    fontSize: 28,
-    fontWeight: "700",
+  avatarEmoji: {
+    fontSize: 34,
+    lineHeight: 38,
     color: "#1F2937",
   },
   nameText: {

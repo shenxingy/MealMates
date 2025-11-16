@@ -17,7 +17,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ProfileStat } from "../../../../components/profile";
 import type { RouterInputs, RouterOutputs } from "~/utils/api";
 import { useDukeAuth } from "~/hooks/useDukeAuth";
-import { DEFAULT_USER_AVATAR, trpcClient } from "~/utils/api";
+import { trpcClient } from "~/utils/api";
 import {
   getStoredUserId,
   setStoredUserId as persistUserId,
@@ -36,6 +36,16 @@ const getNetIdFromSub = (sub: string) => {
   const separatorIndex = sub.indexOf("@");
   return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
 };
+const DEFAULT_AVATAR_EMOJI = "🙂";
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+const isSingleEmoji = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const graphemes = [...trimmed];
+  return graphemes.length === 1 && EMOJI_REGEX.test(trimmed);
+};
 
 export default function YouPage() {
   const router = useRouter();
@@ -43,7 +53,7 @@ export default function YouPage() {
   const [isLoadingUserId, setIsLoadingUserId] = useState(true);
   const [isEditVisible, setIsEditVisible] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const [avatarInput, setAvatarInput] = useState("");
+  const [emojiInput, setEmojiInput] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
   const {
     logout,
@@ -125,7 +135,7 @@ export default function YouPage() {
     }
 
     setNameInput(userProfile.name);
-    setAvatarInput(userProfile.image ?? "");
+    setEmojiInput(userProfile.image ?? "");
     setModalError(null);
     setIsEditVisible(true);
   };
@@ -147,11 +157,17 @@ export default function YouPage() {
       return;
     }
 
+    const trimmedEmoji = emojiInput.trim();
+    if (trimmedEmoji && !isSingleEmoji(trimmedEmoji)) {
+      setModalError("Please enter exactly one emoji.");
+      return;
+    }
+
     try {
       const result = await updateProfileMutation.mutateAsync({
         id: storedUserId,
         name: trimmedName,
-        image: avatarInput.trim(),
+        image: trimmedEmoji,
       });
       if (!result.success) {
         setModalError("We couldn't update your profile. Please try again.");
@@ -185,7 +201,7 @@ export default function YouPage() {
     storedUserId && !userProfile && !isFetchingProfile && !profileError;
   const greetingName = userProfile?.name ?? "Meal Mate";
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
-  const profileAvatar = userProfile?.image ?? DEFAULT_USER_AVATAR;
+  const profileAvatar = userProfile?.image ?? DEFAULT_AVATAR_EMOJI;
 
   return (
     <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
@@ -244,7 +260,7 @@ export default function YouPage() {
               <ProfileInfoCard
                 name={greetingName}
                 email={profileEmail}
-                avatarUrl={profileAvatar}
+                avatarEmoji={profileAvatar}
                 fallbackLabel={userProfile?.name ?? userProfile?.email ?? "?"}
               />
             </>
@@ -287,12 +303,25 @@ export default function YouPage() {
               />
               <TextInput
                 style={styles.textInput}
-                value={avatarInput}
-                placeholder="Avatar image URL"
-                onChangeText={setAvatarInput}
+                value={emojiInput}
+                placeholder="Favorite emoji (e.g., 🍣)"
+                onChangeText={setEmojiInput}
                 autoCapitalize="none"
                 autoCorrect={false}
+                maxLength={4}
               />
+              <View style={styles.emojiPreviewRow}>
+                <Text style={styles.previewLabel}>Preview</Text>
+                <View style={styles.previewCircle}>
+                  <Text style={styles.previewEmoji}>
+                    {emojiInput.trim() || DEFAULT_AVATAR_EMOJI}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.emojiHint}>
+                Enter a single emoji to use as your avatar. Leave blank to use
+                your initials.
+              </Text>
               {modalError ? (
                 <Text style={styles.modalError}>{modalError}</Text>
               ) : null}
@@ -398,6 +427,31 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: "#111827",
+  },
+  emojiPreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  previewLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  previewCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  previewEmoji: {
+    fontSize: 30,
+  },
+  emojiHint: {
+    fontSize: 13,
+    color: "#6B7280",
   },
   modalError: {
     color: "#B91C1C",
