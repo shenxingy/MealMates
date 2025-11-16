@@ -134,3 +134,14 @@ export const fetchPostComments = async (id: number) => {
   const res = await api.get<ApiResponse<PostComment[]>>("/posts/" + id + "/comments");
   return res.data.data;
 };
+
+// export const createPost = async (formData: FormData) => {
+//   const res = await api.post<ApiResponse<any>>("/posts", formData, {
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//     }
+//   });
+//   console.log("done");
+//   console.log(res);
+//   return res.data.message;
+// }
