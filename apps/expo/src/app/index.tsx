@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
@@ -10,19 +10,56 @@ import {
   LoginForm,
 } from "../../components/auth";
 import LinearGradientBackground from "../../components/background/LinearGradientBackground";
+import { useDukeAuth } from "../hooks/useDukeAuth";
 
 export default function Index() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const {
+    isLoading,
+    isAuthenticated,
+    userInfo,
+    error,
+    login,
+  } = useDukeAuth();
+
+  // Navigate to home when authenticated
+  useEffect(() => {
+    if (isAuthenticated && userInfo) {
+      console.log("User authenticated:", userInfo);
+      Alert.alert(
+        "Welcome!",
+        `Successfully logged in as ${userInfo.name} (${userInfo.email})`,
+        [
+          {
+            text: "Continue",
+            onPress: () => router.replace("/(App)/(Home)"),
+          },
+        ]
+      );
+    }
+  }, [isAuthenticated, userInfo, router]);
+
+  // Show error alerts
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Authentication Error", error);
+    }
+  }, [error]);
+
   const handleLogin = () => {
+    // For now, use traditional login (you can implement this later)
     router.replace("/(App)/(Home)");
   };
 
-  const handleRegister = () => {
-    // TODO: Implement Duke registration flow
-    console.log("Register with Duke");
+  const handleDukeAuth = async () => {
+    try {
+      await login();
+    } catch (err) {
+      console.error("Duke authentication error:", err);
+    }
   };
 
   return (
@@ -31,20 +68,29 @@ export default function Index() {
         <View style={styles.content}>
           <Text style={styles.title}>Welcome Back,</Text>
 
-          <LoginForm
-            email={email}
-            password={password}
-            onEmailChange={setEmail}
-            onPasswordChange={setPassword}
-          />
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0F172A" />
+              <Text style={styles.loadingText}>Authenticating with Duke...</Text>
+            </View>
+          ) : (
+            <>
+              <LoginForm
+                email={email}
+                password={password}
+                onEmailChange={setEmail}
+                onPasswordChange={setPassword}
+              />
 
-          <DukeRegisterButton onPress={handleRegister} />
+              <DukeRegisterButton onPress={handleDukeAuth} />
 
-          <Divider />
+              <Divider />
 
-          <View style={styles.loginRow}>
-            <LoginButton onPress={handleLogin} />
-          </View>
+              <View style={styles.loginRow}>
+                <LoginButton onPress={handleLogin} />
+              </View>
+            </>
+          )}
         </View>
       </SafeAreaView>
     </LinearGradientBackground>
@@ -70,5 +116,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#64748B",
+    fontWeight: "500",
   },
 });
