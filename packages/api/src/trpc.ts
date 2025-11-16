@@ -31,9 +31,22 @@ export const createTRPCContext = async (opts: {
   auth: Auth;
 }) => {
   const authApi = opts.auth.api;
-  const session = await authApi.getSession({
-    headers: opts.headers,
-  });
+
+  // Try to get session, but don't fail if better-auth has issues
+  // This allows Duke auth (which bypasses better-auth) to work
+  let session = null;
+  try {
+    session = await authApi.getSession({
+      headers: opts.headers,
+    });
+  } catch {
+    // Silently ignore session errors - this allows public procedures to work
+    // even when better-auth can't validate the session
+    console.log(
+      "[TRPC Context] Could not get session, continuing with null session",
+    );
+  }
+
   return {
     authApi,
     session,
