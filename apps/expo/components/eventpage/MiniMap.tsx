@@ -1,8 +1,18 @@
-import type { Coordinates } from "expo-maps/src/shared.types";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
+import type { Coordinates } from "expo-maps/src/shared.types";
+
+
+
+
 
 interface NoPropMiniMapProps {
   coordinates?: Coordinates;
@@ -126,7 +136,7 @@ export default function MiniMap(props: MiniMapProps) {
               onPress={shareLocationCallback}
             >
               <GlassView
-                style={styles.glassContainer}
+                style={isLiquidGlassAvailable() ? styles.glassContainer : styles.androidContainer}
                 glassEffectStyle="regular"
                 isInteractive
               >
