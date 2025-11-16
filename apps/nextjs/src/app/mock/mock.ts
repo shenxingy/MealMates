@@ -83,6 +83,6 @@ export const detailedEventMockData: DetailedEventDTO[] = [
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[4]!,
     meetPointCoordinates: { latitude: 40.7128, longitude: -74.006 },
-    restaurantCoordinates: { latitude: 40.7130, longitude: -74.0062 },
+    restaurantCoordinates: { latitude: 40.713, longitude: -74.0062 },
   },
 ];

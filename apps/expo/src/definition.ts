@@ -16,12 +16,12 @@ export interface SimpleEventDTO {
 
 export interface DetailedEventDTO extends SimpleEventDTO {
   meetPointCoordinates: {
-    latitude: number,
-    longitude: number,
+    latitude: number;
+    longitude: number;
   };
   // Optional, restaurant can be decided later
   restaurantCoordinates?: {
-    latitude: number,
-    longitude: number,
+    latitude: number;
+    longitude: number;
   };
 }

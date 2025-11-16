@@ -24,7 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         "Allow MealMates to access your location to share it to your mates and help you navigate to them.",
-    }
+    },
   },
   android: {
     package: "com.mealmates.app",
@@ -36,8 +36,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: {
       googleMaps: {
         apiKey: "GOOGLE_MAPS_API_KEY",
-      }
-    }
+      },
+    },
   },
   extra: {
     eas: {
@@ -68,15 +68,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-maps",
       {
-        "requestLocationPermission": true,
-        "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
-      }
+        requestLocationPermission: true,
+        locationPermission: "Allow $(PRODUCT_NAME) to use your location",
+      },
     ],
     [
       "expo-location",
       {
-        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
-      }
+        locationAlwaysAndWhenInUsePermission:
+          "Allow $(PRODUCT_NAME) to use your location.",
+      },
     ],
   ],
 });

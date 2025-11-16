@@ -2,20 +2,25 @@ import type {
   AppleMapsMarker,
   AppleMapsViewType,
 } from "expo-maps/build/apple/AppleMaps.types";
+import type {
+  GoogleMapsMarker,
+  GoogleMapsViewType,
+} from "expo-maps/build/google/GoogleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Linking, Platform, StyleSheet } from "react-native";
 import * as Location from "expo-location";
-import { AppleMaps, getPermissionsAsync, GoogleMaps, requestPermissionsAsync } from "expo-maps";
+import {
+  AppleMaps,
+  getPermissionsAsync,
+  GoogleMaps,
+  requestPermissionsAsync,
+} from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
-import type { GoogleMapsMarker, GoogleMapsViewType } from "expo-maps/build/google/GoogleMaps.types";
 import { useLocalSearchParams, useRouter } from "expo-router";
-
-
 
 import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
-
 
 export default function MapModalPage() {
   const router = useRouter();
@@ -51,11 +56,11 @@ export default function MapModalPage() {
     },
     ...(restaurantCoord
       ? [
-        {
-          coordinates: restaurantCoord,
-          title: restaurantName,
-        },
-      ]
+          {
+            coordinates: restaurantCoord,
+            title: restaurantName,
+          },
+        ]
       : []),
   ];
   const googleMarkerList: GoogleMapsMarker[] = [
@@ -267,7 +272,7 @@ export default function MapModalPage() {
           });
         }
         if (locationPerm && currentLocation) {
-          setRestaurantView(2)
+          setRestaurantView(2);
         } else {
           setRestaurantView(0);
         }

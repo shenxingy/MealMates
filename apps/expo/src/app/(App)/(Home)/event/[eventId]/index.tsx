@@ -1,13 +1,13 @@
+import type { Coordinates } from "expo-maps/src/shared.types";
 import { Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchDetailedEvent } from "~/utils/api";
+import { calculateZoomLevel } from "~/utils/map";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
-import { calculateZoomLevel } from "~/utils/map";
-import type { Coordinates } from "expo-maps/src/shared.types";
 
 const EventDetailsPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -24,10 +24,12 @@ const EventDetailsPage = () => {
     enabled: !!eventId,
   });
 
-  const meetPointCoord: Coordinates | undefined = data?.meetPointCoordinates ?? undefined;
+  const meetPointCoord: Coordinates | undefined =
+    data?.meetPointCoordinates ?? undefined;
   const meetPointLatitude = meetPointCoord?.latitude ?? 0;
   const meetPointLongitude = meetPointCoord?.longitude ?? 0;
-  const restaurantCoord: Coordinates | undefined = data?.restaurantCoordinates ?? undefined;
+  const restaurantCoord: Coordinates | undefined =
+    data?.restaurantCoordinates ?? undefined;
   const restaurantLatitude = restaurantCoord?.latitude ?? 0;
   const restaurantLongitude = restaurantCoord?.longitude ?? 0;
   const meetPoint = data?.meetPoint ?? "Meet Point";

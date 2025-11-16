@@ -4,18 +4,30 @@ import { StyleSheet, Text, View } from "react-native";
 interface ProfileInfoCardProps {
   name: string;
   email: string;
-  avatarEmoji?: string;
+  avatarEmoji?: string | null;
+  fallbackLabel?: string;
 }
 
 const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   name,
   email,
-  avatarEmoji = "🐿️",
+  avatarEmoji,
+  fallbackLabel,
 }) => {
+  const trimmedName = name.trim();
+  const trimmedLabel = fallbackLabel?.trim();
+  const labelInitial = trimmedLabel?.at(0);
+  const nameInitial = trimmedName.at(0);
+  const fallbackInitial = labelInitial ?? nameInitial ?? "?";
+  const displayInitial = fallbackInitial.toUpperCase();
+  const trimmedEmoji = avatarEmoji?.trim();
+  const avatarDisplay =
+    trimmedEmoji && trimmedEmoji.length > 0 ? trimmedEmoji : displayInitial;
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Text style={styles.avatarEmoji}>{avatarEmoji}</Text>
+        <Text style={styles.avatarEmoji}>{avatarDisplay}</Text>
       </View>
       <View>
         <Text style={styles.nameText}>{name}</Text>
@@ -52,7 +64,9 @@ const styles = StyleSheet.create({
     marginRight: 18,
   },
   avatarEmoji: {
-    fontSize: 36,
+    fontSize: 34,
+    lineHeight: 38,
+    color: "#1F2937",
   },
   nameText: {
     fontSize: 22,

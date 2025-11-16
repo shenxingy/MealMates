@@ -20,6 +20,7 @@ export const auth = initAuth({
   secret: env.AUTH_SECRET,
   discordClientId: env.AUTH_DISCORD_ID,
   discordClientSecret: env.AUTH_DISCORD_SECRET,
+  // Duke auth is handled separately via expo-auth-session
 });
 
 export const getSession = cache(async () =>

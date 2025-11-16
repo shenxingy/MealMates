@@ -7,7 +7,11 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@mealmates/api";
 
-import type { ApiResponse, DetailedEventDTO, SimpleEventDTO } from "~/definition";
+import type {
+  ApiResponse,
+  DetailedEventDTO,
+  SimpleEventDTO,
+} from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 
@@ -80,33 +84,39 @@ export const queryClient = new QueryClient({
 });
 
 /**
- * A set of typesafe hooks for consuming your API.
+ * Vanilla tRPC client for use outside of React components
+ * Use this for direct API calls in async functions
+ */
+export const trpcClient = createTRPCClient<AppRouter>({
+  links: [
+    loggerLink({
+      enabled: (opts) =>
+        process.env.NODE_ENV === "development" ||
+        (opts.direction === "down" && opts.result instanceof Error),
+      colorMode: "ansi",
+    }),
+    httpBatchLink({
+      transformer: superjson,
+      url: `${getBaseUrl()}/api/trpc`,
+      headers() {
+        const headers = new Map<string, string>();
+        headers.set("x-trpc-source", "expo-react");
+
+        const cookies = authClient.getCookie();
+        if (cookies) {
+          headers.set("Cookie", cookies);
+        }
+        return Object.fromEntries(headers);
+      },
+    }),
+  ],
+});
+
+/**
+ * A set of typesafe hooks for consuming your API in React components
  */
 export const trpc = createTRPCOptionsProxy<AppRouter>({
-  client: createTRPCClient({
-    links: [
-      loggerLink({
-        enabled: (opts) =>
-          process.env.NODE_ENV === "development" ||
-          (opts.direction === "down" && opts.result instanceof Error),
-        colorMode: "ansi",
-      }),
-      httpBatchLink({
-        transformer: superjson,
-        url: `${getBaseUrl()}/api/trpc`,
-        headers() {
-          const headers = new Map<string, string>();
-          headers.set("x-trpc-source", "expo-react");
-
-          const cookies = authClient.getCookie();
-          if (cookies) {
-            headers.set("Cookie", cookies);
-          }
-          return headers;
-        },
-      }),
-    ],
-  }),
+  client: trpcClient,
   queryClient,
 });
 
@@ -116,7 +126,7 @@ export const fetchSimpleEventList = async () => {
   // await new Promise((resolve) => {
   //   setTimeout(resolve, 3000);
   // });
-  const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/events/list");
+  const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/api/events/list");
   return res.data.data;
 };
 
@@ -124,7 +134,9 @@ export const fetchDetailedEvent = async (eventId: string) => {
   // await new Promise((resolve) => {
   //   setTimeout(resolve, 2000);
   // });
-  const res = await api.get<ApiResponse<DetailedEventDTO>>(`/events/${eventId}/details`);
+  const res = await api.get<ApiResponse<DetailedEventDTO>>(
+    `/api/events/${eventId}/details`,
+  );
   console.log(res.data.data);
   return res.data.data;
-}
+};
