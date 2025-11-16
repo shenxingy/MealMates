@@ -47,7 +47,7 @@ export const calculateZoomLevel = (coordinates: Coordinates[]): number => {
     zoom = 12;
   } else if (maxSpan >= 0.01) {
     zoom = 14;
-  } else if (maxSpan >= 0.005){
+  } else if (maxSpan >= 0.005) {
     zoom = 15;
   } else if (maxSpan >= 0.001) {
     zoom = 16;
@@ -58,9 +58,11 @@ export const calculateZoomLevel = (coordinates: Coordinates[]): number => {
   console.log("Calculated zoom level:", zoom, "for maxSpan:", maxSpan);
 
   return zoom;
-}
+};
 
-export const calculateCenterCoordinates = (coordinates: Coordinates[]): Coordinates | null => {
+export const calculateCenterCoordinates = (
+  coordinates: Coordinates[],
+): Coordinates | null => {
   if (coordinates.length === 0) {
     return null;
   }
@@ -84,4 +86,4 @@ export const calculateCenterCoordinates = (coordinates: Coordinates[]): Coordina
     latitude: totalLat / coordinates.length,
     longitude: totalLng / coordinates.length,
   };
-}
+};

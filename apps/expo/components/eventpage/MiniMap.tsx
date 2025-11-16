@@ -64,7 +64,7 @@ export default function MiniMap(props: MiniMapProps) {
             markers={[
               {
                 coordinates: coordinates,
-              }
+              },
             ]}
             uiSettings={{
               myLocationButtonEnabled: false,
@@ -158,7 +158,7 @@ export default function MiniMap(props: MiniMapProps) {
             markers={[
               {
                 coordinates: coordinates,
-              }
+              },
             ]}
           />
           <Pressable style={styles.mapMask} onPress={onMapPressedCallback} />
@@ -167,9 +167,7 @@ export default function MiniMap(props: MiniMapProps) {
               style={styles.shareLocationButton}
               onPress={shareLocationCallback}
             >
-              <View
-                style={styles.androidContainer}
-              >
+              <View style={styles.androidContainer}>
                 <Text style={styles.shareLocationText}>Share Location</Text>
               </View>
             </Pressable>
