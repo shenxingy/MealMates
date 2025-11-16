@@ -40,7 +40,7 @@ export const userRouter = {
     .input(DukeUserSyncSchema)
     .mutation(async ({ ctx, input }) => {
       // Extract NetID from sub (e.g., "xs90@duke.edu" -> "xs90")
-      const netId = input.dukeNetID || input.sub.split("@")[0];
+      const netId = input.dukeNetID ?? input.sub.split("@")[0];
       
       if (!netId) {
         throw new Error("Could not extract NetID from user data");

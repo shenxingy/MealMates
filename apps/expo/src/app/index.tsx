@@ -29,6 +29,7 @@ export default function Index() {
   // TEMPORARY: Clear auth on mount for testing registration
   useEffect(() => {
     void logout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Navigate to home when authenticated

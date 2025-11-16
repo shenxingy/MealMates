@@ -39,7 +39,7 @@ export const createTRPCContext = async (opts: {
     session = await authApi.getSession({
       headers: opts.headers,
     });
-  } catch (error) {
+  } catch {
     // Silently ignore session errors - this allows public procedures to work
     // even when better-auth can't validate the session
     console.log("[TRPC Context] Could not get session, continuing with null session");
