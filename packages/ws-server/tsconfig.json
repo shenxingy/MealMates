@@ -1,0 +1,10 @@
+{
+  "extends": "../../tooling/typescript/compiled-package.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022"
+  },
+  "include": ["src", "index.ts"],
+  "exclude": ["node_modules"]
+}
