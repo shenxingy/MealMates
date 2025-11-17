@@ -20,6 +20,7 @@ interface ProfileSummarySectionProps {
   greetingName: string;
   profileEmail: string;
   profileAvatar: string | null;
+  avatarColor: string;
   fallbackLabel: string;
   stats: ProfileStat[];
   onRetry: () => void;
@@ -38,6 +39,7 @@ const ProfileSummarySection: FC<ProfileSummarySectionProps> = ({
   greetingName,
   profileEmail,
   profileAvatar,
+  avatarColor,
   fallbackLabel,
   stats,
   onRetry,
@@ -106,6 +108,7 @@ const ProfileSummarySection: FC<ProfileSummarySectionProps> = ({
           name={greetingName}
           email={profileEmail}
           avatarEmoji={profileAvatar}
+          avatarColor={avatarColor}
           fallbackLabel={fallbackLabel}
         />
       </>

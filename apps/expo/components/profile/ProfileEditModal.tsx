@@ -16,6 +16,9 @@ interface ProfileEditModalProps {
   nameError: string | null;
   emojiValue: string;
   onEmojiChange: (value: string) => void;
+  availableColors: string[];
+  selectedColor: string;
+  onColorChange: (color: string) => void;
   onClose: () => void;
   onSave: () => void;
   modalError: string | null;
@@ -31,6 +34,9 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
   nameError,
   emojiValue,
   onEmojiChange,
+  availableColors,
+  selectedColor,
+  onColorChange,
   onClose,
   onSave,
   modalError,
@@ -77,13 +83,38 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
           />
           <View style={styles.emojiPreviewRow}>
             <Text style={styles.previewLabel}>Preview</Text>
-            <View style={styles.previewCircle}>
+            <View
+              style={[
+                styles.previewCircle,
+                { backgroundColor: selectedColor },
+              ]}
+            >
               <Text style={styles.previewEmoji}>{previewAvatar}</Text>
             </View>
           </View>
           <Text style={styles.emojiHint}>
-            Enter a single emoji or letter for your avatar. Leave blank to use your initials.
+            Enter a single emoji or letter for your avatar. Leave blank to use
+            your initials.
           </Text>
+          <Text style={styles.colorHeading}>Avatar background</Text>
+          <View style={styles.colorGrid}>
+            {availableColors.map((color) => {
+              const isSelected = selectedColor === color;
+              return (
+                <Pressable
+                  key={color}
+                  style={[
+                    styles.colorSwatch,
+                    { backgroundColor: color },
+                    isSelected && styles.colorSwatchSelected,
+                  ]}
+                  onPress={() => onColorChange(color)}
+                >
+                  {isSelected ? <Text style={styles.colorSwatchCheck}>✓</Text> : null}
+                </Pressable>
+              );
+            })}
+          </View>
           {modalError ? (
             <Text style={styles.modalError}>{modalError}</Text>
           ) : null}
@@ -174,6 +205,32 @@ const styles = StyleSheet.create({
   emojiHint: {
     fontSize: 13,
     color: "#6B7280",
+  },
+  colorHeading: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  colorGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  colorSwatch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  colorSwatchSelected: {
+    borderColor: "#111827",
+  },
+  colorSwatchCheck: {
+    color: "#111827",
+    fontWeight: "700",
   },
   modalError: {
     color: "#B91C1C",

@@ -28,6 +28,15 @@ const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 const CJK_REGEX =
   /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
 const MAX_VISUAL_NAME_LENGTH = 15;
+const AVATAR_COLOR_OPTIONS = [
+  "#F5F7FB",
+  "#FFE4E6",
+  "#FEF3C7",
+  "#DCFCE7",
+  "#E0F2FE",
+  "#F3E8FF",
+];
+const DEFAULT_AVATAR_COLOR = AVATAR_COLOR_OPTIONS[0] ?? "#F5F7FB";
 const isSingleEmojiOrLetter = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -92,6 +101,8 @@ export default function YouPage() {
   const [nameInput, setNameInput] = useState("");
   const [nameLengthError, setNameLengthError] = useState<string | null>(null);
   const [emojiInput, setEmojiInput] = useState("");
+  const [avatarColorInput, setAvatarColorInput] =
+    useState<string>(DEFAULT_AVATAR_COLOR);
   const [modalError, setModalError] = useState<string | null>(null);
   const {
     logout,
@@ -180,6 +191,7 @@ export default function YouPage() {
 
     handleNameInputChange(userProfile.name);
     setEmojiInput(userProfile.image ?? "");
+    setAvatarColorInput(userProfile.avatarColor);
     setModalError(null);
     setIsEditVisible(true);
   };
@@ -192,6 +204,7 @@ export default function YouPage() {
     setIsEditVisible(false);
     setNameLengthError(null);
     setModalError(null);
+    setAvatarColorInput(userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR);
   };
 
   const handleSaveProfile = async () => {
@@ -222,6 +235,7 @@ export default function YouPage() {
         id: storedUserId,
         name: trimmedName,
         image: trimmedEmoji,
+        avatarColor: avatarColorInput,
       });
       if (!result.success) {
         setModalError("We couldn't update your profile. Please try again.");
@@ -265,7 +279,10 @@ export default function YouPage() {
   const isLogoutDisabled = isAuthMutating || isFetchingProfile;
   const showLogoutSpinner = isAuthMutating;
   const disableSaveButton =
-    !nameInput.trim() || updateProfileMutation.isPending || !!nameLengthError;
+    !nameInput.trim() ||
+    updateProfileMutation.isPending ||
+    !!nameLengthError ||
+    avatarColorInput.trim().length === 0;
   const handleRetry = () => {
     void loadUserId();
     if (storedUserId) {
@@ -296,6 +313,7 @@ export default function YouPage() {
           greetingName={greetingName}
           profileEmail={profileEmail}
           profileAvatar={profileAvatar}
+          avatarColor={userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR}
           fallbackLabel={fallbackLabel}
           stats={stats}
           onRetry={handleRetry}
@@ -314,6 +332,9 @@ export default function YouPage() {
         nameError={nameLengthError}
         emojiValue={emojiInput}
         onEmojiChange={setEmojiInput}
+        availableColors={AVATAR_COLOR_OPTIONS}
+        selectedColor={avatarColorInput}
+        onColorChange={setAvatarColorInput}
         onClose={handleCloseEditModal}
         onSave={handleSaveProfile}
         modalError={modalError}

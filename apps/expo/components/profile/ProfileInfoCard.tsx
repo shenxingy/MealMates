@@ -3,11 +3,14 @@ import { StyleSheet, Text, View } from "react-native";
 
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
+const DEFAULT_AVATAR_BG = "#F5F7FB";
+
 interface ProfileInfoCardProps {
   name: string;
   email: string;
   avatarEmoji?: string | null;
   fallbackLabel?: string;
+  avatarColor?: string;
 }
 
 const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
@@ -15,6 +18,7 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   email,
   avatarEmoji,
   fallbackLabel,
+  avatarColor,
 }) => {
   const trimmedName = name.trim();
   const trimmedLabel = fallbackLabel?.trim();
@@ -34,9 +38,14 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   const isLetterAvatar =
     avatarDisplay.length === 1 && !EMOJI_REGEX.test(avatarDisplay);
 
+  const avatarBackgroundColor =
+    avatarColor && avatarColor.trim().length > 0
+      ? avatarColor
+      : DEFAULT_AVATAR_BG;
+
   return (
     <View style={styles.container}>
-      <View style={styles.avatarContainer}>
+      <View style={[styles.avatarContainer, { backgroundColor: avatarBackgroundColor }]}>
         <Text style={[styles.avatarEmoji, isLetterAvatar && styles.avatarLetter]}>
           {avatarDisplay}
         </Text>
