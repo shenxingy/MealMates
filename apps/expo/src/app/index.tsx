@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import type { ImageSourcePropType } from "react-native";
+import { useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import mealmatesHeroAsset from "../../assets/mealmates.png";
 import { DukeRegisterButton } from "../../components/auth";
 import AnimatedPageFrame from "../../components/frame/AnimatedPageFrame";
 import { useDukeAuth } from "../hooks/useDukeAuth";
-import mealmatesHeroAsset from "../../assets/mealmates.png";
 
 const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 
@@ -69,14 +69,20 @@ export default function Index() {
         </Text>
 
         <View style={styles.heroCard}>
-          <Image source={mealmatesHero} style={styles.heroImage} resizeMode="contain" />
+          <Image
+            source={mealmatesHero}
+            style={styles.heroImage}
+            resizeMode="contain"
+          />
         </View>
 
         <View style={styles.actionSection}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0F172A" />
-              <Text style={styles.loadingText}>Authenticating with Duke...</Text>
+              <Text style={styles.loadingText}>
+                Authenticating with Duke...
+              </Text>
             </View>
           ) : (
             <DukeRegisterButton

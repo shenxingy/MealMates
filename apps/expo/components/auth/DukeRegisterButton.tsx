@@ -24,7 +24,11 @@ export default function DukeRegisterButton({
       onPress={onPress}
       disabled={disabled}
     >
-      <Image source={blueDevilIcon} style={styles.dukeIcon} resizeMode="contain" />
+      <Image
+        source={blueDevilIcon}
+        style={styles.dukeIcon}
+        resizeMode="contain"
+      />
       <Text style={styles.registerText}>{label}</Text>
     </Pressable>
   );

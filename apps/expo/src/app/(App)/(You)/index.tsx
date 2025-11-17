@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -22,9 +13,8 @@ import {
 } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import {
-  ProfileHeader,
-  ProfileInfoCard,
-  ProfileStatsRow,
+  ProfileEditModal,
+  ProfileSummarySection,
 } from "../../../../components/profile";
 
 type UserProfile = RouterOutputs["user"]["byId"];
@@ -36,7 +26,8 @@ const getNetIdFromSub = (sub: string) => {
 };
 const DEFAULT_AVATAR_EMOJI = "🙂";
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
-const CJK_REGEX = /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
+const CJK_REGEX =
+  /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
 const MAX_VISUAL_NAME_LENGTH = 15;
 const isSingleEmoji = (value: string) => {
   const trimmed = value.trim();
@@ -166,7 +157,7 @@ export default function YouPage() {
   const handleNameInputChange = (value: string) => {
     setNameInput(value);
     const validation = validateDisplayName(value);
-    setNameLengthError(validation.valid ? null : validation.error ?? null);
+    setNameLengthError(validation.valid ? null : (validation.error ?? null));
   };
 
   const handleEditProfile = () => {
@@ -253,315 +244,69 @@ export default function YouPage() {
   const shouldPromptSignIn =
     !storedUserId && !isLoadingUserId && !isAuthenticated;
   const profileMissing =
-    storedUserId && !userProfile && !isFetchingProfile && !profileError;
+    Boolean(storedUserId) &&
+    !userProfile &&
+    !isFetchingProfile &&
+    !profileError;
   const greetingName = userProfile?.name ?? "Meal Mate";
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
   const profileAvatar = userProfile?.image ?? DEFAULT_AVATAR_EMOJI;
   const header = "Profile";
   const baseColor = "195,227,255";
+  const isLogoutDisabled = isAuthMutating || isFetchingProfile;
+  const showLogoutSpinner = isAuthMutating;
+  const disableSaveButton =
+    !nameInput.trim() || updateProfileMutation.isPending || !!nameLengthError;
+  const handleRetry = () => {
+    void loadUserId();
+    if (storedUserId) {
+      void refetchProfile();
+    }
+  };
+  const fallbackLabel = userProfile?.name ?? userProfile?.email ?? "?";
 
   return (
     <>
       <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-        <View style={styles.content}>
-          {isFetchingProfile ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0F172A" />
-              <Text style={styles.loadingLabel}>Loading your profile...</Text>
-            </View>
-          ) : profileError ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                We could not load your profile. Pull to refresh or try again
-                later.
-              </Text>
-              <Pressable
-                style={styles.retryButton}
-                onPress={() => {
-                  void loadUserId();
-                  if (storedUserId) {
-                    void refetchProfile();
-                  }
-                }}
-              >
-                <Text style={styles.retryLabel}>Try Again</Text>
-              </Pressable>
-            </View>
-          ) : shouldPromptSignIn ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                Sign in with your Duke account to view your profile.
-              </Text>
-            </View>
-          ) : profileMissing ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                We couldn&apos;t find your profile record. Please sign out and
-                sign back in.
-              </Text>
-              <Pressable style={styles.retryButton} onPress={handleLogout}>
-                <Text style={styles.retryLabel}>Sign Out</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <>
-              <ProfileHeader
-                greetingName={greetingName}
-                onEditPress={handleEditProfile}
-                onSettingsPress={handleOpenSettings}
-              />
-
-              <ProfileInfoCard
-                name={greetingName}
-                email={profileEmail}
-                avatarEmoji={profileAvatar}
-                fallbackLabel={userProfile?.name ?? userProfile?.email ?? "?"}
-              />
-            </>
-          )}
-
-          <ProfileStatsRow stats={stats} />
-
-          <Pressable
-            style={[
-              styles.logoutButton,
-              (isAuthMutating || isFetchingProfile) && styles.disabledButton,
-            ]}
-            onPress={handleLogout}
-            disabled={isAuthMutating || isFetchingProfile}
-          >
-            {isAuthMutating ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.logoutLabel}>Logout</Text>
-            )}
-          </Pressable>
-
-          <View style={styles.bottomSpacer} />
-        </View>
+        <ProfileSummarySection
+          isFetchingProfile={isFetchingProfile}
+          profileError={
+            profileError
+              ? profileError instanceof Error
+                ? profileError.message
+                : String(profileError)
+              : null
+          }
+          shouldPromptSignIn={shouldPromptSignIn}
+          profileMissing={profileMissing}
+          greetingName={greetingName}
+          profileEmail={profileEmail}
+          profileAvatar={profileAvatar}
+          fallbackLabel={fallbackLabel}
+          stats={stats}
+          onRetry={handleRetry}
+          onLogout={handleLogout}
+          onEditPress={handleEditProfile}
+          onSettingsPress={handleOpenSettings}
+          isLogoutDisabled={isLogoutDisabled}
+          showLogoutSpinner={showLogoutSpinner}
+        />
       </AnimatedPageFrame>
 
-      <Modal
-        transparent
+      <ProfileEditModal
         visible={isEditVisible}
-        animationType="slide"
-        onRequestClose={handleCloseEditModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-            <TextInput
-              style={styles.textInput}
-              value={nameInput}
-              placeholder="Display name"
-              onChangeText={handleNameInputChange}
-            />
-            {nameLengthError ? (
-              <Text style={styles.nameErrorText}>{nameLengthError}</Text>
-            ) : null}
-            <TextInput
-              style={styles.textInput}
-              value={emojiInput}
-              placeholder="Favorite emoji (e.g., 🍣)"
-              onChangeText={setEmojiInput}
-              autoCapitalize="none"
-              autoCorrect={false}
-              maxLength={4}
-            />
-            <View style={styles.emojiPreviewRow}>
-              <Text style={styles.previewLabel}>Preview</Text>
-              <View style={styles.previewCircle}>
-                <Text style={styles.previewEmoji}>
-                  {emojiInput.trim() || DEFAULT_AVATAR_EMOJI}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.emojiHint}>
-              Enter a single emoji to use as your avatar. Leave blank to use
-              your initials.
-            </Text>
-            {modalError ? (
-              <Text style={styles.modalError}>{modalError}</Text>
-            ) : null}
-            <View style={styles.modalActions}>
-              <Pressable
-                style={[styles.button, styles.secondaryButton]}
-                onPress={handleCloseEditModal}
-                disabled={updateProfileMutation.isPending}
-              >
-                <Text style={styles.secondaryButtonText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.button,
-                  styles.primaryButton,
-                  (!nameInput.trim() ||
-                    updateProfileMutation.isPending ||
-                    !!nameLengthError) &&
-                    styles.disabledButton,
-                ]}
-                onPress={handleSaveProfile}
-                disabled={
-                  !nameInput.trim() ||
-                  updateProfileMutation.isPending ||
-                  !!nameLengthError
-                }
-              >
-                {updateProfileMutation.isPending ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>Save</Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        nameValue={nameInput}
+        onNameChange={handleNameInputChange}
+        nameError={nameLengthError}
+        emojiValue={emojiInput}
+        onEmojiChange={setEmojiInput}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveProfile}
+        modalError={modalError}
+        isSaving={updateProfileMutation.isPending}
+        disableSave={disableSaveButton}
+        defaultAvatarEmoji={DEFAULT_AVATAR_EMOJI}
+      />
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 4,
-    paddingTop: 16,
-    gap: 24,
-  },
-  loadingContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-    alignItems: "center",
-    gap: 8,
-  },
-  loadingLabel: {
-    fontSize: 16,
-    color: "#1F2937",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  errorText: {
-    fontSize: 16,
-    color: "#B91C1C",
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#1F2937",
-  },
-  retryLabel: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  bottomSpacer: {
-    height: 120,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
-    gap: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5F5",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#111827",
-  },
-  nameErrorText: {
-    marginTop: 4,
-    marginBottom: 4,
-    color: "#B91C1C",
-    fontSize: 14,
-  },
-  emojiPreviewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  previewLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#475569",
-  },
-  previewCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#F1F5F9",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  previewEmoji: {
-    fontSize: 30,
-  },
-  emojiHint: {
-    fontSize: 13,
-    color: "#6B7280",
-  },
-  modalError: {
-    color: "#B91C1C",
-    fontSize: 14,
-  },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  button: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 110,
-  },
-  secondaryButton: {
-    backgroundColor: "#E2E8F0",
-  },
-  secondaryButtonText: {
-    color: "#1F2937",
-    fontWeight: "600",
-  },
-  primaryButton: {
-    backgroundColor: "#2563EB",
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  logoutButton: {
-    marginTop: 16,
-    backgroundColor: "#DC2626",
-    borderRadius: 20,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoutLabel: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
