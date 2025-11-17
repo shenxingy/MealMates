@@ -20,12 +20,15 @@ import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
+import { getStoredUserId } from "~/utils/user-storage";
+import { useApiSocket } from "~/hooks/useApiSocket";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
 
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const _eventId = params.eventId as string;
+  const [userId, setUserId] = useState<string>("");
+  const eventId = params.eventId as string;
   const shared = params.shared === "true";
   const meetPoint = params.meetPoint as string;
   const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
@@ -48,6 +51,39 @@ export default function MapModalPage() {
           longitude: restaurantLongitude,
         }
       : null;
+
+  // get userId from storage
+  useEffect(() => {
+    const loadUserId = async () => {
+      const storedId = await getStoredUserId();
+      if (storedId) {
+        setUserId(storedId);
+      }
+    };
+    void loadUserId();
+  }, []);
+
+  // WebSocket
+  const { shareLocation: _shareLocation, leaveEvent, isConnected } = useApiSocket({
+    userId: userId,
+    eventId: eventId,
+    enabled: shared,
+    handlers: {
+      onJoinSuccess: (payload) => {
+        console.log('[MapModal] Successfully joined event:', payload);
+      },
+      onLocationUpdate: (payload) => {
+        console.log('[MapModal] Received location update:', payload);
+        // TODO: update marker on map
+      },
+      onUserLeft: (payload) => {
+        console.log('[MapModal] User left:', payload);
+      },
+      onError: (payload) => {
+        console.error('[MapModal] WebSocket error:', payload);
+      },
+    },
+  });
 
   const appleMarkerList: AppleMapsMarker[] = [
     {
@@ -84,9 +120,22 @@ export default function MapModalPage() {
   const [meetPointView, setMeetPointView] = useState(0);
   const [restaurantView, setRestaurantView] = useState(0);
 
-  console.log("Map Modal Params:", params);
+  // console.log("Map Modal Params:", params);
+
+  // close websocket when unmounting
+  useEffect(() => {
+    return () => {
+      if (shared && isConnected) {
+        console.log('[MapModal] Component unmounting, leaving event');
+        leaveEvent();
+      }
+    };
+  }, [shared, isConnected, leaveEvent]);
 
   const handleDismiss = () => {
+    if (shared && isConnected) {
+      leaveEvent();
+    }
     router.back();
   };
 
