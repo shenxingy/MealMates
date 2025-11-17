@@ -56,7 +56,9 @@ export const userRouter = {
 
       if (existingUser) {
         // Preserve custom display names that users set inside the app.
-        const trimmedExistingName = existingUser.name?.trim();
+        const trimmedExistingName = existingUser.name
+          ? existingUser.name.trim()
+          : undefined;
         const trimmedIncomingName = input.name.trim();
         const shouldPreserveCustomName =
           !!trimmedExistingName &&

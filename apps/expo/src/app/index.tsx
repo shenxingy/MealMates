@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { ImageSourcePropType } from "react-native";
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +14,9 @@ import { useRouter } from "expo-router";
 import { DukeRegisterButton } from "../../components/auth";
 import LinearGradientBackground from "../../components/background/LinearGradientBackground";
 import { useDukeAuth } from "../hooks/useDukeAuth";
+import mealmatesHeroAsset from "../../assets/mealmates.png";
+
+const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 
 export default function Index() {
   const router = useRouter();
@@ -62,11 +66,7 @@ export default function Index() {
           </Text>
 
           <View style={styles.heroCard}>
-            <Image
-              source={require("../../assets/mealmates.png")}
-              style={styles.heroImage}
-              resizeMode="contain"
-            />
+            <Image source={mealmatesHero} style={styles.heroImage} resizeMode="contain" />
           </View>
 
           <View style={styles.actionSection}>

@@ -1,5 +1,9 @@
-import type { StyleProp, ViewStyle } from "react-native";
+import type { ImageSourcePropType, StyleProp, ViewStyle } from "react-native";
 import { Image, Pressable, StyleSheet, Text } from "react-native";
+
+import blueDevilAsset from "../../assets/blue-devil.png";
+
+const blueDevilIcon: ImageSourcePropType = blueDevilAsset;
 
 interface DukeRegisterButtonProps {
   onPress?: () => void;
@@ -20,11 +24,7 @@ export default function DukeRegisterButton({
       onPress={onPress}
       disabled={disabled}
     >
-      <Image
-        source={require("../../assets/blue-devil.png")}
-        style={styles.dukeIcon}
-        resizeMode="contain"
-      />
+      <Image source={blueDevilIcon} style={styles.dukeIcon} resizeMode="contain" />
       <Text style={styles.registerText}>{label}</Text>
     </Pressable>
   );
