@@ -59,6 +59,10 @@ export function useDukeAuth() {
     } else if (response?.type === "error") {
       setError(response.error?.message ?? "Authentication failed");
       setIsLoading(false);
+    } else if (response?.type === "dismiss" || response?.type === "cancel") {
+      // User backed out of the auth flow, so reset to initial state
+      setIsLoading(false);
+      setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response]);
