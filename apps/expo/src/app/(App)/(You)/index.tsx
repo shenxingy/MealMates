@@ -187,10 +187,11 @@ export default function YouPage() {
       setStoredUserIdState(null);
       setIsEditVisible(false);
       await loadUserId();
-      router.replace("/");
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
       Alert.alert("Logout failed", "Please try again.");
+    } finally {
+      router.replace("/");
     }
   };
 
