@@ -36,6 +36,12 @@ export function useDukeAuth() {
     revocationEndpoint: DUKE_AUTH_CONFIG.revocationEndpoint,
   };
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: "mealmates://duke/auth/callback",
+    scheme: "mealmates",
+    path: "duke/auth/callback",
+  });
+
   // Set up the auth request
   const [_request, response, promptAsync] = AuthSession.useAuthRequest(
     {
@@ -43,7 +49,7 @@ export function useDukeAuth() {
       clientId: DUKE_AUTH_CONFIG.clientId,
       clientSecret: DUKE_AUTH_CONFIG.clientSecret,
       scopes: DUKE_AUTH_CONFIG.scopes,
-      redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+      redirectUri,
       usePKCE: false,
     },
     discovery,
@@ -145,7 +151,7 @@ export function useDukeAuth() {
           clientId: DUKE_AUTH_CONFIG.clientId,
           clientSecret: DUKE_AUTH_CONFIG.clientSecret,
           code,
-          redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+          redirectUri,
         },
         discovery,
       );

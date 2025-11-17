@@ -33,7 +33,7 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   const avatarDisplay = trimmedEmoji
     ? isEmojiAvatar
       ? trimmedEmoji
-      : trimmedEmoji.at(0)?.toUpperCase() ?? displayInitial
+      : (trimmedEmoji.at(0)?.toUpperCase() ?? displayInitial)
     : displayInitial;
   const isLetterAvatar =
     avatarDisplay.length === 1 && !EMOJI_REGEX.test(avatarDisplay);
@@ -45,8 +45,15 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={[styles.avatarContainer, { backgroundColor: avatarBackgroundColor }]}>
-        <Text style={[styles.avatarEmoji, isLetterAvatar && styles.avatarLetter]}>
+      <View
+        style={[
+          styles.avatarContainer,
+          { backgroundColor: avatarBackgroundColor },
+        ]}
+      >
+        <Text
+          style={[styles.avatarEmoji, isLetterAvatar && styles.avatarLetter]}
+        >
           {avatarDisplay}
         </Text>
       </View>

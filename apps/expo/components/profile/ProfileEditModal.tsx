@@ -55,9 +55,7 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
   const trimmedEmojiValue = emojiValue.trim();
   const normalizedLabel = defaultAvatarLabel.trim();
   const fallbackAvatar =
-    normalizedLabel.length > 0
-      ? normalizedLabel.charAt(0).toUpperCase()
-      : "?";
+    normalizedLabel.length > 0 ? normalizedLabel.charAt(0).toUpperCase() : "?";
   const previewAvatar =
     trimmedEmojiValue.length > 0 ? trimmedEmojiValue : fallbackAvatar;
 
@@ -72,7 +70,9 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Edit Profile</Text>
           <Text style={styles.sectionHeading}>Display Name</Text>
-          <Text style={styles.sectionSubtitle}>This name appears across MealMates.</Text>
+          <Text style={styles.sectionSubtitle}>
+            This name appears across MealMates.
+          </Text>
           <TextInput
             style={styles.textInput}
             value={nameValue}
@@ -101,10 +101,7 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
           <View style={styles.emojiPreviewRow}>
             <Text style={styles.previewLabel}>Preview</Text>
             <View
-              style={[
-                styles.previewCircle,
-                { backgroundColor: selectedColor },
-              ]}
+              style={[styles.previewCircle, { backgroundColor: selectedColor }]}
             >
               <Text style={styles.previewEmoji}>{previewAvatar}</Text>
             </View>
@@ -136,7 +133,9 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
                   ]}
                   onPress={() => onColorChange(color)}
                 >
-                  {isSelected ? <Text style={styles.colorSwatchCheck}>✓</Text> : null}
+                  {isSelected ? (
+                    <Text style={styles.colorSwatchCheck}>✓</Text>
+                  ) : null}
                 </Pressable>
               );
             })}
