@@ -1,14 +1,21 @@
 import { useEffect, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
+
+
 import type {
   ErrorPayload,
   JoinSuccessPayload,
   LocationUpdatePayload,
   ServerMessage,
   UseApiSocketOptions,
+  UserJoinEventMessage,
+  UserLeaveEventMessage,
   UserLeftPayload,
+  UserShareLocationMessage,
 } from "~/definition";
+import { getStoredUsername } from "~/utils/user-storage";
+
 
 const WS_BASE_URL =
   process.env.EXPO_PUBLIC_WEBSOCKET_URL ?? "ws://localhost:3001";
@@ -21,6 +28,23 @@ export function useApiSocket({
 }: UseApiSocketOptions) {
   const shouldConnect = enabled && !!userId && !!eventId;
   const hasJoined = useRef(false);
+
+  // Use ref to store handlers to avoid effect re-runs when handlers object changes
+  const handlersRef = useRef(handlers);
+  const username = useRef("");
+
+  // Update handlers ref when handlers change
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
+
+  useEffect(() => {
+    const loadUsername = async () => {
+      const usernameFromStorage = await getStoredUsername();
+      username.current = usernameFromStorage ?? "Anonymous";
+    }
+    void loadUsername();
+  })
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
     WS_BASE_URL,
@@ -35,14 +59,15 @@ export function useApiSocket({
   // send join_event when connected
   useEffect(() => {
     if (readyState === ReadyState.OPEN && shouldConnect && !hasJoined.current) {
-      console.log('[useApiSocket] WebSocket connected, sending join_event');
-      sendJsonMessage({
+      const message: UserJoinEventMessage = {
         type: 'join_event',
         payload: {
           userId,
           eventId: parseInt(eventId, 10),
         },
-      });
+      };
+      sendJsonMessage(message);
+      console.log('[useApiSocket] WebSocket connected, sending join_event');
       hasJoined.current = true;
     }
 
@@ -59,46 +84,49 @@ export function useApiSocket({
 
       switch (message.type) {
         case 'join_success':
-          handlers?.onJoinSuccess?.(message.payload as JoinSuccessPayload);
+          handlersRef.current?.onJoinSuccess?.(message.payload as JoinSuccessPayload);
           break;
         case 'location_update':
-          handlers?.onLocationUpdate?.(message.payload as LocationUpdatePayload);
+          handlersRef.current?.onLocationUpdate?.(message.payload as LocationUpdatePayload);
           break;
         case 'user_left':
-          handlers?.onUserLeft?.(message.payload as UserLeftPayload);
+          handlersRef.current?.onUserLeft?.(message.payload as UserLeftPayload);
           break;
         case 'error':
-          handlers?.onError?.(message.payload as ErrorPayload);
+          handlersRef.current?.onError?.(message.payload as ErrorPayload);
           break;
         default:
           console.warn('[useApiSocket] Unknown message type:', message);
       }
     }
-  }, [lastJsonMessage, handlers]);
+  }, [lastJsonMessage]);
 
   // send share location update
   const shareLocation = (latitude: number, longitude: number) => {
     if (readyState === ReadyState.OPEN && shouldConnect) {
-      console.log('[useApiSocket] Sharing location:', { latitude, longitude });
-      sendJsonMessage({
+      const message: UserShareLocationMessage = {
         type: 'share_location',
         payload: {
+          username: username.current,
           latitude,
           longitude,
           timestamp: new Date().toISOString(),
         },
-      });
+      }
+      sendJsonMessage(message);
+      console.log('[useApiSocket] Sharing location:', message);
     }
   };
 
   // send leave event
   const leaveEvent = () => {
     if (readyState === ReadyState.OPEN && shouldConnect) {
-      console.log('[useApiSocket] Leaving event');
-      sendJsonMessage({
+      const message: UserLeaveEventMessage = {
         type: 'leave_event',
         payload: {},
-      });
+      }
+      sendJsonMessage(message);
+      console.log('[useApiSocket] Leaving event');
     }
   };
 
