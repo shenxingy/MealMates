@@ -16,11 +16,7 @@ export default function DukeRegisterButton({
 }: DukeRegisterButtonProps) {
   return (
     <Pressable
-      style={[
-        styles.registerButton,
-        disabled && styles.disabledButton,
-        style,
-      ]}
+      style={[styles.registerButton, disabled && styles.disabledButton, style]}
       onPress={onPress}
       disabled={disabled}
     >
