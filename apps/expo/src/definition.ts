@@ -34,6 +34,7 @@ export interface JoinSuccessPayload {
 
 export interface LocationUpdatePayload {
   userId: string;
+  username: string;
   latitude: number;
   longitude: number;
   timestamp: string;
@@ -65,4 +66,36 @@ export interface UseApiSocketOptions {
 export interface ServerMessage {
   type: 'join_success' | 'location_update' | 'user_left' | 'error';
   payload: JoinSuccessPayload | LocationUpdatePayload | UserLeftPayload | ErrorPayload;
+}
+
+/**
+ * client joins event
+ */
+export interface UserJoinEventMessage {
+  type: "join_event";
+  payload: {
+    userId: string;
+    eventId: number;
+  };
+}
+
+/**
+ * client shares location update
+ */
+export interface UserShareLocationMessage {
+  type: "share_location";
+  payload: {
+    username: string;
+    latitude: number;
+    longitude: number;
+    timestamp: string;
+  };
+}
+
+/**
+ * client leaves event
+ */
+export interface UserLeaveEventMessage {
+  type: "leave_event";
+  payload: Record<string, never>; // empty payload
 }

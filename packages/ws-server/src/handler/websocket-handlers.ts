@@ -126,7 +126,7 @@ function handleShareLocationEvent(
     return;
   }
 
-  const { latitude, longitude, timestamp } = data.payload;
+  const { latitude, longitude, timestamp, username } = data.payload;
 
   // broadcast location update to other users in the same event
   if (ws.eventId && ws.userId) {
@@ -136,6 +136,7 @@ function handleShareLocationEvent(
         type: "location_update",
         payload: {
           userId: ws.userId,
+          username,
           latitude,
           longitude,
           timestamp,
