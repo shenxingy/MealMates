@@ -11,7 +11,12 @@ import * as SecureStore from "expo-secure-store";
 import type { DukeUserInfo } from "~/config";
 import { DUKE_AUTH_CONFIG } from "~/config";
 import { trpcClient } from "~/utils/api";
-import { clearStoredUserId, clearStoredUsername, setStoredUserId, setStoredUsername } from "~/utils/user-storage";
+import {
+  clearStoredUserId,
+  clearStoredUsername,
+  setStoredUserId,
+  setStoredUsername,
+} from "~/utils/user-storage";
 
 const TOKEN_KEY = "duke_access_token";
 const REFRESH_TOKEN_KEY = "duke_refresh_token";
@@ -270,7 +275,7 @@ export function useDukeAuth() {
           "[DUKE AUTH] Tokens stored in database for server-side access",
         );
         await setStoredUserId(result.user.id);
-        await setStoredUsername(result.user.name)
+        await setStoredUsername(result.user.name);
       } else if (fallbackId) {
         await setStoredUserId(fallbackId);
         await setStoredUsername("Unknown User");
