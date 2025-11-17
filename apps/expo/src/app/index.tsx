@@ -63,15 +63,13 @@ export default function Index() {
 
           <View style={styles.heroCard}>
             <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=80",
-              }}
+              source={require("../../assets/mealmates.png")}
               style={styles.heroImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
 
-          <View style={styles.actionCard}>
+          <View style={styles.actionSection}>
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#0F172A" />
@@ -81,11 +79,6 @@ export default function Index() {
               </View>
             ) : (
               <>
-                <Text style={styles.subtitle}>Sign in with your Duke NetID</Text>
-                <Text style={styles.helperText}>
-                  One secure Duke login powers both registration and return
-                  visits. No extra passwords, ever.
-                </Text>
                 <DukeRegisterButton
                   label="Continue with Duke"
                   onPress={handleDukeAuth}
@@ -136,29 +129,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 220,
   },
-  actionCard: {
+  actionSection: {
     marginTop: 32,
-    borderRadius: 28,
-    paddingHorizontal: 24,
-    paddingVertical: 28,
-    backgroundColor: "rgba(255,255,255,0.92)",
-    shadowColor: "#1F2937",
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.14,
-    shadowRadius: 30,
-    elevation: 12,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#0F172A",
-    letterSpacing: 0.2,
-  },
-  helperText: {
-    marginTop: 12,
-    fontSize: 15,
-    color: "#475569",
-    lineHeight: 22,
   },
   dukeButton: {
     marginTop: 28,
