@@ -3,19 +3,20 @@ import { useState } from 'react';
 import { View, Image, Text, StyleSheet, ImageSize, Pressable } from 'react-native'
 import Like from './Like';
 import { likePost } from '~/utils/api';
+import { Post } from '~/definition';
 
-export interface PostProps {
-  id: number;
-  title: string;
-  content: string;
-  image: string;
-  user: string;
-  time: string;
-  likes: number;
-  liked: boolean;
-}
+// export interface PostProps {
+//   id: number;
+//   title: string;
+//   content: string;
+//   image: string;
+//   user: string;
+//   time: string;
+//   likes: number;
+//   liked: boolean;
+// }
 
-export default function PostItem(props: PostProps) {
+export default function PostItem({ props, onRefresh }: { props: Post, onRefresh: () => Promise<void> }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const getSize = async () => {
@@ -30,6 +31,7 @@ export default function PostItem(props: PostProps) {
   const like = async () => {
     const res = await likePost(props.id, !props.liked);
     console.log(res);
+    onRefresh();
   }
   getSize();
   return (

@@ -1,16 +1,16 @@
 import { Text, Pressable, StyleSheet, Button } from "react-native";
 import { useEffect, useState } from "react";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import PostItem, { PostProps } from "../../../../components/postpage/PostItem";
 import PostList from "../../../../components/postpage/PostList";
+import { Post } from '~/definition';
 import { fetchPostList } from "~/utils/api";
 import { useRouter } from "expo-router";
 
 export default function PostPage() {
   const header = "Posts";
   const baseColor = "255,178,0";
-  const [posts, setPosts] = useState<PostProps[]>([]);
-  const refresh = async () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const onRefresh = async () => {
     const data = await fetchPostList();
     // console.log(data);
     setPosts(data);
@@ -20,7 +20,7 @@ export default function PostPage() {
     router.push({ pathname: '/(App)/(Posts)/create' });
   }
   useEffect(() => {
-    refresh();
+    onRefresh();
   }, []);
 
   return (
@@ -29,12 +29,13 @@ export default function PostPage() {
         <Pressable onPress={create}>
           <Text>New Post</Text>
         </Pressable>
-        <Pressable onPress={refresh}>
+        <Pressable onPress={onRefresh}>
           <Text>Refresh</Text>
         </Pressable>
         <PostList
           data={posts}
           numColumns={2}
+          onRefresh={onRefresh}
         />
       </AnimatedPageFrame>
     </>

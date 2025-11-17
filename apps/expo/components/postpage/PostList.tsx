@@ -1,26 +1,13 @@
-import PostItem, { PostProps } from "./PostItem";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View, Image } from "react-native";
+import PostItem from "./PostItem";
+import { Post } from '~/definition';
 
-const renderPost = (listItem : any) => {
-  const post: PostProps = listItem.item;
-  return(
-    <PostItem
-      id={post.id}
-      title={post.title}
-      content={post.content}
-      image={post.image}
-      user={post.user}
-      time={post.time}
-      likes={post.likes}
-      liked={post.liked}
-    />
-  );
-}
 
-const getLists = async (data: PostProps[], numColumns: number) => {
+
+const getLists = async (data: Post[], numColumns: number) => {
   if (data.length === 0 || numColumns === 0) return [];
-  let lists: PostProps[][] = []
+  let lists: Post[][] = []
   const heights: number[] = [];
   for (let i = 0; i < numColumns; i++) {
     lists.push([]);
@@ -37,7 +24,7 @@ const getLists = async (data: PostProps[], numColumns: number) => {
         listIdx = i;
       }
     }
-    const post: PostProps | undefined = data[idx++];
+    const post: Post | undefined = data[idx++];
     const list = lists[listIdx];
     if (!post || !list) break;
     list.push(post);
@@ -48,14 +35,20 @@ const getLists = async (data: PostProps[], numColumns: number) => {
   return lists;
 }
 
-export default function PostList({data, numColumns} : { data: PostProps[], numColumns: number }) {
-  const [lists, setLists] = useState<PostProps[][]>([]);
+export default function PostList({data, numColumns, onRefresh} :
+  { data: Post[], numColumns: number, onRefresh: () => Promise<void> }
+) {
+  const [lists, setLists] = useState<Post[][]>([]);
   useEffect(() => {
-    const func = async (data: PostProps[], numColumns: number) => {
+    const func = async (data: Post[], numColumns: number) => {
       setLists(await getLists(data, numColumns))
     }
     func(data, numColumns);
   }, [data, numColumns]);
+  const renderPost = (listItem : any) => {
+  const post: Post = listItem.item;
+  return (<PostItem props={post} onRefresh={onRefresh} />);
+  }
   return (
     <View style={ [styles.container] } >
       { lists.length > 0 && lists.map((list, idx) => (

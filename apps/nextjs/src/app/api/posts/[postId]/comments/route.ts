@@ -44,8 +44,8 @@ export async function POST(req: Request) {
     content: formData.get("content") as string,
     image: imgUrl,
     user: formData.get("user") as string,
-    likes: Number(formData.get("title") as string),
-    liked: formData.get("title") as string === "true"
+    likes: Number(formData.get("likes") as string),
+    liked: formData.get("liked") as string === "true"
   }
   PostData.addComment(Number(formData.get("post") as string), newComment);
   return NextResponse.json({

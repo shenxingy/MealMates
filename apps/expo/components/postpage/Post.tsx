@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { View, Text, Image, ImageSize, Pressable, StyleSheet } from "react-native";
 import Like from './Like';
-import { PostProps } from './PostItem';
+import { Post } from '~/definition';
 import { useRouter } from 'expo-router';
 import { likePost } from "~/utils/api";
 
-export default function Post(props: PostProps) {
+export default function PostDetail({ props, onRefresh }: { props: Post, onRefresh: () => Promise<void> }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const getSize = async () => {
@@ -32,6 +32,7 @@ export default function Post(props: PostProps) {
   const like = async () => {
     const res = await likePost(props.id, !props.liked);
     console.log(res);
+    onRefresh();
   }
   getSize();
   return (
