@@ -4,13 +4,11 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -22,7 +20,7 @@ import {
   getStoredUserId,
   setStoredUserId as persistUserId,
 } from "~/utils/user-storage";
-import LinearGradientBackground from "../../../../components/background/LinearGradientBackground";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import {
   ProfileHeader,
   ProfileInfoCard,
@@ -38,6 +36,8 @@ const getNetIdFromSub = (sub: string) => {
 };
 const DEFAULT_AVATAR_EMOJI = "🙂";
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+const CJK_REGEX = /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
+const MAX_VISUAL_NAME_LENGTH = 15;
 const isSingleEmoji = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -47,12 +47,50 @@ const isSingleEmoji = (value: string) => {
   return graphemes.length === 1 && EMOJI_REGEX.test(trimmed);
 };
 
+const isAsciiCharacter = (char: string) => {
+  const codePoint = char.codePointAt(0);
+  return codePoint !== undefined && codePoint <= 0x7f;
+};
+
+const getVisualNameLength = (value: string) => {
+  let length = 0;
+  for (const char of value) {
+    if (isAsciiCharacter(char)) {
+      length += 1;
+    } else if (CJK_REGEX.test(char)) {
+      length += 1.363;
+    } else {
+      length += 1.1;
+    }
+  }
+  return length;
+};
+
+export const validateDisplayName = (name: string) => {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    return { valid: false, error: "Display name cannot be empty." };
+  }
+
+  if (EMOJI_REGEX.test(trimmed)) {
+    return { valid: false, error: "Emoji characters are not supported here." };
+  }
+
+  if (getVisualNameLength(trimmed) > MAX_VISUAL_NAME_LENGTH) {
+    return { valid: false, error: "Display name is too long for the header." };
+  }
+
+  return { valid: true };
+};
+
 export default function YouPage() {
   const router = useRouter();
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
   const [isLoadingUserId, setIsLoadingUserId] = useState(true);
   const [isEditVisible, setIsEditVisible] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [nameLengthError, setNameLengthError] = useState<string | null>(null);
   const [emojiInput, setEmojiInput] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
   const {
@@ -125,6 +163,12 @@ export default function YouPage() {
       trpcClient.user.updateProfileById.mutate(input),
   });
 
+  const handleNameInputChange = (value: string) => {
+    setNameInput(value);
+    const validation = validateDisplayName(value);
+    setNameLengthError(validation.valid ? null : validation.error ?? null);
+  };
+
   const handleEditProfile = () => {
     if (!userProfile || !storedUserId) {
       Alert.alert(
@@ -134,7 +178,7 @@ export default function YouPage() {
       return;
     }
 
-    setNameInput(userProfile.name);
+    handleNameInputChange(userProfile.name);
     setEmojiInput(userProfile.image ?? "");
     setModalError(null);
     setIsEditVisible(true);
@@ -142,6 +186,12 @@ export default function YouPage() {
 
   const handleOpenSettings = () => {
     // TODO: Navigate to settings page
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditVisible(false);
+    setNameLengthError(null);
+    setModalError(null);
   };
 
   const handleSaveProfile = async () => {
@@ -152,8 +202,12 @@ export default function YouPage() {
 
     const trimmedName = nameInput.trim();
 
-    if (!trimmedName) {
-      setModalError("Please provide a display name.");
+    const validation = validateDisplayName(trimmedName);
+    if (!validation.valid) {
+      const errorMessage =
+        validation.error ?? "Please enter a shorter display name.";
+      setNameLengthError(errorMessage);
+      setModalError(errorMessage);
       return;
     }
 
@@ -174,7 +228,7 @@ export default function YouPage() {
         return;
       }
       await refetchProfile();
-      setIsEditVisible(false);
+      handleCloseEditModal();
     } catch (error: unknown) {
       console.error("[YOU PAGE] Failed to update profile:", error);
       setModalError("Unable to save your changes. Please try again.");
@@ -185,7 +239,7 @@ export default function YouPage() {
     try {
       await logout();
       setStoredUserIdState(null);
-      setIsEditVisible(false);
+      handleCloseEditModal();
       await loadUserId();
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
@@ -203,14 +257,13 @@ export default function YouPage() {
   const greetingName = userProfile?.name ?? "Meal Mate";
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
   const profileAvatar = userProfile?.image ?? DEFAULT_AVATAR_EMOJI;
+  const header = "Profile";
+  const baseColor = "195,227,255";
 
   return (
-    <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+    <>
+      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
+        <View style={styles.content}>
           {isFetchingProfile ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0F172A" />
@@ -285,90 +338,94 @@ export default function YouPage() {
           </Pressable>
 
           <View style={styles.bottomSpacer} />
-        </ScrollView>
+        </View>
+      </AnimatedPageFrame>
 
-        <Modal
-          transparent
-          visible={isEditVisible}
-          animationType="slide"
-          onRequestClose={() => setIsEditVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TextInput
-                style={styles.textInput}
-                value={nameInput}
-                placeholder="Display name"
-                onChangeText={setNameInput}
-              />
-              <TextInput
-                style={styles.textInput}
-                value={emojiInput}
-                placeholder="Favorite emoji (e.g., 🍣)"
-                onChangeText={setEmojiInput}
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={4}
-              />
-              <View style={styles.emojiPreviewRow}>
-                <Text style={styles.previewLabel}>Preview</Text>
-                <View style={styles.previewCircle}>
-                  <Text style={styles.previewEmoji}>
-                    {emojiInput.trim() || DEFAULT_AVATAR_EMOJI}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.emojiHint}>
-                Enter a single emoji to use as your avatar. Leave blank to use
-                your initials.
-              </Text>
-              {modalError ? (
-                <Text style={styles.modalError}>{modalError}</Text>
-              ) : null}
-              <View style={styles.modalActions}>
-                <Pressable
-                  style={[styles.button, styles.secondaryButton]}
-                  onPress={() => setIsEditVisible(false)}
-                  disabled={updateProfileMutation.isPending}
-                >
-                  <Text style={styles.secondaryButtonText}>Cancel</Text>
-                </Pressable>
-                <Pressable
-                  style={[
-                    styles.button,
-                    styles.primaryButton,
-                    (!nameInput.trim() || updateProfileMutation.isPending) &&
-                      styles.disabledButton,
-                  ]}
-                  onPress={handleSaveProfile}
-                  disabled={
-                    !nameInput.trim() || updateProfileMutation.isPending
-                  }
-                >
-                  {updateProfileMutation.isPending ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>Save</Text>
-                  )}
-                </Pressable>
+      <Modal
+        transparent
+        visible={isEditVisible}
+        animationType="slide"
+        onRequestClose={handleCloseEditModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <TextInput
+              style={styles.textInput}
+              value={nameInput}
+              placeholder="Display name"
+              onChangeText={handleNameInputChange}
+            />
+            {nameLengthError ? (
+              <Text style={styles.nameErrorText}>{nameLengthError}</Text>
+            ) : null}
+            <TextInput
+              style={styles.textInput}
+              value={emojiInput}
+              placeholder="Favorite emoji (e.g., 🍣)"
+              onChangeText={setEmojiInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={4}
+            />
+            <View style={styles.emojiPreviewRow}>
+              <Text style={styles.previewLabel}>Preview</Text>
+              <View style={styles.previewCircle}>
+                <Text style={styles.previewEmoji}>
+                  {emojiInput.trim() || DEFAULT_AVATAR_EMOJI}
+                </Text>
               </View>
             </View>
+            <Text style={styles.emojiHint}>
+              Enter a single emoji to use as your avatar. Leave blank to use
+              your initials.
+            </Text>
+            {modalError ? (
+              <Text style={styles.modalError}>{modalError}</Text>
+            ) : null}
+            <View style={styles.modalActions}>
+              <Pressable
+                style={[styles.button, styles.secondaryButton]}
+                onPress={handleCloseEditModal}
+                disabled={updateProfileMutation.isPending}
+              >
+                <Text style={styles.secondaryButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.button,
+                  styles.primaryButton,
+                  (!nameInput.trim() ||
+                    updateProfileMutation.isPending ||
+                    !!nameLengthError) &&
+                    styles.disabledButton,
+                ]}
+                onPress={handleSaveProfile}
+                disabled={
+                  !nameInput.trim() ||
+                  updateProfileMutation.isPending ||
+                  !!nameLengthError
+                }
+              >
+                {updateProfileMutation.isPending ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Save</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
-        </Modal>
-      </SafeAreaView>
-    </LinearGradientBackground>
+        </View>
+      </Modal>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 36,
+  content: {
+    paddingHorizontal: 4,
+    paddingTop: 16,
+    gap: 24,
   },
   loadingContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -428,6 +485,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: "#111827",
+  },
+  nameErrorText: {
+    marginTop: 4,
+    marginBottom: 4,
+    color: "#B91C1C",
+    fontSize: 14,
   },
   emojiPreviewRow: {
     flexDirection: "row",
