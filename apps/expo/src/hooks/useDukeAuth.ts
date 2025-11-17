@@ -8,10 +8,10 @@ import {
 } from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 
-import type { DukeUserInfo } from "../config/dukeAuth";
-import { DUKE_AUTH_CONFIG } from "../config/dukeAuth";
-import { trpcClient } from "../utils/api";
-import { clearStoredUserId, setStoredUserId } from "../utils/user-storage";
+import type { DukeUserInfo } from "~/config";
+import { DUKE_AUTH_CONFIG } from "~/config";
+import { trpcClient } from "~/utils/api";
+import { clearStoredUserId, clearStoredUsername, setStoredUserId, setStoredUsername } from "~/utils/user-storage";
 
 const TOKEN_KEY = "duke_access_token";
 const REFRESH_TOKEN_KEY = "duke_refresh_token";
@@ -260,8 +260,10 @@ export function useDukeAuth() {
           "[DUKE AUTH] Tokens stored in database for server-side access",
         );
         await setStoredUserId(result.user.id);
+        await setStoredUsername(result.user.name)
       } else if (fallbackId) {
         await setStoredUserId(fallbackId);
+        await setStoredUsername("Unknown User");
       }
     } catch (err: unknown) {
       console.error("[DUKE AUTH] Error syncing user to database:", err);
@@ -270,6 +272,7 @@ export function useDukeAuth() {
         dukeUserInfo.dukeNetID ?? extractNetIdFromSub(dukeUserInfo.sub);
       if (fallbackId) {
         await setStoredUserId(fallbackId);
+        await setStoredUsername("Unknown User");
       }
     }
   };
@@ -378,6 +381,7 @@ export function useDukeAuth() {
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
       await clearStoredUserId();
+      await clearStoredUsername();
     } catch (err: unknown) {
       console.error("Error during logout:", err);
       const errorMessage =
