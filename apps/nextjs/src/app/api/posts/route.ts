@@ -37,12 +37,12 @@ export async function POST(req: Request) {
     image: data.publicUrl,
     user: formData.get("user") as string,
     time: new Date(formData.get("user") as string),
-    likes: Number(formData.get("title") as string),
-    liked: formData.get("title") as string === "true"
+    likes: Number(formData.get("likes") as string),
+    liked: formData.get("liked") as string === "true"
   }
-  PostData.addPost(newPost);
+  const res = PostData.addPost(newPost);
   return NextResponse.json({
-    message: "Success",
+    message: res ? "Success" : "Failure",
   });
 }
 

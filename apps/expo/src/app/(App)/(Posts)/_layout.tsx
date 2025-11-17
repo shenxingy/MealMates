@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
+import { createContext } from "react";
 
 export default function PostLayout() {
+  // const postContext = createContext({ onRefresh: () => {} });
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>

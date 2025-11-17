@@ -2,17 +2,20 @@ import { Image, ImageSize, Pressable, StyleSheet, Text, View } from "react-nativ
 import Like from "./Like";
 import { useState } from "react";
 import { likeComment } from "~/utils/api";
+import { PostComment } from "~/definition";
 
-export interface CommentProps {
-  id: number;
-  content: string;
-  image: string | undefined;
-  user: string;
-  likes: number;
-  liked: boolean;
-}
+// export interface CommentProps {
+//   id: number;
+//   content: string;
+//   image: string | undefined;
+//   user: string;
+//   likes: number;
+//   liked: boolean;
+// }
 
-export default function Comment({ postId, props }: { postId: number, props: CommentProps }) {
+export default function Comment({ postId, props, onRefresh }:
+  { postId: number, props: PostComment, onRefresh: () => void }
+) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const getSize = async () => {
@@ -24,6 +27,7 @@ export default function Comment({ postId, props }: { postId: number, props: Comm
   const like = async () => {
     const res = await likeComment(postId, props.id, !props.liked);
     console.log(res);
+    onRefresh();
   }
   getSize();
   return (

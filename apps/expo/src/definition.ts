@@ -26,6 +26,7 @@ export interface Post {
 }
 
 export interface PostComment {
+  postId: number,
   id: number,
   content: string;
   image: string | undefined;

@@ -89,6 +89,7 @@ export class PostData {
     if (!PostData.postCommentsMockData[idx]) {
       return false;
     }
+    comment.id = PostData.postCommentsMockData[idx].length;
     PostData.postCommentsMockData[idx].push(comment);
     return true;
   }
