@@ -118,12 +118,6 @@ const styles = StyleSheet.create({
     marginTop: 28,
     borderRadius: 32,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.65)",
-    shadowColor: "#1F2937",
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.18,
-    shadowRadius: 32,
-    elevation: 14,
   },
   heroImage: {
     width: "100%",
