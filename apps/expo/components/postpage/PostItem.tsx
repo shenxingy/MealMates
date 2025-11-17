@@ -2,6 +2,7 @@ import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Image, Text, StyleSheet, ImageSize, Pressable } from 'react-native'
 import Like from './Like';
+import { likePost } from '~/utils/api';
 
 export interface PostProps {
   id: number;
@@ -26,6 +27,10 @@ export default function PostItem(props: PostProps) {
   const seeDetails = () => {
     router.push({ pathname: '/(App)/(Posts)/detail', params: {id: props.id} });
   }
+  const like = async () => {
+    const res = await likePost(props.id, !props.liked);
+    console.log(res);
+  }
   getSize();
   return (
     <Pressable
@@ -39,14 +44,9 @@ export default function PostItem(props: PostProps) {
       <Text style={styles.title} >{props.title}</Text>
       <View style={[styles.bottom]} >
         <Text style={styles.grayText} >{props.user}</Text>
-        {/* <View style={styles.like} >
-          { props.liked?
-            (<Image source={require('../../assets/filled-heart.png')} />) :
-            (<Image source={require('../../assets/empty-heart.png')} />)
-          }
-          <Text> {props.likes}</Text>
-        </View> */}
-        <Like likes={props.likes} liked={props.liked} border={true} />
+        <Pressable onPress={like}>
+          <Like likes={props.likes} liked={props.liked} border={true} />
+        </Pressable>
       </View>
     </Pressable>
   )

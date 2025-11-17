@@ -18,10 +18,11 @@ export default function PostDetails() {
   const [post, setPost] = useState<PostProps | undefined>(undefined);
   const [comments, setComments] = useState<CommentProps[] | undefined>(undefined);
   const refresh = async () => {
-    // const data = await fetchPost(idNum);
-    // console.log(data);
     setPost(await fetchPost(idNum));
     setComments(await fetchPostComments(idNum));
+  }
+  const comment = () => {
+    router.push({ pathname: '/(App)/(Posts)/comment', params: {postId: id}});
   }
   const router = useRouter();
   useEffect(() => {
@@ -30,7 +31,13 @@ export default function PostDetails() {
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
       <Pressable onPress={router.back} >
-        <Back />
+        <Back text="< Posts" />
+      </Pressable>
+      <Pressable onPress={refresh} >
+        <Text>refresh</Text>
+      </Pressable>
+      <Pressable onPress={comment} >
+        <Text>comment</Text>
       </Pressable>
       { post?
         (<Post
@@ -48,14 +55,11 @@ export default function PostDetails() {
         )
       }
       <View style={ styles.line }></View>
-      { comments && comments.map((comment, idx) => (
+      { post && comments && comments.map((comment, idx) => (
         <Comment
           key={idx}
-          content={comment.content}
-          image={comment.image}
-          user={comment.user}
-          likes={comment.likes}
-          liked={comment.liked}
+          postId={post.id}
+          props={comment}
         />
       ))}
     </AnimatedPageFrame>

@@ -1,8 +1,8 @@
 import { Text, StyleSheet } from 'react-native';
 
-export default function Back() {
+export default function Back({ text }: { text: string }) {
   return (
-    <Text style={styles.back} >{'<'} Posts</Text>
+    <Text style={styles.back} >{ text }</Text>
   )
 }
 

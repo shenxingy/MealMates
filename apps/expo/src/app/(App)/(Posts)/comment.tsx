@@ -1,15 +1,16 @@
 import { View, Text, TextInput, Image, Pressable, StyleSheet, ImageSize, Alert, Platform } from "react-native";
 import { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 // import { createPost } from "~/utils/api";
 import Back from "../../../../components/postpage/Back";
+import { getBaseUrl } from "~/utils/base-url";
 
-export default function Create() {
-  const header = "New Post";
+export default function Comment() {
+  const header = "Comment";
   const baseColor = "255,178,0";
-  const [title, setTitle] = useState<string>("");
+  const { postId } = useLocalSearchParams();
   const [content, setContent] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [width, setWidth] = useState<number>(0);
@@ -20,6 +21,10 @@ export default function Create() {
     const size: ImageSize = await Image.getSize(image);
     setWidth(size.width);
     setHeight(size.height);
+  }
+  const changeText = (content: string) => {
+    setContent(content);
+    setAlert(undefined);
   }
   const pick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -32,28 +37,29 @@ export default function Create() {
       setAlert(undefined);
     }
   }
-  const post = async () => {
-    if (image.length === 0) {
-      setAlert("Please upload an image");
+  const comment = async () => {
+    if (image.length === 0 && content.length === 0) {
+      setAlert("Please add comment content or upload an image");
       return;
     }
     const formData = new FormData();
-    const uriParts = image.split(".");
-    const fileType = uriParts[uriParts.length - 1];
-    const imageType = "image/" + fileType;
-    formData.append("title", title);
+    formData.append("post", postId);
     formData.append("content", content);
-    formData.append("image", {
-      uri: image,
-      name: "img", // any name is fine
-      type: imageType,
-    } as any);
     formData.append("user", "current user");
-    formData.append("time", new Date().toString());
     formData.append("likes", 0);
     formData.append("liked", false);
-    const host: string = Platform.OS === "android"? "10.0.2.2" : "localhost"
-    const res = await fetch("http://" + host + ":3000/api/posts", {
+    if (image.length !== 0) {
+      const uriParts = image.split(".");
+      const fileType = uriParts[uriParts.length - 1];
+      const imageType = "image/" + fileType;
+      formData.append("image", {
+        uri: image,
+        name: "img", // any name is fine
+        type: imageType,
+      } as any);
+    }
+    const host: string = getBaseUrl();
+    const res = await fetch(host + "/posts/" + postId + "/comments", {
       method: "POST",
       headers: { "Content-Type": "multipart/form-data", },
       body: formData,
@@ -64,7 +70,7 @@ export default function Create() {
       router.back();
     }
     else {
-      setAlert("post failed");
+      setAlert("comment failed");
     }
   }
 
@@ -72,12 +78,10 @@ export default function Create() {
     <>
       <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
         <Pressable onPress={router.back} >
-          <Back text="< Posts" />
+          <Back text="< Detail" />
         </Pressable>
-        <Text>Post Title</Text>
-        <TextInput value={title} onChangeText={title => setTitle(title)} />
-        <Text>Post Content</Text>
-        <TextInput value={content} onChangeText={content => setContent(content)} />
+        <Text>Comment</Text>
+        <TextInput value={content} onChangeText={changeText} />
         <Pressable onPress={pick}>
           <Text>Choose An Image</Text>
         </Pressable>
@@ -86,8 +90,8 @@ export default function Create() {
           style={[ styles.image, {aspectRatio: width / height} ]}
         />}
         { alert && <Text>{alert}</Text> }
-        <Pressable onPress={post}>
-          <Text>Post</Text>
+        <Pressable onPress={comment}>
+          <Text>Send</Text>
         </Pressable>
       </AnimatedPageFrame>
     </>

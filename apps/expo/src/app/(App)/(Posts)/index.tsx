@@ -12,7 +12,8 @@ export default function PostPage() {
   const [posts, setPosts] = useState<PostProps[]>([]);
   const refresh = async () => {
     const data = await fetchPostList();
-    setPosts(await fetchPostList());
+    // console.log(data);
+    setPosts(data);
   }
   const router = useRouter();
   const create = () => {

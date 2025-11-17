@@ -3,6 +3,7 @@ import { View, Text, Image, ImageSize, Pressable, StyleSheet } from "react-nativ
 import Like from './Like';
 import { PostProps } from './PostItem';
 import { useRouter } from 'expo-router';
+import { likePost } from "~/utils/api";
 
 export default function Post(props: PostProps) {
   const [width, setWidth] = useState<number>(0);
@@ -16,9 +17,6 @@ export default function Post(props: PostProps) {
   const timePassed = () => {
     const date1: Date = new Date();
     const date2: Date = new Date(props.time);
-    console.log(date1);
-    console.log(props.time);
-    // return 'time passed';
     const year: number = date1.getFullYear() - date2.getFullYear();
     if (year > 0) return year > 1 ? year + ' years ago' : '1 year ago';
     const month: number = date1.getMonth() - date2.getMonth();
@@ -30,6 +28,10 @@ export default function Post(props: PostProps) {
     const min: number = date1.getMinutes() - date2.getMinutes();
     if (min > 0) return min > 1 ? min + ' mins ago' : '1 min ago';
     return 'just now';
+  }
+  const like = async () => {
+    const res = await likePost(props.id, !props.liked);
+    console.log(res);
   }
   getSize();
   return (
@@ -46,7 +48,9 @@ export default function Post(props: PostProps) {
             <Text style={ [styles.grayText, styles.bond] } >{props.user}</Text>
             <Text style={styles.grayText} >{ timePassed() }</Text>
           </View>
-          <Like likes={props.likes} liked={props.liked} border={true} />
+          <Pressable onPress={like}>
+            <Like likes={props.likes} liked={props.liked} border={true} />
+          </Pressable>
         </View>
       </View>
     </View>
