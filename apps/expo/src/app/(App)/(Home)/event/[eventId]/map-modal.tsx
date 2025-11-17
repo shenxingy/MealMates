@@ -7,7 +7,7 @@ import type {
   GoogleMapsViewType,
 } from "expo-maps/build/google/GoogleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Linking, Platform, StyleSheet } from "react-native";
 import * as Location from "expo-location";
 import {
@@ -16,24 +16,29 @@ import {
   GoogleMaps,
   requestPermissionsAsync,
 } from "expo-maps";
-import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { useApiSocket } from "~/hooks/useApiSocket";
 import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
+import { getStoredUserId } from "~/utils/user-storage";
+import { excludingPointsOfInterest } from "../../../../../../components/eventpage/MiniMap";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
+import type { LocationUpdatePayload } from "~/definition";
 
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const _eventId = params.eventId as string;
+  const [userId, setUserId] = useState<string>("");
+  const eventId = params.eventId as string;
   const shared = params.shared === "true";
   const meetPoint = params.meetPoint as string;
   const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
   const meetPointLongitude = parseFloat(params.meetPointLongitude as string);
-  const meetPointCoord: Coordinates = {
+  const meetPointCoord: Coordinates = useMemo(() => ({
     latitude: meetPointLatitude,
     longitude: meetPointLongitude,
-  };
+  }), [meetPointLatitude, meetPointLongitude]);
+
   const restaurantName = params.restaurantName as string;
   const restaurantLatitude = params.restaurantLatitude
     ? parseFloat(params.restaurantLatitude as string)
@@ -41,42 +46,134 @@ export default function MapModalPage() {
   const restaurantLongitude = params.restaurantLongitude
     ? parseFloat(params.restaurantLongitude as string)
     : null;
-  const restaurantCoord: Coordinates | null =
+  const restaurantCoord: Coordinates | null = useMemo(() =>
     restaurantLatitude !== null && restaurantLongitude !== null
       ? {
           latitude: restaurantLatitude,
           longitude: restaurantLongitude,
         }
-      : null;
+      : null,
+    [restaurantLatitude, restaurantLongitude]
+  );
 
-  const appleMarkerList: AppleMapsMarker[] = [
-    {
+  // get userId from storage
+  useEffect(() => {
+    const loadUserId = async () => {
+      const storedId = await getStoredUserId();
+      if (storedId) {
+        setUserId(storedId);
+      }
+    };
+    void loadUserId();
+  }, []);
+
+  // State to track user locations from WebSocket
+  const [userLocations, setUserLocations] = useState<
+    Map<string, LocationUpdatePayload>
+  >(new Map());
+
+  // WebSocket
+  const { shareLocation, leaveEvent, isConnected } = useApiSocket({
+    userId: userId,
+    eventId: eventId,
+    enabled: shared,
+    handlers: {
+      onJoinSuccess: (payload) => {
+        console.log("[MapModal] Successfully joined event:", payload);
+      },
+      onLocationUpdate: (payload) => {
+        console.log("[MapModal] Received location update:", payload);
+        if (payload.userId === userId) {
+          return;
+        }
+
+        // Update user location
+        setUserLocations((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(payload.userId, payload);
+          return newMap;
+        });
+      },
+      onUserLeft: (payload) => {
+        console.log("[MapModal] User left:", payload);
+
+        // Remove user location marker
+        setUserLocations((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(payload.userId);
+          return newMap;
+        });
+      },
+      onError: (payload) => {
+        console.error("[MapModal] WebSocket error:", payload);
+      },
+    },
+  });
+
+  // compute marker lists
+  const appleMarkerList = useMemo(() => {
+    const markers: AppleMapsMarker[] = [];
+    markers.push({
       coordinates: meetPointCoord,
       title: meetPoint,
-    },
-    ...(restaurantCoord
-      ? [
-          {
-            coordinates: restaurantCoord,
-            title: restaurantName,
-          },
-        ]
-      : []),
-  ];
-  const googleMarkerList: GoogleMapsMarker[] = [
-    {
+      systemImage: "flag.fill",
+      id: "meet-point",
+    });
+    if (restaurantCoord) {
+      markers.push({
+        coordinates: restaurantCoord,
+        title: restaurantName,
+        systemImage: "fork.knife",
+        id: "restaurant",
+      });
+    }
+
+    // Add user location markers
+    userLocations.forEach((location, uid) => {
+      markers.push({
+        coordinates: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+        title: `User ${uid.slice(0, 8)}`, // Show first 8 chars of userId
+        systemImage: "person.fill",
+        id: `user-${uid}`,
+      });
+    });
+
+    return markers;
+  }, [meetPoint, meetPointCoord, restaurantCoord, restaurantName, userLocations]);
+
+  const googleMarkerList = useMemo(() => {
+    const markers: GoogleMapsMarker[] = [];
+
+    // Add meet point marker
+    markers.push({
       coordinates: meetPointCoord,
       title: meetPoint,
-    },
-    ...(restaurantCoord
-      ? [
-          {
-            coordinates: restaurantCoord,
-            title: restaurantName,
-          },
-        ]
-      : []),
-  ];
+    });
+
+    // Add restaurant marker if available
+    if (restaurantCoord) {
+      markers.push({
+        coordinates: restaurantCoord,
+        title: restaurantName,
+      });
+    }
+
+    // Add user location markers from WebSocket
+    userLocations.forEach((location, uid) => {
+      markers.push({
+        coordinates: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+        title: `User ${uid.slice(0, 8)}`,
+      });
+    });
+
+    return markers;
+  }, [meetPoint, meetPointCoord, restaurantCoord, restaurantName, userLocations]);
 
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =
@@ -84,9 +181,22 @@ export default function MapModalPage() {
   const [meetPointView, setMeetPointView] = useState(0);
   const [restaurantView, setRestaurantView] = useState(0);
 
-  console.log("Map Modal Params:", params);
+  // console.log("Map Modal Params:", params);
+
+  // close websocket when unmounting
+  useEffect(() => {
+    return () => {
+      if (shared && isConnected) {
+        console.log("[MapModal] Component unmounting, leaving event");
+        leaveEvent();
+      }
+    };
+  }, [shared, isConnected, leaveEvent]);
 
   const handleDismiss = () => {
+    if (shared && isConnected) {
+      leaveEvent();
+    }
     router.back();
   };
 
@@ -111,19 +221,14 @@ export default function MapModalPage() {
     );
   };
 
+  // Request location permission
   useEffect(() => {
-    const requestPermissionAndLocation = async () => {
-      const getCurrentLocation = async () => {
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        setCurrentLocation(currentLocation);
-      };
-
+    const requestPermission = async () => {
       const status = await getPermissionsAsync();
       console.log("Location permission status:", status);
 
       if (status.granted) {
         setLocationPerm(true);
-        await getCurrentLocation();
         return;
       }
       if (!status.canAskAgain) {
@@ -143,12 +248,54 @@ export default function MapModalPage() {
           alartLocationPerm();
         }
       }
-      if (newStatus.granted) {
-        await getCurrentLocation();
+    };
+    void requestPermission();
+  }, [shared]);
+
+  // Update location every 30 seconds when permission is granted
+  // If sharing is enabled and connected, also share the location
+  useEffect(() => {
+    if (!locationPerm) {
+      return;
+    }
+
+    const updateLocation = async () => {
+      try {
+        const newLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced, // Balance between accuracy and battery
+        });
+        setCurrentLocation(newLocation);
+        console.log("[MapModal] Location updated:", {
+          latitude: newLocation.coords.latitude,
+          longitude: newLocation.coords.longitude,
+        });
+
+        // Share location if sharing is enabled and connected
+        if (shared && isConnected) {
+          shareLocation(
+            newLocation.coords.latitude,
+            newLocation.coords.longitude,
+          );
+          console.log("[MapModal] Location shared with event participants");
+        }
+      } catch (error) {
+        console.error("[MapModal] Failed to get location:", error);
       }
     };
-    void requestPermissionAndLocation();
-  }, [shared]);
+
+    // Get location immediately
+    void updateLocation();
+
+    // Set up interval to update location every 30 seconds
+    const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
+    const locationInterval = setInterval(() => {
+      void updateLocation();
+    }, LOCATION_UPDATE_INTERVAL);
+
+    return () => {
+      clearInterval(locationInterval);
+    };
+  }, [locationPerm, shared, isConnected, shareLocation]);
 
   const appleMap = useRef<AppleMapsViewType>(null);
   const googleMap = useRef<GoogleMapsViewType>(null);
@@ -365,60 +512,7 @@ export default function MapModalPage() {
           properties={{
             isMyLocationEnabled: locationPerm,
             pointsOfInterest: {
-              excluding: [
-                AppleMapPointOfInterestCategory.AIRPORT,
-                AppleMapPointOfInterestCategory.ATM,
-                AppleMapPointOfInterestCategory.AQUARIUM,
-                AppleMapPointOfInterestCategory.ANIMAL_SERVICE,
-                AppleMapPointOfInterestCategory.AUTOMOTIVE_REPAIR,
-                AppleMapPointOfInterestCategory.BANK,
-                AppleMapPointOfInterestCategory.BEAUTY,
-                AppleMapPointOfInterestCategory.BEACH,
-                AppleMapPointOfInterestCategory.BASEBALL,
-                AppleMapPointOfInterestCategory.BASKETBALL,
-                AppleMapPointOfInterestCategory.BOWLING,
-                AppleMapPointOfInterestCategory.CASTLE,
-                AppleMapPointOfInterestCategory.CAMPGROUND,
-                AppleMapPointOfInterestCategory.CAR_RENTAL,
-                AppleMapPointOfInterestCategory.DISTILLERY,
-                AppleMapPointOfInterestCategory.EV_CHARGER,
-                AppleMapPointOfInterestCategory.FISHING,
-                AppleMapPointOfInterestCategory.FAIRGROUND,
-                AppleMapPointOfInterestCategory.FORTRESS,
-                AppleMapPointOfInterestCategory.FIRE_STATION,
-                AppleMapPointOfInterestCategory.FITNESS_CENTER,
-                AppleMapPointOfInterestCategory.GOLF,
-                AppleMapPointOfInterestCategory.GAS_STATION,
-                AppleMapPointOfInterestCategory.GO_KART,
-                AppleMapPointOfInterestCategory.HIKING,
-                AppleMapPointOfInterestCategory.KAYAKING,
-                AppleMapPointOfInterestCategory.LAUNDRY,
-                AppleMapPointOfInterestCategory.MAILBOX,
-                AppleMapPointOfInterestCategory.MARINA,
-                AppleMapPointOfInterestCategory.MUSEUM,
-                AppleMapPointOfInterestCategory.NATIONAL_MONUMENT,
-                AppleMapPointOfInterestCategory.PARKING,
-                AppleMapPointOfInterestCategory.POLICE,
-                AppleMapPointOfInterestCategory.PHARMACY,
-                AppleMapPointOfInterestCategory.PLANETARIUM,
-                AppleMapPointOfInterestCategory.PUBLIC_TRANSPORT,
-                AppleMapPointOfInterestCategory.RESTROOM,
-                AppleMapPointOfInterestCategory.RV_PARK,
-                AppleMapPointOfInterestCategory.ROCK_CLIMBING,
-                AppleMapPointOfInterestCategory.SPA,
-                AppleMapPointOfInterestCategory.SKATING,
-                AppleMapPointOfInterestCategory.SOCCER,
-                AppleMapPointOfInterestCategory.SKIING,
-                AppleMapPointOfInterestCategory.SKATE_PARK,
-                AppleMapPointOfInterestCategory.STADIUM,
-                AppleMapPointOfInterestCategory.SURFING,
-                AppleMapPointOfInterestCategory.SWIMMING,
-                AppleMapPointOfInterestCategory.TENNIS,
-                AppleMapPointOfInterestCategory.THEATER,
-                AppleMapPointOfInterestCategory.VOLLEYBALL,
-                AppleMapPointOfInterestCategory.WINERY,
-                AppleMapPointOfInterestCategory.ZOO,
-              ],
+              excluding: excludingPointsOfInterest,
             },
           }}
           ref={appleMap}
