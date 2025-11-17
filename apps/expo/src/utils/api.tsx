@@ -130,9 +130,22 @@ export const fetchPost = async (id: number) => {
   return res.data.data;
 };
 
+export const likePost = async (id: number, like: boolean) => {
+  const data = { like: like };
+  const res = await api.put<ApiResponse<any>>("/posts/" + id, data);
+  return res.data.message;
+};
+
 export const fetchPostComments = async (id: number) => {
   const res = await api.get<ApiResponse<PostComment[]>>("/posts/" + id + "/comments");
   return res.data.data;
+};
+
+export const likeComment = async (postId: number, commentId: number, like: boolean) => {
+  const url: string = "/posts/" + postId + "/comments/" + commentId;
+  const data = { like: like };
+  const res = await api.put<ApiResponse<any>>(url, data);
+  return res.data.message;
 };
 
 // export const createPost = async (formData: FormData) => {

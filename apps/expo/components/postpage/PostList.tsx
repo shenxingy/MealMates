@@ -56,7 +56,6 @@ export default function PostList({data, numColumns} : { data: PostProps[], numCo
     }
     func(data, numColumns);
   }, [data, numColumns]);
-  console.log("lists length: " + lists.length);
   return (
     <View style={ [styles.container] } >
       { lists.length > 0 && lists.map((list, idx) => (

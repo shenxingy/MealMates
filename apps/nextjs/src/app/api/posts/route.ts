@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 // import { supabase } from "@mealmates/db/supabase-client";
 import { supabase } from "@mealmates/db/client";
-// import { postMockData } from "~/app/mock/mock";
+import { PostData } from "~/app/mock/PostData";
 import { Post } from "~/app/definition";
-
-export var postData: Post[] = [];
 
 export async function POST(req: Request) {
   const formData = await req.formData();
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
     .from("Post")
     .getPublicUrl(fileName);
   const newPost: Post = {
-    id: postData.length,
+    id: 0,
     title: formData.get("title") as string,
     content: formData.get("content") as string,
     image: data.publicUrl,
@@ -42,17 +40,20 @@ export async function POST(req: Request) {
     likes: Number(formData.get("title") as string),
     liked: formData.get("title") as string === "true"
   }
-  postData.push(newPost);
-  console.log(postData);
+  PostData.addPost(newPost);
   return NextResponse.json({
     message: "Success",
   });
 }
 
 export function GET() {
-  console.log(postData);
+  const data = PostData.getPosts();
+  console.log(data);
+  console.log(PostData.getPost(0));
+  console.log(PostData.getPost(1));
+  console.log(PostData.getPost(2));
   return NextResponse.json({
-    data: postData,
+    data: data,
     message: "Success",
   });
 }

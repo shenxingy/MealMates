@@ -1,8 +1,10 @@
-import { Image, ImageSize, StyleSheet, Text, View } from "react-native";
+import { Image, ImageSize, Pressable, StyleSheet, Text, View } from "react-native";
 import Like from "./Like";
 import { useState } from "react";
+import { likeComment } from "~/utils/api";
 
 export interface CommentProps {
+  id: number;
   content: string;
   image: string | undefined;
   user: string;
@@ -10,7 +12,7 @@ export interface CommentProps {
   liked: boolean;
 }
 
-export default function Comment(props: CommentProps) {
+export default function Comment({ postId, props }: { postId: number, props: CommentProps }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const getSize = async () => {
@@ -18,6 +20,10 @@ export default function Comment(props: CommentProps) {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
+  }
+  const like = async () => {
+    const res = await likeComment(postId, props.id, !props.liked);
+    console.log(res);
   }
   getSize();
   return (
@@ -32,7 +38,9 @@ export default function Comment(props: CommentProps) {
           />
         }
       </View>
-      <Like likes={props.likes} liked={props.liked} border={false} />
+      <Pressable onPress={like}>
+        <Like likes={props.likes} liked={props.liked} border={false} />
+      </Pressable>
     </View>
   )
 }
