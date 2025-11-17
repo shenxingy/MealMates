@@ -19,6 +19,7 @@ export interface UserJoinEventMessage {
 export interface UserShareLocationMessage {
   type: "share_location";
   payload: {
+    username: string;
     latitude: number;
     longitude: number;
     timestamp: string;
@@ -64,6 +65,7 @@ export interface LocationUpdateMessage {
   type: "location_update";
   payload: {
     userId: string;
+    username: string;
     latitude: number;
     longitude: number;
     timestamp: string;
