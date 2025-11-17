@@ -16,9 +16,13 @@ interface ProfileEditModalProps {
   nameError: string | null;
   emojiValue: string;
   onEmojiChange: (value: string) => void;
+  emojiError: string | null;
   availableColors: string[];
   selectedColor: string;
   onColorChange: (color: string) => void;
+  colorInputValue: string;
+  onCustomColorInputChange: (value: string) => void;
+  colorError: string | null;
   onClose: () => void;
   onSave: () => void;
   modalError: string | null;
@@ -34,9 +38,13 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
   nameError,
   emojiValue,
   onEmojiChange,
+  emojiError,
   availableColors,
   selectedColor,
   onColorChange,
+  colorInputValue,
+  onCustomColorInputChange,
+  colorError,
   onClose,
   onSave,
   modalError,
@@ -63,6 +71,8 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Edit Profile</Text>
+          <Text style={styles.sectionHeading}>Display Name</Text>
+          <Text style={styles.sectionSubtitle}>This name appears across MealMates.</Text>
           <TextInput
             style={styles.textInput}
             value={nameValue}
@@ -70,8 +80,12 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
             onChangeText={onNameChange}
           />
           {nameError ? (
-            <Text style={styles.nameErrorText}>{nameError}</Text>
+            <Text style={styles.inputErrorText}>{nameError}</Text>
           ) : null}
+          <Text style={styles.sectionHeading}>Avatar Icon</Text>
+          <Text style={styles.sectionSubtitle}>
+            Enter a single emoji or letter to use inside the avatar.
+          </Text>
           <TextInput
             style={styles.textInput}
             value={emojiValue}
@@ -81,6 +95,9 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
             autoCorrect={false}
             maxLength={4}
           />
+          {emojiError ? (
+            <Text style={styles.inputErrorText}>{emojiError}</Text>
+          ) : null}
           <View style={styles.emojiPreviewRow}>
             <Text style={styles.previewLabel}>Preview</Text>
             <View
@@ -92,11 +109,20 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
               <Text style={styles.previewEmoji}>{previewAvatar}</Text>
             </View>
           </View>
-          <Text style={styles.emojiHint}>
-            Enter a single emoji or letter for your avatar. Leave blank to use
-            your initials.
+          <Text style={styles.sectionHeading}>Avatar Background</Text>
+          <Text style={styles.sectionSubtitle}>
+            Pick a color from the palette or enter your own hex code.
           </Text>
-          <Text style={styles.colorHeading}>Avatar background</Text>
+          <TextInput
+            style={styles.colorTextInput}
+            value={colorInputValue}
+            placeholder="#FF5733"
+            autoCapitalize="characters"
+            onChangeText={onCustomColorInputChange}
+          />
+          {colorError ? (
+            <Text style={styles.inputErrorText}>{colorError}</Text>
+          ) : null}
           <View style={styles.colorGrid}>
             {availableColors.map((color) => {
               const isSelected = selectedColor === color;
@@ -175,11 +201,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#111827",
   },
-  nameErrorText: {
-    marginTop: -4,
-    marginBottom: -4,
+  sectionHeading: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginBottom: 6,
+  },
+  inputErrorText: {
+    marginTop: -2,
+    marginBottom: 4,
     color: "#B91C1C",
-    fontSize: 14,
+    fontSize: 13,
   },
   emojiPreviewRow: {
     flexDirection: "row",
@@ -202,14 +239,15 @@ const styles = StyleSheet.create({
   previewEmoji: {
     fontSize: 30,
   },
-  emojiHint: {
-    fontSize: 13,
-    color: "#6B7280",
-  },
-  colorHeading: {
-    fontSize: 14,
-    fontWeight: "600",
+  colorTextInput: {
+    borderWidth: 1,
+    borderColor: "#CBD5F5",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
     color: "#111827",
+    textTransform: "uppercase",
   },
   colorGrid: {
     flexDirection: "row",

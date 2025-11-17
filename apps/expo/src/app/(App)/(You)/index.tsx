@@ -37,6 +37,7 @@ const AVATAR_COLOR_OPTIONS = [
   "#F3E8FF",
 ];
 const DEFAULT_AVATAR_COLOR = AVATAR_COLOR_OPTIONS[0] ?? "#F5F7FB";
+const HEX_COLOR_REGEX = /^#([0-9A-Fa-f]{6})$/;
 const isSingleEmojiOrLetter = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -93,6 +94,16 @@ export const validateDisplayName = (name: string) => {
   return { valid: true };
 };
 
+const normalizeHexColor = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+};
+
+const isValidHexColor = (value: string) => HEX_COLOR_REGEX.test(value);
+
 export default function YouPage() {
   const router = useRouter();
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
@@ -101,8 +112,12 @@ export default function YouPage() {
   const [nameInput, setNameInput] = useState("");
   const [nameLengthError, setNameLengthError] = useState<string | null>(null);
   const [emojiInput, setEmojiInput] = useState("");
+  const [emojiError, setEmojiError] = useState<string | null>(null);
   const [avatarColorInput, setAvatarColorInput] =
     useState<string>(DEFAULT_AVATAR_COLOR);
+  const [customColorInput, setCustomColorInput] =
+    useState<string>(DEFAULT_AVATAR_COLOR);
+  const [colorError, setColorError] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const {
     logout,
@@ -191,7 +206,10 @@ export default function YouPage() {
 
     handleNameInputChange(userProfile.name);
     setEmojiInput(userProfile.image ?? "");
+    setEmojiError(null);
     setAvatarColorInput(userProfile.avatarColor);
+    setCustomColorInput(userProfile.avatarColor);
+    setColorError(null);
     setModalError(null);
     setIsEditVisible(true);
   };
@@ -200,11 +218,49 @@ export default function YouPage() {
     // TODO: Navigate to settings page
   };
 
+  const handleSelectColor = (color: string) => {
+    setAvatarColorInput(color);
+    setCustomColorInput(color);
+    setColorError(null);
+  };
+
+  const handleCustomColorChange = (value: string) => {
+    setCustomColorInput(value);
+    const normalized = normalizeHexColor(value);
+    if (!normalized) {
+      setColorError("Please enter a color value.");
+      return;
+    }
+    if (isValidHexColor(normalized)) {
+      setAvatarColorInput(normalized);
+      setColorError(null);
+    } else {
+      setColorError("Use a valid hex color, e.g. #FF5733.");
+    }
+  };
+
+  const handleEmojiInputChange = (value: string) => {
+    setEmojiInput(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setEmojiError(null);
+      return;
+    }
+    if (isSingleEmojiOrLetter(trimmed)) {
+      setEmojiError(null);
+    } else {
+      setEmojiError("Use a single emoji or letter.");
+    }
+  };
+
   const handleCloseEditModal = () => {
     setIsEditVisible(false);
     setNameLengthError(null);
     setModalError(null);
     setAvatarColorInput(userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR);
+    setCustomColorInput(userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR);
+    setColorError(null);
+    setEmojiError(null);
   };
 
   const handleSaveProfile = async () => {
@@ -225,8 +281,13 @@ export default function YouPage() {
     }
 
     const trimmedEmoji = emojiInput.trim();
+    if (emojiError) {
+      setModalError(emojiError);
+      return;
+    }
     if (trimmedEmoji && !isSingleEmojiOrLetter(trimmedEmoji)) {
-      setModalError("Please enter a single emoji or letter.");
+      setModalError("Use a single emoji or letter.");
+      setEmojiError("Use a single emoji or letter.");
       return;
     }
 
@@ -282,7 +343,9 @@ export default function YouPage() {
     !nameInput.trim() ||
     updateProfileMutation.isPending ||
     !!nameLengthError ||
-    avatarColorInput.trim().length === 0;
+    avatarColorInput.trim().length === 0 ||
+    !!colorError ||
+    !!emojiError;
   const handleRetry = () => {
     void loadUserId();
     if (storedUserId) {
@@ -331,10 +394,14 @@ export default function YouPage() {
         onNameChange={handleNameInputChange}
         nameError={nameLengthError}
         emojiValue={emojiInput}
-        onEmojiChange={setEmojiInput}
+        onEmojiChange={handleEmojiInputChange}
+        emojiError={emojiError}
         availableColors={AVATAR_COLOR_OPTIONS}
         selectedColor={avatarColorInput}
-        onColorChange={setAvatarColorInput}
+        onColorChange={handleSelectColor}
+        colorInputValue={customColorInput}
+        onCustomColorInputChange={handleCustomColorChange}
+        colorError={colorError}
         onClose={handleCloseEditModal}
         onSave={handleSaveProfile}
         modalError={modalError}
