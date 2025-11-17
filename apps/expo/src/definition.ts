@@ -25,3 +25,44 @@ export interface DetailedEventDTO extends SimpleEventDTO {
     longitude: number;
   };
 }
+
+export interface JoinSuccessPayload {
+  userId: string;
+  eventId: number;
+  message: string;
+}
+
+export interface LocationUpdatePayload {
+  userId: string;
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+}
+
+export interface UserLeftPayload {
+  userId: string;
+}
+
+export interface ErrorPayload {
+  code: string;
+  message: string;
+}
+
+export interface MessageHandlers {
+  onJoinSuccess?: (message: JoinSuccessPayload) => void;
+  onLocationUpdate?: (message: LocationUpdatePayload) => void;
+  onUserLeft?: (message: UserLeftPayload) => void;
+  onError?: (message: ErrorPayload) => void;
+}
+
+export interface UseApiSocketOptions {
+  userId: string;
+  eventId: string;
+  enabled: boolean; // 控制是否启用 WebSocket
+  handlers?: MessageHandlers;
+}
+
+export interface ServerMessage {
+  type: 'join_success' | 'location_update' | 'user_left' | 'error';
+  payload: JoinSuccessPayload | LocationUpdatePayload | UserLeftPayload | ErrorPayload;
+}
