@@ -1,14 +1,29 @@
+import type { StyleProp, ViewStyle } from "react-native";
 import { Image, Pressable, StyleSheet, Text } from "react-native";
 
 interface DukeRegisterButtonProps {
   onPress?: () => void;
+  label?: string;
+  style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 }
 
 export default function DukeRegisterButton({
   onPress,
+  label = "Register with Duke",
+  style,
+  disabled = false,
 }: DukeRegisterButtonProps) {
   return (
-    <Pressable style={styles.registerButton} onPress={onPress}>
+    <Pressable
+      style={[
+        styles.registerButton,
+        disabled && styles.disabledButton,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Image
         source={{
           uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Duke_Blue_Devils_logo.svg/240px-Duke_Blue_Devils_logo.svg.png",
@@ -16,7 +31,7 @@ export default function DukeRegisterButton({
         style={styles.dukeIcon}
         resizeMode="contain"
       />
-      <Text style={styles.registerText}>Register with Duke</Text>
+      <Text style={styles.registerText}>{label}</Text>
     </Pressable>
   );
 }
@@ -46,5 +61,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#0F172A",
     marginLeft: 12,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });

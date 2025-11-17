@@ -55,11 +55,23 @@ export const userRouter = {
       });
 
       if (existingUser) {
+        // Preserve custom display names that users set inside the app.
+        const trimmedExistingName = existingUser.name?.trim();
+        const trimmedIncomingName = input.name.trim();
+        const shouldPreserveCustomName =
+          !!trimmedExistingName &&
+          trimmedExistingName.length > 0 &&
+          trimmedExistingName !== trimmedIncomingName;
+        const displayName =
+          shouldPreserveCustomName && trimmedExistingName
+            ? existingUser.name
+            : input.name;
+
         // Update existing user
         await ctx.db
           .update(user)
           .set({
-            name: input.name,
+            name: displayName,
             email: input.email,
             emailVerified: input.email_verified ?? false,
             givenName: input.given_name,
@@ -120,20 +132,22 @@ export const userRouter = {
 
         console.log(`[USER] Updated existing Duke user: ${netId}`);
 
+        const updatedUser = {
+          ...existingUser,
+          name: displayName,
+          email: input.email,
+          emailVerified: input.email_verified ?? false,
+          givenName: input.given_name,
+          familyName: input.family_name,
+          dukeNetID: netId,
+          dukeUniqueID: input.dukeUniqueID,
+          dukePrimaryAffiliation: input.dukePrimaryAffiliation,
+        };
+
         return {
           success: true,
           isNewUser: false,
-          user: {
-            ...existingUser,
-            name: input.name,
-            email: input.email,
-            emailVerified: input.email_verified ?? false,
-            givenName: input.given_name,
-            familyName: input.family_name,
-            dukeNetID: netId,
-            dukeUniqueID: input.dukeUniqueID,
-            dukePrimaryAffiliation: input.dukePrimaryAffiliation,
-          },
+          user: updatedUser,
         };
       } else {
         // Create new user
