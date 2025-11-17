@@ -19,7 +19,7 @@ interface ProfileSummarySectionProps {
   profileMissing: boolean;
   greetingName: string;
   profileEmail: string;
-  profileAvatar: string;
+  profileAvatar: string | null;
   fallbackLabel: string;
   stats: ProfileStat[];
   onRetry: () => void;

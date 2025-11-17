@@ -21,7 +21,7 @@ interface ProfileEditModalProps {
   modalError: string | null;
   isSaving: boolean;
   disableSave: boolean;
-  defaultAvatarEmoji: string;
+  defaultAvatarLabel: string;
 }
 
 const ProfileEditModal: FC<ProfileEditModalProps> = ({
@@ -36,8 +36,17 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
   modalError,
   isSaving,
   disableSave,
-  defaultAvatarEmoji,
+  defaultAvatarLabel,
 }) => {
+  const trimmedEmojiValue = emojiValue.trim();
+  const normalizedLabel = defaultAvatarLabel.trim();
+  const fallbackAvatar =
+    normalizedLabel.length > 0
+      ? normalizedLabel.charAt(0).toUpperCase()
+      : "?";
+  const previewAvatar =
+    trimmedEmojiValue.length > 0 ? trimmedEmojiValue : fallbackAvatar;
+
   return (
     <Modal
       transparent
@@ -69,14 +78,11 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
           <View style={styles.emojiPreviewRow}>
             <Text style={styles.previewLabel}>Preview</Text>
             <View style={styles.previewCircle}>
-              <Text style={styles.previewEmoji}>
-                {emojiValue.trim() || defaultAvatarEmoji}
-              </Text>
+              <Text style={styles.previewEmoji}>{previewAvatar}</Text>
             </View>
           </View>
           <Text style={styles.emojiHint}>
-            Enter a single emoji to use as your avatar. Leave blank to use your
-            initials.
+            Enter a single emoji or letter for your avatar. Leave blank to use your initials.
           </Text>
           {modalError ? (
             <Text style={styles.modalError}>{modalError}</Text>

@@ -1,6 +1,8 @@
 import type { FC } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
 interface ProfileInfoCardProps {
   name: string;
   email: string;
@@ -21,13 +23,23 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   const fallbackInitial = labelInitial ?? nameInitial ?? "?";
   const displayInitial = fallbackInitial.toUpperCase();
   const trimmedEmoji = avatarEmoji?.trim();
-  const avatarDisplay =
-    trimmedEmoji && trimmedEmoji.length > 0 ? trimmedEmoji : displayInitial;
+
+  const isEmojiAvatar =
+    trimmedEmoji && trimmedEmoji.length > 0 && EMOJI_REGEX.test(trimmedEmoji);
+  const avatarDisplay = trimmedEmoji
+    ? isEmojiAvatar
+      ? trimmedEmoji
+      : trimmedEmoji.at(0)?.toUpperCase() ?? displayInitial
+    : displayInitial;
+  const isLetterAvatar =
+    avatarDisplay.length === 1 && !EMOJI_REGEX.test(avatarDisplay);
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Text style={styles.avatarEmoji}>{avatarDisplay}</Text>
+        <Text style={[styles.avatarEmoji, isLetterAvatar && styles.avatarLetter]}>
+          {avatarDisplay}
+        </Text>
       </View>
       <View>
         <Text style={styles.nameText}>{name}</Text>
@@ -67,6 +79,10 @@ const styles = StyleSheet.create({
     fontSize: 34,
     lineHeight: 38,
     color: "#1F2937",
+  },
+  avatarLetter: {
+    fontSize: 30,
+    fontWeight: "700",
   },
   nameText: {
     fontSize: 22,

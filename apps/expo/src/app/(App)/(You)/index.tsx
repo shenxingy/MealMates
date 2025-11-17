@@ -24,18 +24,27 @@ const getNetIdFromSub = (sub: string) => {
   const separatorIndex = sub.indexOf("@");
   return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
 };
-const DEFAULT_AVATAR_EMOJI = "🙂";
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 const CJK_REGEX =
   /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
 const MAX_VISUAL_NAME_LENGTH = 15;
-const isSingleEmoji = (value: string) => {
+const isSingleEmojiOrLetter = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) {
     return false;
   }
   const graphemes = [...trimmed];
-  return graphemes.length === 1 && EMOJI_REGEX.test(trimmed);
+  if (graphemes.length !== 1) {
+    return false;
+  }
+  const char = graphemes[0];
+  if (!char) {
+    return false;
+  }
+  if (EMOJI_REGEX.test(char)) {
+    return true;
+  }
+  return /^[A-Za-z]$/.test(char);
 };
 
 const isAsciiCharacter = (char: string) => {
@@ -203,8 +212,8 @@ export default function YouPage() {
     }
 
     const trimmedEmoji = emojiInput.trim();
-    if (trimmedEmoji && !isSingleEmoji(trimmedEmoji)) {
-      setModalError("Please enter exactly one emoji.");
+    if (trimmedEmoji && !isSingleEmojiOrLetter(trimmedEmoji)) {
+      setModalError("Please enter a single emoji or letter.");
       return;
     }
 
@@ -250,7 +259,7 @@ export default function YouPage() {
     !profileError;
   const greetingName = userProfile?.name ?? "Meal Mate";
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
-  const profileAvatar = userProfile?.image ?? DEFAULT_AVATAR_EMOJI;
+  const profileAvatar = userProfile?.image ?? null;
   const header = "Profile";
   const baseColor = "195,227,255";
   const isLogoutDisabled = isAuthMutating || isFetchingProfile;
@@ -264,6 +273,11 @@ export default function YouPage() {
     }
   };
   const fallbackLabel = userProfile?.name ?? userProfile?.email ?? "?";
+  const normalizedGreeting = greetingName.trim();
+  const defaultAvatarLabel =
+    normalizedGreeting.length > 0
+      ? normalizedGreeting.charAt(0).toUpperCase()
+      : "?";
 
   return (
     <>
@@ -305,7 +319,7 @@ export default function YouPage() {
         modalError={modalError}
         isSaving={updateProfileMutation.isPending}
         disableSave={disableSaveButton}
-        defaultAvatarEmoji={DEFAULT_AVATAR_EMOJI}
+        defaultAvatarLabel={defaultAvatarLabel}
       />
     </>
   );
