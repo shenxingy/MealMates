@@ -25,9 +25,7 @@ export default function DukeRegisterButton({
       disabled={disabled}
     >
       <Image
-        source={{
-          uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Duke_Blue_Devils_logo.svg/240px-Duke_Blue_Devils_logo.svg.png",
-        }}
+        source={require("../../assets/blue-devil.png")}
         style={styles.dukeIcon}
         resizeMode="contain"
       />
