@@ -39,6 +39,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: "GOOGLE_MAPS_API_KEY",
       },
     },
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "mealmates",
+            host: "auth",
+            pathPrefix: "/callback",
+          },
+        ],
+        category: ["BROWSABLE", "DEFAULT"],
+      },
+    ],
   },
   extra: {
     eas: {
