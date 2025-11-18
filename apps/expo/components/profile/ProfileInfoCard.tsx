@@ -1,11 +1,16 @@
 import type { FC } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
+const DEFAULT_AVATAR_BG = "#F5F7FB";
+
 interface ProfileInfoCardProps {
   name: string;
   email: string;
   avatarEmoji?: string | null;
   fallbackLabel?: string;
+  avatarColor?: string;
 }
 
 const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
@@ -13,6 +18,7 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   email,
   avatarEmoji,
   fallbackLabel,
+  avatarColor,
 }) => {
   const trimmedName = name.trim();
   const trimmedLabel = fallbackLabel?.trim();
@@ -21,13 +27,35 @@ const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
   const fallbackInitial = labelInitial ?? nameInitial ?? "?";
   const displayInitial = fallbackInitial.toUpperCase();
   const trimmedEmoji = avatarEmoji?.trim();
-  const avatarDisplay =
-    trimmedEmoji && trimmedEmoji.length > 0 ? trimmedEmoji : displayInitial;
+
+  const isEmojiAvatar =
+    trimmedEmoji && trimmedEmoji.length > 0 && EMOJI_REGEX.test(trimmedEmoji);
+  const avatarDisplay = trimmedEmoji
+    ? isEmojiAvatar
+      ? trimmedEmoji
+      : (trimmedEmoji.at(0)?.toUpperCase() ?? displayInitial)
+    : displayInitial;
+  const isLetterAvatar =
+    avatarDisplay.length === 1 && !EMOJI_REGEX.test(avatarDisplay);
+
+  const avatarBackgroundColor =
+    avatarColor && avatarColor.trim().length > 0
+      ? avatarColor
+      : DEFAULT_AVATAR_BG;
 
   return (
     <View style={styles.container}>
-      <View style={styles.avatarContainer}>
-        <Text style={styles.avatarEmoji}>{avatarDisplay}</Text>
+      <View
+        style={[
+          styles.avatarContainer,
+          { backgroundColor: avatarBackgroundColor },
+        ]}
+      >
+        <Text
+          style={[styles.avatarEmoji, isLetterAvatar && styles.avatarLetter]}
+        >
+          {avatarDisplay}
+        </Text>
       </View>
       <View>
         <Text style={styles.nameText}>{name}</Text>
@@ -67,6 +95,10 @@ const styles = StyleSheet.create({
     fontSize: 34,
     lineHeight: 38,
     color: "#1F2937",
+  },
+  avatarLetter: {
+    fontSize: 30,
+    fontWeight: "700",
   },
   nameText: {
     fontSize: 22,
