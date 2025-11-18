@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { QueryClientProvider } from "@tanstack/react-query";
+import * as SplashScreen from 'expo-splash-screen';
 
 import { queryClient } from "~/utils/api";
 
@@ -10,6 +11,10 @@ import { queryClient } from "~/utils/api";
 // It wraps your pages with the providers they need
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  SplashScreen.setOptions({
+    duration: 1000,
+    fade: true,
+  })
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
