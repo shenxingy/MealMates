@@ -42,9 +42,9 @@ export function useDukeAuth() {
   };
 
   const redirectUri = AuthSession.makeRedirectUri({
-    native: "mealmates://duke/auth/callback",
+    native: "mealmates://auth/callback",
     scheme: "mealmates",
-    path: "duke/auth/callback",
+    path: "auth/callback",
   });
 
   // Set up the auth request
