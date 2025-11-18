@@ -41,6 +41,12 @@ export function useDukeAuth() {
     revocationEndpoint: DUKE_AUTH_CONFIG.revocationEndpoint,
   };
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: "mealmates://auth/callback",
+    scheme: "mealmates",
+    path: "auth/callback",
+  });
+
   // Set up the auth request
   const [_request, response, promptAsync] = AuthSession.useAuthRequest(
     {
@@ -48,7 +54,7 @@ export function useDukeAuth() {
       clientId: DUKE_AUTH_CONFIG.clientId,
       clientSecret: DUKE_AUTH_CONFIG.clientSecret,
       scopes: DUKE_AUTH_CONFIG.scopes,
-      redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+      redirectUri,
       usePKCE: false,
     },
     discovery,
@@ -64,6 +70,10 @@ export function useDukeAuth() {
     } else if (response?.type === "error") {
       setError(response.error?.message ?? "Authentication failed");
       setIsLoading(false);
+    } else if (response?.type === "dismiss" || response?.type === "cancel") {
+      // User backed out of the auth flow, so reset to initial state
+      setIsLoading(false);
+      setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response]);
@@ -146,7 +156,7 @@ export function useDukeAuth() {
           clientId: DUKE_AUTH_CONFIG.clientId,
           clientSecret: DUKE_AUTH_CONFIG.clientSecret,
           code,
-          redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+          redirectUri,
         },
         discovery,
       );

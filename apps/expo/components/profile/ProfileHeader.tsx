@@ -9,7 +9,6 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader: FC<ProfileHeaderProps> = ({
-  greetingName,
   onEditPress,
   onSettingsPress,
 }) => {
@@ -24,7 +23,6 @@ const ProfileHeader: FC<ProfileHeaderProps> = ({
           <Ionicons name="settings-outline" size={24} color="#1F2937" />
         </Pressable>
       </View>
-      <Text style={styles.greetingText}>Hi, {greetingName}</Text>
     </View>
   );
 };
@@ -34,7 +32,7 @@ export default ProfileHeader;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
-    marginBottom: 24,
+    marginTop: -74,
   },
   actions: {
     flexDirection: "row",

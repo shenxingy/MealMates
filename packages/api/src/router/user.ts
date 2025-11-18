@@ -55,11 +55,25 @@ export const userRouter = {
       });
 
       if (existingUser) {
+        // Preserve custom display names that users set inside the app.
+        const trimmedExistingName = existingUser.name
+          ? existingUser.name.trim()
+          : undefined;
+        const trimmedIncomingName = input.name.trim();
+        const shouldPreserveCustomName =
+          !!trimmedExistingName &&
+          trimmedExistingName.length > 0 &&
+          trimmedExistingName !== trimmedIncomingName;
+        const displayName =
+          shouldPreserveCustomName && trimmedExistingName
+            ? existingUser.name
+            : input.name;
+
         // Update existing user
         await ctx.db
           .update(user)
           .set({
-            name: input.name,
+            name: displayName,
             email: input.email,
             emailVerified: input.email_verified ?? false,
             givenName: input.given_name,
@@ -120,20 +134,22 @@ export const userRouter = {
 
         console.log(`[USER] Updated existing Duke user: ${netId}`);
 
+        const updatedUser = {
+          ...existingUser,
+          name: displayName,
+          email: input.email,
+          emailVerified: input.email_verified ?? false,
+          givenName: input.given_name,
+          familyName: input.family_name,
+          dukeNetID: netId,
+          dukeUniqueID: input.dukeUniqueID,
+          dukePrimaryAffiliation: input.dukePrimaryAffiliation,
+        };
+
         return {
           success: true,
           isNewUser: false,
-          user: {
-            ...existingUser,
-            name: input.name,
-            email: input.email,
-            emailVerified: input.email_verified ?? false,
-            givenName: input.given_name,
-            familyName: input.family_name,
-            dukeNetID: netId,
-            dukeUniqueID: input.dukeUniqueID,
-            dukePrimaryAffiliation: input.dukePrimaryAffiliation,
-          },
+          user: updatedUser,
         };
       } else {
         // Create new user
@@ -202,6 +218,7 @@ export const userRouter = {
       z.object({
         name: z.string().optional(),
         image: z.string().optional(),
+        avatarColor: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -224,13 +241,15 @@ export const userRouter = {
         id: z.string(),
         name: z.string().min(1).optional(),
         image: z.string().optional(),
+        avatarColor: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, name, image } = input;
+      const { id, name, image, avatarColor } = input;
       const updates: {
         name?: string;
         image?: string | null;
+        avatarColor?: string;
         updatedAt?: Date;
       } = {};
 
@@ -240,6 +259,10 @@ export const userRouter = {
 
       if (typeof image === "string") {
         updates.image = image.length > 0 ? image : null;
+      }
+
+      if (typeof avatarColor === "string") {
+        updates.avatarColor = avatarColor;
       }
 
       if (Object.keys(updates).length === 0) {

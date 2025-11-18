@@ -14,19 +14,31 @@
     "development": {
       "extends": "base",
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:3000",
+        "EXPO_PUBLIC_WEBSOCKET_URL": "ws://10.0.2.2:3001"
+      }
     },
     "preview": {
       "extends": "base",
       "distribution": "internal",
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:3000",
+        "EXPO_PUBLIC_WEBSOCKET_URL": "ws://10.0.2.2:3001"
       }
     },
     "production": {
       "extends": "base",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://meal-mates-nextjs-pk4y.vercel.app",
+        "EXPO_PUBLIC_WEBSOCKET_URL": "wss://meal-mates-nextjs-pk4y.vercel.app"
       }
     }
   },

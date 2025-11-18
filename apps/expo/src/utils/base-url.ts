@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 /**
@@ -13,14 +14,33 @@ export const getBaseUrl = () => {
    * **NOTE**: This is only for development. In production, you'll want to set the
    * baseUrl to your production API URL.
    */
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  const localhost = debuggerHost?.split(":")[0];
 
+  // Priority 1: Use production API URL if set (for EAS builds)
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // Priority 2: Development mode with debugger
+  const debuggerHost = Constants.expoConfig?.hostUri;
+  let localhost = debuggerHost?.split(":")[0];
+
+  // Priority 3: Fallback for production builds without env var
   if (!localhost) {
-    // return "https://turbo.t3.gg";
-    throw new Error(
-      "Failed to get localhost. Please point to your production server.",
+    // For testing production builds on emulator/simulator
+    localhost = Platform.OS === "android" ? "10.0.2.2" : "localhost";
+    console.warn(
+      `[getBaseUrl] No hostUri found, using fallback: ${localhost}. ` +
+        `Set EXPO_PUBLIC_API_URL for production builds.`,
     );
   }
+
+  // Android emulator needs 10.0.2.2 instead of localhost
+  if (
+    Platform.OS === "android" &&
+    (localhost === "localhost" || localhost === "127.0.0.1")
+  ) {
+    localhost = "10.0.2.2";
+  }
+
   return `http://${localhost}:3000`;
 };
