@@ -1,14 +1,10 @@
 import { Image, Platform, StyleSheet, Text, View } from "react-native";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 
 import { DEFAULT_USER_AVATAR } from "~/utils/api";
 import Skeleton from "../frame/Skeleton";
-import {
-  GlassView,
-  isLiquidGlassAvailable,
-  SymbolView,
-  hasSymbolModule,
-} from "~/utils/nativeViews";
 
 interface LoadingProps {
   isLoading: true;
@@ -22,7 +18,7 @@ interface LoadingProps {
 }
 
 interface LoadedProps {
-  isLoading?: false; // 关键：设为可选的 false
+  isLoading?: false;
   scheduleTime: string;
   avatarUrl?: string;
   username: string;
@@ -96,7 +92,7 @@ const EventView = (props: EventViewProps) => {
             )}
           </View>
           <View style={styles.scheduleTimeContainer}>
-            {Platform.OS === "ios" && hasSymbolModule ? (
+            {Platform.OS === "ios" ? (
               <SymbolView name="clock" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="time" size={24} color="#ff7800" />
@@ -112,7 +108,7 @@ const EventView = (props: EventViewProps) => {
         </View>
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
           <View style={styles.detailedInfo}>
-            {Platform.OS === "ios" && hasSymbolModule ? (
+            {Platform.OS === "ios" ? (
               <SymbolView name="mappin" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="location" size={24} color="#ff7800" />
@@ -128,7 +124,7 @@ const EventView = (props: EventViewProps) => {
         </View>
         <View style={styles.detailedInfoContainer}>
           <View style={styles.detailedInfo}>
-            {Platform.OS === "ios" && hasSymbolModule ? (
+            {Platform.OS === "ios" ? (
               <SymbolView name="storefront" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="restaurant" size={24} color="#ff7800" />
@@ -156,7 +152,7 @@ const EventView = (props: EventViewProps) => {
                     : styles.nonGlassMessageContainer
                 }
               >
-                {Platform.OS === "ios" && hasSymbolModule ? (
+                {Platform.OS === "ios" ? (
                   <SymbolView
                     name="message.badge"
                     style={{ width: 24, height: 24 }}

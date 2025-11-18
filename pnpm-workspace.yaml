@@ -30,7 +30,14 @@ catalogs:
 linkWorkspacePackages: true
 
 onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - better-sqlite3
+  - bufferutil
+  - core-js-pure
   - esbuild
+  - prisma
+  - sharp
 
 overrides:
   '@types/minimatch': 5.1.2

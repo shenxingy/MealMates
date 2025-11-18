@@ -5,7 +5,10 @@ interface LoginButtonProps {
   label?: string;
 }
 
-export default function LoginButton({ onPress, label = "Log in" }: LoginButtonProps) {
+export default function LoginButton({
+  onPress,
+  label = "Log in",
+}: LoginButtonProps) {
   return (
     <Pressable onPress={onPress} style={styles.loginButton}>
       <Text style={styles.loginText}>{label}</Text>
@@ -32,4 +35,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 });
+<<<<<<< HEAD
 
+=======
+>>>>>>> dev

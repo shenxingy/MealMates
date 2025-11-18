@@ -1,18 +1,22 @@
 import { useMemo } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { LinearGradient as MaskGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaskedView from "@react-native-masked-view/masked-view";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
-import { useRouter } from "expo-router";
-import {
-  BlurView,
-  GlassView,
-  SymbolView,
-  LinearGradient as MaskGradient,
-  MaskedView,
-  hasSymbolModule,
-} from "~/utils/nativeViews";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -24,7 +28,14 @@ export default function AnimatedPageFrame(props: {
   enableReturnButton?: boolean;
   returnButtonText?: string;
 }) {
-  const { children, baseColor, headerTitle, scrollEnabled = true, enableReturnButton = false, returnButtonText } = props;
+  const {
+    children,
+    baseColor,
+    headerTitle,
+    scrollEnabled = true,
+    enableReturnButton = false,
+    returnButtonText,
+  } = props;
   // Create a single Animated.Value instance without accessing ref.current during render
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
@@ -75,7 +86,7 @@ export default function AnimatedPageFrame(props: {
   const router = useRouter();
   const handleReturnButton = () => {
     router.back();
-  }
+  };
 
   return (
     <LinearGradientBackground
@@ -164,23 +175,27 @@ export default function AnimatedPageFrame(props: {
       {/* Return button */}
       {enableReturnButton && (
         <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
-          <GlassView style={styles.returnButton} isInteractive>
+          <GlassView
+            style={
+              isLiquidGlassAvailable()
+                ? styles.returnGlassButton
+                : styles.returnButton
+            }
+            isInteractive
+          >
             <View style={styles.returnButtonContainer}>
-              {hasSymbolModule ? (
+              {Platform.OS === "ios" ? (
                 <SymbolView
                   name="chevron.backward"
                   size={17}
                   tintColor="black"
                 />
               ) : (
-                <Ionicons name="chevron-back" size={20} color="black" />
+                <MaterialIcons name="arrow-back-ios" size={17} color="black" />
               )}
               {returnButtonText && (
-                <Text style={styles.returnButtonText}>
-                  {returnButtonText}
-                </Text>
-              )
-              }
+                <Text style={styles.returnButtonText}>{returnButtonText}</Text>
+              )}
             </View>
           </GlassView>
         </Pressable>
@@ -206,10 +221,16 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
   },
+  returnGlassButton: {
+    height: 48,
+    minWidth: 48,
+    borderRadius: 24,
+  },
   returnButton: {
     height: 48,
     minWidth: 48,
     borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.6)",
   },
   returnButtonContainer: {
     height: "100%",

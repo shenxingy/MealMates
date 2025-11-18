@@ -1,6 +1,6 @@
 import type React from "react";
 import { Animated, StyleSheet, View } from "react-native";
-import { LinearGradient } from "~/utils/nativeViews";
+import { LinearGradient } from "expo-linear-gradient";
 
 const BACKDROP_HEIGHT = 1000; // large enough to cover translate range
 const BACKDROP_TOP = -750; // center the tall backdrop on screen

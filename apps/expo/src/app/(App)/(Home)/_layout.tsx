@@ -14,7 +14,10 @@ export default function HomeLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ title: "Home Page" }} />
-        <Stack.Screen name="event/[eventId]" options={{ title: "Event Details" }} />
+        <Stack.Screen
+          name="event/[eventId]"
+          options={{ title: "Event Details" }}
+        />
       </Stack>
     </>
   );
