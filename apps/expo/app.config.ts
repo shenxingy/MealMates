@@ -24,7 +24,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         "Allow MealMates to access your location to share it to your mates and help you navigate to them.",
-      NSAppTransportSecurity: { NSAllowsArbitraryLoads: true }, // enable HTTP requests
     },
   },
   android: {
@@ -39,6 +38,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: "GOOGLE_MAPS_API_KEY",
       },
     },
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "mealmates",
+            host: "auth",
+            pathPrefix: "/callback",
+          },
+        ],
+        category: ["BROWSABLE", "DEFAULT"],
+      },
+    ],
   },
   extra: {
     eas: {
@@ -69,12 +82,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-splash-screen",
       {
-        backgroundColor: "#E4E4E7",
+        backgroundColor: "#FFFFFF",
         image: "./assets/icon-light.png",
         dark: {
           backgroundColor: "#18181B",
           image: "./assets/icon-dark.png",
         },
+        imageWidth: 250,
       },
     ],
     [
