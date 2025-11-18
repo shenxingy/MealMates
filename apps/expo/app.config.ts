@@ -21,6 +21,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       light: "./assets/icon-light.png",
       dark: "./assets/icon-dark.png",
     },
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        "Allow MealMates to access your location to share it to your mates and help you navigate to them.",
+      NSAppTransportSecurity: { NSAllowsArbitraryLoads: true }, // enable HTTP requests
+    },
   },
   android: {
     package: "com.mealmates.app",
@@ -29,6 +34,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
     edgeToEdgeEnabled: true,
+    config: {
+      googleMaps: {
+        apiKey: "GOOGLE_MAPS_API_KEY",
+      },
+    },
   },
   extra: {
     eas: {
@@ -46,6 +56,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
     "expo-web-browser",
     [
+      "expo-build-properties",
+      {
+        android: {
+          usesCleartextTraffic: true, // enable HTTP requests
+        },
+        ios: {
+          flipper: true,
+        },
+      },
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: "#E4E4E7",
@@ -54,6 +75,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           backgroundColor: "#18181B",
           image: "./assets/icon-dark.png",
         },
+      },
+    ],
+    [
+      "expo-maps",
+      {
+        requestLocationPermission: true,
+        locationPermission: "Allow $(PRODUCT_NAME) to use your location",
+      },
+    ],
+    [
+      "expo-location",
+      {
+        locationAlwaysAndWhenInUsePermission:
+          "Allow $(PRODUCT_NAME) to use your location.",
       },
     ],
   ],

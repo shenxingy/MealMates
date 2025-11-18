@@ -16,17 +16,11 @@ const ProfileHeader: FC<ProfileHeaderProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.actions}>
-        <Pressable
-          onPress={onEditPress}
-          style={styles.editButton}
-        >
+        <Pressable onPress={onEditPress} style={styles.editButton}>
           <Ionicons name="create-outline" size={20} color="#1F2937" />
           <Text style={styles.editLabel}>Edit</Text>
         </Pressable>
-        <Pressable
-          onPress={onSettingsPress}
-          style={styles.settingsButton}
-        >
+        <Pressable onPress={onSettingsPress} style={styles.settingsButton}>
           <Ionicons name="settings-outline" size={24} color="#1F2937" />
         </Pressable>
       </View>

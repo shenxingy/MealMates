@@ -28,3 +28,13 @@ export interface PostComment {
   likes: number;
   liked: boolean;
 }
+export interface DetailedEventDTO extends SimpleEventDTO {
+  meetPointCoordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  restaurantCoordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}

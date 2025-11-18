@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { LinearGradient } from "~/utils/nativeViews";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Skeleton = (props: {
   isLoading: boolean;

@@ -12,7 +12,6 @@ export default function PostPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const onRefresh = async () => {
     const data = await fetchPostList();
-    // console.log(data);
     setPosts(data);
   }
   const router = useRouter();
@@ -29,9 +28,10 @@ export default function PostPage() {
         <Pressable onPress={create}>
           <Text>New Post</Text>
         </Pressable>
-        <Pressable onPress={onRefresh}>
+        {/* <Pressable onPress={onRefresh}>
           <Text>Refresh</Text>
-        </Pressable>
+        </Pressable> */}
+        <Button onPress={onRefresh} title="Refresh" />
         <PostList
           data={posts}
           numColumns={2}

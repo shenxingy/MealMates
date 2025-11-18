@@ -5,8 +5,8 @@
   },
   "build": {
     "base": {
-      "node": "22.12.0",
-      "pnpm": "9.15.4",
+      "node": "22.20.0",
+      "pnpm": "10.15.1",
       "ios": {
         "resourceClass": "m-medium"
       }
@@ -24,7 +24,10 @@
       }
     },
     "production": {
-      "extends": "base"
+      "extends": "base",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
