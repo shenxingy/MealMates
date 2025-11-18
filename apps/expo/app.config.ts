@@ -38,6 +38,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         apiKey: "GOOGLE_MAPS_API_KEY",
       },
     },
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "mealmates",
+            host: "auth",
+            pathPrefix: "/callback",
+          },
+        ],
+        category: ["BROWSABLE", "DEFAULT"],
+      },
+    ],
   },
   extra: {
     eas: {
@@ -54,6 +68,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-router",
     "expo-secure-store",
     "expo-web-browser",
+    [
+      "expo-build-properties",
+      {
+        android: {
+          usesCleartextTraffic: true, // enable HTTP requests
+        },
+        ios: {
+          flipper: true,
+        },
+      },
+    ],
     [
       "expo-splash-screen",
       {
