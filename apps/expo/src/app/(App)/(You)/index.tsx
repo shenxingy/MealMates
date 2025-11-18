@@ -1,16 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -22,11 +11,10 @@ import {
   getStoredUserId,
   setStoredUserId as persistUserId,
 } from "~/utils/user-storage";
-import LinearGradientBackground from "../../../../components/background/LinearGradientBackground";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import {
-  ProfileHeader,
-  ProfileInfoCard,
-  ProfileStatsRow,
+  ProfileEditModal,
+  ProfileSummarySection,
 } from "../../../../components/profile";
 
 type UserProfile = RouterOutputs["user"]["byId"];
@@ -36,16 +24,85 @@ const getNetIdFromSub = (sub: string) => {
   const separatorIndex = sub.indexOf("@");
   return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
 };
-const DEFAULT_AVATAR_EMOJI = "🙂";
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
-const isSingleEmoji = (value: string) => {
+const CJK_REGEX =
+  /[\u4e00-\u9fa5\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
+const MAX_VISUAL_NAME_LENGTH = 15;
+const AVATAR_COLOR_OPTIONS = [
+  "#F5F7FB",
+  "#FFE4E6",
+  "#FEF3C7",
+  "#DCFCE7",
+  "#E0F2FE",
+  "#F3E8FF",
+];
+const DEFAULT_AVATAR_COLOR = AVATAR_COLOR_OPTIONS[0] ?? "#F5F7FB";
+const HEX_COLOR_REGEX = /^#([0-9A-Fa-f]{6})$/;
+const isSingleEmojiOrLetter = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) {
     return false;
   }
   const graphemes = [...trimmed];
-  return graphemes.length === 1 && EMOJI_REGEX.test(trimmed);
+  if (graphemes.length !== 1) {
+    return false;
+  }
+  const char = graphemes[0];
+  if (!char) {
+    return false;
+  }
+  if (EMOJI_REGEX.test(char)) {
+    return true;
+  }
+  return /^[A-Za-z]$/.test(char);
 };
+
+const isAsciiCharacter = (char: string) => {
+  const codePoint = char.codePointAt(0);
+  return codePoint !== undefined && codePoint <= 0x7f;
+};
+
+const getVisualNameLength = (value: string) => {
+  let length = 0;
+  for (const char of value) {
+    if (isAsciiCharacter(char)) {
+      length += 1;
+    } else if (CJK_REGEX.test(char)) {
+      length += 1.363;
+    } else {
+      length += 1.1;
+    }
+  }
+  return length;
+};
+
+export const validateDisplayName = (name: string) => {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    return { valid: false, error: "Display name cannot be empty." };
+  }
+
+  if (EMOJI_REGEX.test(trimmed)) {
+    return { valid: false, error: "Emoji characters are not supported here." };
+  }
+
+  if (getVisualNameLength(trimmed) > MAX_VISUAL_NAME_LENGTH) {
+    return { valid: false, error: "Display name is too long for the header." };
+  }
+
+  return { valid: true };
+};
+
+const normalizeHexColor = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+};
+
+const isValidHexColor = (value: string) => HEX_COLOR_REGEX.test(value);
 
 export default function YouPage() {
   const router = useRouter();
@@ -53,7 +110,14 @@ export default function YouPage() {
   const [isLoadingUserId, setIsLoadingUserId] = useState(true);
   const [isEditVisible, setIsEditVisible] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [nameLengthError, setNameLengthError] = useState<string | null>(null);
   const [emojiInput, setEmojiInput] = useState("");
+  const [emojiError, setEmojiError] = useState<string | null>(null);
+  const [avatarColorInput, setAvatarColorInput] =
+    useState<string>(DEFAULT_AVATAR_COLOR);
+  const [customColorInput, setCustomColorInput] =
+    useState<string>(DEFAULT_AVATAR_COLOR);
+  const [colorError, setColorError] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const {
     logout,
@@ -125,6 +189,12 @@ export default function YouPage() {
       trpcClient.user.updateProfileById.mutate(input),
   });
 
+  const handleNameInputChange = (value: string) => {
+    setNameInput(value);
+    const validation = validateDisplayName(value);
+    setNameLengthError(validation.valid ? null : (validation.error ?? null));
+  };
+
   const handleEditProfile = () => {
     if (!userProfile || !storedUserId) {
       Alert.alert(
@@ -134,14 +204,63 @@ export default function YouPage() {
       return;
     }
 
-    setNameInput(userProfile.name);
+    handleNameInputChange(userProfile.name);
     setEmojiInput(userProfile.image ?? "");
+    setEmojiError(null);
+    setAvatarColorInput(userProfile.avatarColor);
+    setCustomColorInput(userProfile.avatarColor);
+    setColorError(null);
     setModalError(null);
     setIsEditVisible(true);
   };
 
   const handleOpenSettings = () => {
     // TODO: Navigate to settings page
+  };
+
+  const handleSelectColor = (color: string) => {
+    setAvatarColorInput(color);
+    setCustomColorInput(color);
+    setColorError(null);
+  };
+
+  const handleCustomColorChange = (value: string) => {
+    setCustomColorInput(value);
+    const normalized = normalizeHexColor(value);
+    if (!normalized) {
+      setColorError("Please enter a color value.");
+      return;
+    }
+    if (isValidHexColor(normalized)) {
+      setAvatarColorInput(normalized);
+      setColorError(null);
+    } else {
+      setColorError("Use a valid hex color, e.g. #FF5733.");
+    }
+  };
+
+  const handleEmojiInputChange = (value: string) => {
+    setEmojiInput(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setEmojiError(null);
+      return;
+    }
+    if (isSingleEmojiOrLetter(trimmed)) {
+      setEmojiError(null);
+    } else {
+      setEmojiError("Use a single emoji or letter.");
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditVisible(false);
+    setNameLengthError(null);
+    setModalError(null);
+    setAvatarColorInput(userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR);
+    setCustomColorInput(userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR);
+    setColorError(null);
+    setEmojiError(null);
   };
 
   const handleSaveProfile = async () => {
@@ -152,14 +271,23 @@ export default function YouPage() {
 
     const trimmedName = nameInput.trim();
 
-    if (!trimmedName) {
-      setModalError("Please provide a display name.");
+    const validation = validateDisplayName(trimmedName);
+    if (!validation.valid) {
+      const errorMessage =
+        validation.error ?? "Please enter a shorter display name.";
+      setNameLengthError(errorMessage);
+      setModalError(errorMessage);
       return;
     }
 
     const trimmedEmoji = emojiInput.trim();
-    if (trimmedEmoji && !isSingleEmoji(trimmedEmoji)) {
-      setModalError("Please enter exactly one emoji.");
+    if (emojiError) {
+      setModalError(emojiError);
+      return;
+    }
+    if (trimmedEmoji && !isSingleEmojiOrLetter(trimmedEmoji)) {
+      setModalError("Use a single emoji or letter.");
+      setEmojiError("Use a single emoji or letter.");
       return;
     }
 
@@ -168,13 +296,14 @@ export default function YouPage() {
         id: storedUserId,
         name: trimmedName,
         image: trimmedEmoji,
+        avatarColor: avatarColorInput,
       });
       if (!result.success) {
         setModalError("We couldn't update your profile. Please try again.");
         return;
       }
       await refetchProfile();
-      setIsEditVisible(false);
+      handleCloseEditModal();
     } catch (error: unknown) {
       console.error("[YOU PAGE] Failed to update profile:", error);
       setModalError("Unable to save your changes. Please try again.");
@@ -185,12 +314,13 @@ export default function YouPage() {
     try {
       await logout();
       setStoredUserIdState(null);
-      setIsEditVisible(false);
+      handleCloseEditModal();
       await loadUserId();
-      router.replace("/");
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
       Alert.alert("Logout failed", "Please try again.");
+    } finally {
+      router.replace("/");
     }
   };
 
@@ -198,306 +328,87 @@ export default function YouPage() {
   const shouldPromptSignIn =
     !storedUserId && !isLoadingUserId && !isAuthenticated;
   const profileMissing =
-    storedUserId && !userProfile && !isFetchingProfile && !profileError;
+    Boolean(storedUserId) &&
+    !userProfile &&
+    !isFetchingProfile &&
+    !profileError;
   const greetingName = userProfile?.name ?? "Meal Mate";
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
-  const profileAvatar = userProfile?.image ?? DEFAULT_AVATAR_EMOJI;
+  const profileAvatar = userProfile?.image ?? null;
+  const header = "Profile";
+  const baseColor = "195,227,255";
+  const isLogoutDisabled = isAuthMutating || isFetchingProfile;
+  const showLogoutSpinner = isAuthMutating;
+  const disableSaveButton =
+    !nameInput.trim() ||
+    updateProfileMutation.isPending ||
+    !!nameLengthError ||
+    avatarColorInput.trim().length === 0 ||
+    !!colorError ||
+    !!emojiError;
+  const handleRetry = () => {
+    void loadUserId();
+    if (storedUserId) {
+      void refetchProfile();
+    }
+  };
+  const fallbackLabel = userProfile?.name ?? userProfile?.email ?? "?";
+  const normalizedGreeting = greetingName.trim();
+  const defaultAvatarLabel =
+    normalizedGreeting.length > 0
+      ? normalizedGreeting.charAt(0).toUpperCase()
+      : "?";
 
   return (
-    <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {isFetchingProfile ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0F172A" />
-              <Text style={styles.loadingLabel}>Loading your profile...</Text>
-            </View>
-          ) : profileError ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                We could not load your profile. Pull to refresh or try again
-                later.
-              </Text>
-              <Pressable
-                style={styles.retryButton}
-                onPress={() => {
-                  void loadUserId();
-                  if (storedUserId) {
-                    void refetchProfile();
-                  }
-                }}
-              >
-                <Text style={styles.retryLabel}>Try Again</Text>
-              </Pressable>
-            </View>
-          ) : shouldPromptSignIn ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                Sign in with your Duke account to view your profile.
-              </Text>
-            </View>
-          ) : profileMissing ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.errorText}>
-                We couldn&apos;t find your profile record. Please sign out and
-                sign back in.
-              </Text>
-              <Pressable style={styles.retryButton} onPress={handleLogout}>
-                <Text style={styles.retryLabel}>Sign Out</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <>
-              <ProfileHeader
-                greetingName={greetingName}
-                onEditPress={handleEditProfile}
-                onSettingsPress={handleOpenSettings}
-              />
+    <>
+      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
+        <ProfileSummarySection
+          isFetchingProfile={isFetchingProfile}
+          profileError={
+            profileError
+              ? profileError instanceof Error
+                ? profileError.message
+                : String(profileError)
+              : null
+          }
+          shouldPromptSignIn={shouldPromptSignIn}
+          profileMissing={profileMissing}
+          greetingName={greetingName}
+          profileEmail={profileEmail}
+          profileAvatar={profileAvatar}
+          avatarColor={userProfile?.avatarColor ?? DEFAULT_AVATAR_COLOR}
+          fallbackLabel={fallbackLabel}
+          stats={stats}
+          onRetry={handleRetry}
+          onLogout={handleLogout}
+          onEditPress={handleEditProfile}
+          onSettingsPress={handleOpenSettings}
+          isLogoutDisabled={isLogoutDisabled}
+          showLogoutSpinner={showLogoutSpinner}
+        />
+      </AnimatedPageFrame>
 
-              <ProfileInfoCard
-                name={greetingName}
-                email={profileEmail}
-                avatarEmoji={profileAvatar}
-                fallbackLabel={userProfile?.name ?? userProfile?.email ?? "?"}
-              />
-            </>
-          )}
-
-          <ProfileStatsRow stats={stats} />
-
-          <Pressable
-            style={[
-              styles.logoutButton,
-              (isAuthMutating || isFetchingProfile) && styles.disabledButton,
-            ]}
-            onPress={handleLogout}
-            disabled={isAuthMutating || isFetchingProfile}
-          >
-            {isAuthMutating ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.logoutLabel}>Logout</Text>
-            )}
-          </Pressable>
-
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-
-        <Modal
-          transparent
-          visible={isEditVisible}
-          animationType="slide"
-          onRequestClose={() => setIsEditVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TextInput
-                style={styles.textInput}
-                value={nameInput}
-                placeholder="Display name"
-                onChangeText={setNameInput}
-              />
-              <TextInput
-                style={styles.textInput}
-                value={emojiInput}
-                placeholder="Favorite emoji (e.g., 🍣)"
-                onChangeText={setEmojiInput}
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={4}
-              />
-              <View style={styles.emojiPreviewRow}>
-                <Text style={styles.previewLabel}>Preview</Text>
-                <View style={styles.previewCircle}>
-                  <Text style={styles.previewEmoji}>
-                    {emojiInput.trim() || DEFAULT_AVATAR_EMOJI}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.emojiHint}>
-                Enter a single emoji to use as your avatar. Leave blank to use
-                your initials.
-              </Text>
-              {modalError ? (
-                <Text style={styles.modalError}>{modalError}</Text>
-              ) : null}
-              <View style={styles.modalActions}>
-                <Pressable
-                  style={[styles.button, styles.secondaryButton]}
-                  onPress={() => setIsEditVisible(false)}
-                  disabled={updateProfileMutation.isPending}
-                >
-                  <Text style={styles.secondaryButtonText}>Cancel</Text>
-                </Pressable>
-                <Pressable
-                  style={[
-                    styles.button,
-                    styles.primaryButton,
-                    (!nameInput.trim() || updateProfileMutation.isPending) &&
-                      styles.disabledButton,
-                  ]}
-                  onPress={handleSaveProfile}
-                  disabled={
-                    !nameInput.trim() || updateProfileMutation.isPending
-                  }
-                >
-                  {updateProfileMutation.isPending ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>Save</Text>
-                  )}
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      </SafeAreaView>
-    </LinearGradientBackground>
+      <ProfileEditModal
+        visible={isEditVisible}
+        nameValue={nameInput}
+        onNameChange={handleNameInputChange}
+        nameError={nameLengthError}
+        emojiValue={emojiInput}
+        onEmojiChange={handleEmojiInputChange}
+        emojiError={emojiError}
+        availableColors={AVATAR_COLOR_OPTIONS}
+        selectedColor={avatarColorInput}
+        onColorChange={handleSelectColor}
+        colorInputValue={customColorInput}
+        onCustomColorInputChange={handleCustomColorChange}
+        colorError={colorError}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveProfile}
+        modalError={modalError}
+        isSaving={updateProfileMutation.isPending}
+        disableSave={disableSaveButton}
+        defaultAvatarLabel={defaultAvatarLabel}
+      />
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 36,
-  },
-  loadingContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-    alignItems: "center",
-    gap: 8,
-  },
-  loadingLabel: {
-    fontSize: 16,
-    color: "#1F2937",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  errorText: {
-    fontSize: 16,
-    color: "#B91C1C",
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#1F2937",
-  },
-  retryLabel: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  bottomSpacer: {
-    height: 120,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
-    gap: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5F5",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#111827",
-  },
-  emojiPreviewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  previewLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#475569",
-  },
-  previewCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#F1F5F9",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  previewEmoji: {
-    fontSize: 30,
-  },
-  emojiHint: {
-    fontSize: 13,
-    color: "#6B7280",
-  },
-  modalError: {
-    color: "#B91C1C",
-    fontSize: 14,
-  },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  button: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 110,
-  },
-  secondaryButton: {
-    backgroundColor: "#E2E8F0",
-  },
-  secondaryButtonText: {
-    color: "#1F2937",
-    fontWeight: "600",
-  },
-  primaryButton: {
-    backgroundColor: "#2563EB",
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  logoutButton: {
-    marginTop: 16,
-    backgroundColor: "#DC2626",
-    borderRadius: 20,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoutLabel: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

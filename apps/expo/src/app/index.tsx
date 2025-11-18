@@ -1,23 +1,28 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import type { ImageSourcePropType } from "react-native";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 
-import {
-  Divider,
-  DukeRegisterButton,
-  LoginButton,
-  LoginForm,
-} from "../../components/auth";
-import LinearGradientBackground from "../../components/background/LinearGradientBackground";
+import mealmatesHeroAsset from "../../assets/mealmates.png";
+import { DukeRegisterButton } from "../../components/auth";
+import AnimatedPageFrame from "../../components/frame/AnimatedPageFrame";
 import { useDukeAuth } from "../hooks/useDukeAuth";
+
+const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 
 export default function Index() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   const { isLoading, isAuthenticated, userInfo, error, login } = useDukeAuth();
+  const header = "MealMates";
+  const baseColor = "195,227,255";
 
   // Navigate to home when authenticated
   useEffect(() => {
@@ -43,11 +48,6 @@ export default function Index() {
     }
   }, [error]);
 
-  const handleLogin = () => {
-    // For now, use traditional login (you can implement this later)
-    router.replace("/(App)/(Home)");
-  };
-
   const handleDukeAuth = async () => {
     try {
       await login();
@@ -57,11 +57,26 @@ export default function Index() {
   };
 
   return (
-    <LinearGradientBackground startColor="#C3E3FF" endColor="#F7F7FB">
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Welcome Back,</Text>
+    <AnimatedPageFrame
+      baseColor={baseColor}
+      headerTitle={header}
+      scrollEnabled={false}
+    >
+      <View style={styles.content}>
+        <Text style={styles.tagline}>
+          Plan the perfect bite with friends, classmates, or new faces around
+          Duke.
+        </Text>
 
+        <View style={styles.heroCard}>
+          <Image
+            source={mealmatesHero}
+            style={styles.heroImage}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={styles.actionSection}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0F172A" />
@@ -70,52 +85,48 @@ export default function Index() {
               </Text>
             </View>
           ) : (
-            <>
-              <LoginForm
-                email={email}
-                password={password}
-                onEmailChange={setEmail}
-                onPasswordChange={setPassword}
-              />
-
-              <DukeRegisterButton onPress={handleDukeAuth} />
-
-              <Divider />
-
-              <View style={styles.loginRow}>
-                <LoginButton onPress={handleLogin} />
-              </View>
-            </>
+            <DukeRegisterButton
+              label="Continue with Duke"
+              onPress={handleDukeAuth}
+              style={styles.dukeButton}
+            />
           )}
         </View>
-      </SafeAreaView>
-    </LinearGradientBackground>
+      </View>
+    </AnimatedPageFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 28,
-    paddingTop: 48,
+    paddingTop: 24,
   },
-  title: {
-    fontSize: 36,
-    fontWeight: "700",
-    color: "#0F172A",
-    letterSpacing: 0.4,
+  tagline: {
+    fontSize: 16,
+    color: "#475569",
+    lineHeight: 22,
   },
-  loginRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  heroCard: {
+    marginTop: 28,
+    borderRadius: 32,
+    overflow: "hidden",
+  },
+  heroImage: {
+    width: "100%",
+    height: 220,
+  },
+  actionSection: {
+    marginTop: 32,
+  },
+  dukeButton: {
+    marginTop: 28,
+    width: "100%",
+    alignSelf: "stretch",
     justifyContent: "center",
   },
   loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     gap: 16,
   },
