@@ -34,7 +34,17 @@ export default function SymbolButton(props: SymbolButtonProps) {
     return (
       <>
         <Pressable style={pressableStyle} onPress={onPress}>
-          <GlassView style={isLiquidGlassAvailable() ? glassViewStyle : [glassViewStyle, {backgroundColor: "rgba(255,255,255,0.85)"}]} isInteractive>
+          <GlassView
+            style={
+              isLiquidGlassAvailable()
+                ? glassViewStyle
+                : [
+                    glassViewStyle,
+                    { backgroundColor: "rgba(255,255,255,0.85)" },
+                  ]
+            }
+            isInteractive
+          >
             <SymbolView
               name={SFSymbolName}
               size={21}

@@ -18,12 +18,12 @@ import {
 } from "expo-maps";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import type { LocationUpdatePayload } from "~/definition";
 import { useApiSocket } from "~/hooks/useApiSocket";
 import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
 import { getStoredUserId } from "~/utils/user-storage";
 import { excludingPointsOfInterest } from "../../../../../../components/eventpage/MiniMap";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
-import type { LocationUpdatePayload } from "~/definition";
 
 export default function MapModalPage() {
   const router = useRouter();
@@ -34,10 +34,13 @@ export default function MapModalPage() {
   const meetPoint = params.meetPoint as string;
   const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
   const meetPointLongitude = parseFloat(params.meetPointLongitude as string);
-  const meetPointCoord: Coordinates = useMemo(() => ({
-    latitude: meetPointLatitude,
-    longitude: meetPointLongitude,
-  }), [meetPointLatitude, meetPointLongitude]);
+  const meetPointCoord: Coordinates = useMemo(
+    () => ({
+      latitude: meetPointLatitude,
+      longitude: meetPointLongitude,
+    }),
+    [meetPointLatitude, meetPointLongitude],
+  );
 
   const restaurantName = params.restaurantName as string;
   const restaurantLatitude = params.restaurantLatitude
@@ -46,14 +49,15 @@ export default function MapModalPage() {
   const restaurantLongitude = params.restaurantLongitude
     ? parseFloat(params.restaurantLongitude as string)
     : null;
-  const restaurantCoord: Coordinates | null = useMemo(() =>
-    restaurantLatitude !== null && restaurantLongitude !== null
-      ? {
-          latitude: restaurantLatitude,
-          longitude: restaurantLongitude,
-        }
-      : null,
-    [restaurantLatitude, restaurantLongitude]
+  const restaurantCoord: Coordinates | null = useMemo(
+    () =>
+      restaurantLatitude !== null && restaurantLongitude !== null
+        ? {
+            latitude: restaurantLatitude,
+            longitude: restaurantLongitude,
+          }
+        : null,
+    [restaurantLatitude, restaurantLongitude],
   );
 
   // get userId from storage
@@ -142,7 +146,13 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [meetPoint, meetPointCoord, restaurantCoord, restaurantName, userLocations]);
+  }, [
+    meetPoint,
+    meetPointCoord,
+    restaurantCoord,
+    restaurantName,
+    userLocations,
+  ]);
 
   const googleMarkerList = useMemo(() => {
     const markers: GoogleMapsMarker[] = [];
@@ -173,7 +183,13 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [meetPoint, meetPointCoord, restaurantCoord, restaurantName, userLocations]);
+  }, [
+    meetPoint,
+    meetPointCoord,
+    restaurantCoord,
+    restaurantName,
+    userLocations,
+  ]);
 
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =

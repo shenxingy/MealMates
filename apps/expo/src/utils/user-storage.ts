@@ -35,7 +35,7 @@ export const getStoredUsername = async () => {
     console.error("[USER STORAGE] Failed to read username:", error);
     return null;
   }
-}
+};
 
 export const setStoredUsername = async (username: string) => {
   try {
@@ -43,7 +43,7 @@ export const setStoredUsername = async (username: string) => {
   } catch (error) {
     console.error("[USER STORAGE] Failed to persist username:", error);
   }
-}
+};
 
 export const clearStoredUsername = async () => {
   try {
@@ -51,4 +51,4 @@ export const clearStoredUsername = async () => {
   } catch (error) {
     console.error("[USER STORAGE] Failed to clear username:", error);
   }
-}
+};
