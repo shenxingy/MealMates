@@ -24,6 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         "Allow MealMates to access your location to share it to your mates and help you navigate to them.",
+      NSAppTransportSecurity: { NSAllowsArbitraryLoads: true }, // enable HTTP requests
     },
   },
   android: {
@@ -54,6 +55,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-router",
     "expo-secure-store",
     "expo-web-browser",
+    [
+      'expo-build-properties',
+      {
+        android: {
+          usesCleartextTraffic: true, // enable HTTP requests
+        },
+        ios: {
+          flipper: true,
+        },
+      },
+    ],
     [
       "expo-splash-screen",
       {
