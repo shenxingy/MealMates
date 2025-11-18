@@ -135,7 +135,7 @@ export default function MapModalPage() {
           latitude: location.latitude,
           longitude: location.longitude,
         },
-        title: `User ${uid.slice(0, 8)}`, // Show first 8 chars of userId
+        title: location.username, // Show first 8 chars of userId
         systemImage: "person.fill",
         id: `user-${uid}`,
       });
@@ -162,13 +162,13 @@ export default function MapModalPage() {
     }
 
     // Add user location markers from WebSocket
-    userLocations.forEach((location, uid) => {
+    userLocations.forEach((location, _uid) => {
       markers.push({
         coordinates: {
           latitude: location.latitude,
           longitude: location.longitude,
         },
-        title: `User ${uid.slice(0, 8)}`,
+        title: location.username,
       });
     });
 
@@ -287,7 +287,7 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
+    const LOCATION_UPDATE_INTERVAL = 5000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
     }, LOCATION_UPDATE_INTERVAL);
