@@ -64,8 +64,12 @@ export interface UseApiSocketOptions {
 }
 
 export interface ServerMessage {
-  type: 'join_success' | 'location_update' | 'user_left' | 'error';
-  payload: JoinSuccessPayload | LocationUpdatePayload | UserLeftPayload | ErrorPayload;
+  type: "join_success" | "location_update" | "user_left" | "error";
+  payload:
+    | JoinSuccessPayload
+    | LocationUpdatePayload
+    | UserLeftPayload
+    | ErrorPayload;
 }
 
 /**

@@ -56,7 +56,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
     "expo-web-browser",
     [
-      'expo-build-properties',
+      "expo-build-properties",
       {
         android: {
           usesCleartextTraffic: true, // enable HTTP requests
