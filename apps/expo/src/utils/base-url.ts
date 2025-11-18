@@ -1,5 +1,5 @@
-import Constants from "expo-constants";
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 /**
  * Extend this function when going to production by
@@ -14,7 +14,7 @@ export const getBaseUrl = () => {
    * **NOTE**: This is only for development. In production, you'll want to set the
    * baseUrl to your production API URL.
    */
-  
+
   // Priority 1: Use production API URL if set (for EAS builds)
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
@@ -30,7 +30,7 @@ export const getBaseUrl = () => {
     localhost = Platform.OS === "android" ? "10.0.2.2" : "localhost";
     console.warn(
       `[getBaseUrl] No hostUri found, using fallback: ${localhost}. ` +
-      `Set EXPO_PUBLIC_API_URL for production builds.`,
+        `Set EXPO_PUBLIC_API_URL for production builds.`,
     );
   }
 

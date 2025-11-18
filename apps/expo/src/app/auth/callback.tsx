@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 
 /**
  * OAuth Callback Screen
- * 
+ *
  * This screen handles the OAuth callback from Duke authentication.
  * The actual token exchange is handled by expo-auth-session in useDukeAuth hook.
  * This screen just provides a UI while the authentication completes.
@@ -50,4 +50,3 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
 });
-
