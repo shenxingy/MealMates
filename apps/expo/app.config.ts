@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   updates: {
     fallbackToCacheTimeout: 0,
   },
-  newArchEnabled: false,
+  newArchEnabled: true,
   assetBundlePatterns: ["**/*"],
   ios: {
     bundleIdentifier: "com.mealmates.app",

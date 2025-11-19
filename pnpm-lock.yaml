@@ -48,12 +48,6 @@ catalogs:
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
-<<<<<<< HEAD
-=======
-    zod:
-      specifier: ^3.24.1
-      version: 3.25.76
->>>>>>> dev
   react19:
     '@types/react':
       specifier: ^19.1.12
@@ -311,11 +305,7 @@ importers:
         specifier: 2.2.2
         version: 2.2.2
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
     devDependencies:
       '@mealmates/eslint-config':
@@ -376,11 +366,7 @@ importers:
         specifier: 2.2.2
         version: 2.2.2
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
     devDependencies:
       '@mealmates/eslint-config':
@@ -432,11 +418,7 @@ importers:
         specifier: catalog:react19
         version: 19.1.1(react@19.1.1)
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
     devDependencies:
       '@better-auth/cli':
@@ -482,11 +464,7 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(drizzle-orm@0.44.7(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.11.6)(@vercel/postgres@0.10.0)(better-sqlite3@12.4.1)(kysely@0.28.8)(prisma@5.22.0))(zod@3.25.76)
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
     devDependencies:
       '@mealmates/eslint-config':
@@ -557,21 +535,13 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
 
   packages/validators:
     dependencies:
       zod:
-<<<<<<< HEAD
         specifier: ^3.22.0
-=======
-        specifier: 'catalog:'
->>>>>>> dev
         version: 3.25.76
     devDependencies:
       '@mealmates/eslint-config':
