@@ -1,28 +1,39 @@
+import type { AppleMapsMarker } from "expo-maps/build/apple/AppleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
+import { useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
+import { GoogleMapsMarker } from "expo-maps/build/google/GoogleMaps.types";
+
+import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
 
 interface NoPropMiniMapProps {
-  coordinates?: Coordinates;
-  zoom?: number;
+  meetPointCoord?: Coordinates;
+  meetPoint?: string;
+  restaurant?: string;
+  restaurantCoord?: Coordinates;
   joined?: boolean;
   shareLocationCallback?: () => void;
   onMapPressedCallback: () => void;
 }
 
 interface NotJoinedMiniMapProps {
-  coordinates: Coordinates;
-  zoom: number;
+  meetPointCoord: Coordinates;
+  meetPoint: string;
+  restaurant?: string;
+  restaurantCoord?: Coordinates;
   joined: false;
   onMapPressedCallback: () => void;
   shareLocationCallback?: () => void;
 }
 
 interface JoinedMiniMapProps {
-  coordinates: Coordinates;
-  zoom: number;
+  meetPointCoord: Coordinates;
+  meetPoint: string;
+  restaurant?: string;
+  restaurantCoord?: Coordinates;
   joined: true;
   onMapPressedCallback: () => void;
   shareLocationCallback: () => void;
@@ -35,12 +46,66 @@ type MiniMapProps =
 
 export default function MiniMap(props: MiniMapProps) {
   const {
-    coordinates,
-    zoom,
+    meetPoint,
+    meetPointCoord,
+    restaurant,
+    restaurantCoord,
     joined,
     shareLocationCallback,
     onMapPressedCallback,
   } = props;
+
+  const [coordinates, setCoordinates] = useState<Coordinates | undefined>(
+    undefined,
+  );
+  const [zoom, setZoom] = useState<number>(15);
+  const [appleMarker, setAppleMarker] = useState<AppleMapsMarker[]>([]);
+  const [googleMarker, setGoogleMarker] = useState<GoogleMapsMarker[]>([]);
+
+  useEffect(() => {
+    const configMap = () => {
+      if (meetPointCoord == null) {
+        return;
+      }
+      let center: Coordinates | undefined = meetPointCoord;
+      let zoom = calculateZoomLevel([meetPointCoord]);
+      const appleMarker: AppleMapsMarker[] = [
+        {
+          coordinates: meetPointCoord,
+          title: meetPoint,
+          systemImage: "flag.fill",
+          id: "meet-point",
+        },
+      ];
+      const googleMarker: GoogleMapsMarker[] = [
+        {
+          coordinates: meetPointCoord,
+          title: meetPoint,
+        },
+      ];
+      if (restaurantCoord != null) {
+        center = calculateCenterCoordinates([meetPointCoord, restaurantCoord]);
+        zoom = calculateZoomLevel([meetPointCoord, restaurantCoord]);
+        if (restaurant != null) {
+          appleMarker.push({
+            coordinates: restaurantCoord,
+            title: restaurant,
+            systemImage: "fork.knife",
+            id: "restaurant-point",
+          });
+          googleMarker.push({
+            coordinates: restaurantCoord,
+            title: restaurant,
+          });
+        }
+      }
+      setCoordinates(center);
+      setZoom(zoom);
+      setAppleMarker(appleMarker);
+      setGoogleMarker(googleMarker);
+    };
+    void configMap();
+  }, [meetPoint, meetPointCoord, restaurant, restaurantCoord]);
 
   return (
     <>
@@ -52,11 +117,7 @@ export default function MiniMap(props: MiniMapProps) {
               coordinates,
               zoom,
             }}
-            markers={[
-              {
-                coordinates: coordinates,
-              },
-            ]}
+            markers={appleMarker}
             uiSettings={{
               myLocationButtonEnabled: false,
               togglePitchEnabled: false,
@@ -97,11 +158,7 @@ export default function MiniMap(props: MiniMapProps) {
               scaleBarEnabled: false,
               zoomControlsEnabled: false,
             }}
-            markers={[
-              {
-                coordinates: coordinates,
-              },
-            ]}
+            markers={googleMarker}
           />
           <Pressable style={styles.mapMask} onPress={onMapPressedCallback} />
           {joined && (
