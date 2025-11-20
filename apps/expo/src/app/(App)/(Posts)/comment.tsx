@@ -3,7 +3,6 @@ import { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-// import { createPost } from "~/utils/api";
 import Back from "../../../../components/postpage/Back";
 import { getBaseUrl } from "~/utils/base-url";
 

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { FlatList, StyleSheet, View, Image } from "react-native";
+import { FlatList, StyleSheet, View, Image, Text } from "react-native";
 import PostItem from "./PostItem";
 import { Post } from '~/definition';
-
 
 
 const getLists = async (data: Post[], numColumns: number) => {
@@ -29,7 +28,6 @@ const getLists = async (data: Post[], numColumns: number) => {
     if (!post || !list) break;
     list.push(post);
     const { width, height } = await Image.getSize(post.image);
-    // console.log('h: ' + height + ', w: ' + width);
     heights[listIdx] = (heights[listIdx] ?? 0) + height / width + 0.5;
   }
   return lists;
@@ -46,8 +44,8 @@ export default function PostList({data, numColumns, onRefresh} :
     func(data, numColumns);
   }, [data, numColumns]);
   const renderPost = (listItem : any) => {
-  const post: Post = listItem.item;
-  return (<PostItem props={post} onRefresh={onRefresh} />);
+    const post: Post = listItem.item;
+    return (<PostItem props={post} onRefresh={onRefresh} />);
   }
   return (
     <View style={ [styles.container] } >

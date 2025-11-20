@@ -1,20 +1,10 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Image, Text, StyleSheet, ImageSize, Pressable } from 'react-native'
 import Like from './Like';
 import { likePost } from '~/utils/api';
 import { Post } from '~/definition';
 
-// export interface PostProps {
-//   id: number;
-//   title: string;
-//   content: string;
-//   image: string;
-//   user: string;
-//   time: string;
-//   likes: number;
-//   liked: boolean;
-// }
 
 export default function PostItem({ props, onRefresh }: { props: Post, onRefresh: () => Promise<void> }) {
   const [width, setWidth] = useState<number>(0);
