@@ -62,14 +62,14 @@ export const calculateZoomLevel = (coordinates: Coordinates[]): number => {
 
 export const calculateCenterCoordinates = (
   coordinates: Coordinates[],
-): Coordinates | null => {
+): Coordinates | undefined => {
   if (coordinates.length === 0) {
-    return null;
+    return undefined;
   }
 
   if (coordinates.length === 1) {
     const firstCoord = coordinates[0];
-    return firstCoord ?? null;
+    return firstCoord ?? undefined;
   }
 
   let totalLat = 0;
