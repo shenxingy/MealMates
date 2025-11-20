@@ -144,28 +144,28 @@ export const fetchDetailedEvent = async (eventId: string) => {
 };
 
 export const fetchPostList = async () => {
-  const res = await api.get<ApiResponse<Post[]>>("/posts");
+  const res = await api.get<ApiResponse<Post[]>>("/api/posts");
   return res.data.data;
 };
 
 export const fetchPost = async (id: number) => {
-  const res = await api.get<ApiResponse<Post>>("/posts/" + id);
+  const res = await api.get<ApiResponse<Post>>("/api/posts/" + id);
   return res.data.data;
 };
 
 export const likePost = async (id: number, like: boolean) => {
   const data = { like: like };
-  const res = await api.put<ApiResponse<any>>("/posts/" + id, data);
+  const res = await api.put<ApiResponse<any>>("/api/posts/" + id, data);
   return res.data.message;
 };
 
 export const fetchPostComments = async (id: number) => {
-  const res = await api.get<ApiResponse<PostComment[]>>("/posts/" + id + "/comments");
+  const res = await api.get<ApiResponse<PostComment[]>>("/api/posts/" + id + "/comments");
   return res.data.data;
 };
 
 export const likeComment = async (postId: number, commentId: number, like: boolean) => {
-  const url: string = "/posts/" + postId + "/comments/" + commentId;
+  const url: string = "/api/posts/" + postId + "/comments/" + commentId;
   const data = { like: like };
   const res = await api.put<ApiResponse<any>>(url, data);
   return res.data.message;

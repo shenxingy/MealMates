@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Image, Pressable, StyleSheet, ImageSize, Alert, Platform } from "react-native";
+import { View, Text, TextInput, Image, Pressable, StyleSheet, ImageSize, Platform } from "react-native";
 import { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";

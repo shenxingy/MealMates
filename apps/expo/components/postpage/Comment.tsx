@@ -4,15 +4,6 @@ import { useState } from "react";
 import { likeComment } from "~/utils/api";
 import { PostComment } from "~/definition";
 
-// export interface CommentProps {
-//   id: number;
-//   content: string;
-//   image: string | undefined;
-//   user: string;
-//   likes: number;
-//   liked: boolean;
-// }
-
 export default function Comment({ postId, props, onRefresh }:
   { postId: number, props: PostComment, onRefresh: () => void }
 ) {

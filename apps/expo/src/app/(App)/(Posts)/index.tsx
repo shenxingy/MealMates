@@ -1,10 +1,10 @@
-import { Text, Pressable, StyleSheet, Button } from "react-native";
+import { Text, Pressable, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
+import { useRouter } from "expo-router";
 import PostList from "../../../../components/postpage/PostList";
 import { Post } from '~/definition';
 import { fetchPostList } from "~/utils/api";
-import { useRouter } from "expo-router";
 
 export default function PostPage() {
   const header = "Posts";
@@ -28,10 +28,11 @@ export default function PostPage() {
         <Pressable onPress={create}>
           <Text>New Post</Text>
         </Pressable>
-        {/* <Pressable onPress={onRefresh}>
+        <Pressable onPress={onRefresh}>
           <Text>Refresh</Text>
-        </Pressable> */}
-        <Button onPress={onRefresh} title="Refresh" />
+        </Pressable>
+        <Text>fuck index</Text>
+        <Text>fuck index</Text>
         <PostList
           data={posts}
           numColumns={2}

@@ -43,14 +43,6 @@ export default function PostDetails() {
         (<PostDetail
           props={post}
           onRefresh={onRefresh}
-            // id={post.id}
-            // title={post.title}
-            // content={post.content}
-            // image={post.image}
-            // user={post.user}
-            // time={post.time}
-            // likes={post.likes}
-            // liked={post.liked}
         />):
         (
           <Text>post not found</Text>
