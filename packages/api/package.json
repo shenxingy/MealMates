@@ -23,7 +23,7 @@
     "@mealmates/validators": "workspace:*",
     "@trpc/server": "catalog:",
     "superjson": "2.2.2",
-    "zod": "^3.25.76"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@mealmates/eslint-config": "workspace:*",
