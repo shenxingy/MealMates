@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchDetailedEvent } from "~/utils/api";
-import { calculateZoomLevel } from "~/utils/map";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
@@ -91,8 +90,10 @@ const EventDetailsPage = () => {
       <EmptySpace marginTop={20} />
       {meetPointCoord && (
         <MiniMap
-          coordinates={meetPointCoord}
-          zoom={calculateZoomLevel([meetPointCoord])}
+          meetPointCoord={meetPointCoord}
+          meetPoint={meetPoint}
+          restaurantCoord={restaurantCoord}
+          restaurant={restaurantName}
           joined={true}
           shareLocationCallback={shareLocationCallback}
           onMapPressedCallback={handleOpenMapModal}
