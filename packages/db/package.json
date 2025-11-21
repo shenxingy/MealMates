@@ -29,12 +29,11 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.81.1",
+    "@supabase/supabase-js": "^2.84.0",
     "@vercel/postgres": "^0.10.0",
-    "better-sqlite3": "^12.4.1",
     "drizzle-orm": "^0.44.6",
     "drizzle-zod": "^0.8.3",
-    "zod": "^3.25.76"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@mealmates/eslint-config": "workspace:*",

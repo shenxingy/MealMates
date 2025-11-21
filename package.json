@@ -28,19 +28,11 @@
   },
   "devDependencies": {
     "@mealmates/prettier-config": "workspace:*",
-    "@turbo/gen": "^2.6.0",
+    "@turbo/gen": "^2.5.8",
     "dotenv-cli": "^10.0.0",
     "prettier": "catalog:",
-    "turbo": "^2.6.0",
+    "turbo": "^2.5.8",
     "typescript": "catalog:"
   },
-  "prettier": "@mealmates/prettier-config",
-  "pnpm": {
-    "overrides": {
-      "@expo/metro-runtime": "6.1.2",
-      "better-sqlite3": "^12.4.1",
-      "utf-8-validate": "^5",
-      "zod": "^3.22.0"
-    }
-  }
+  "prettier": "@mealmates/prettier-config"
 }
