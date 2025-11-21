@@ -103,3 +103,24 @@ export interface UserLeaveEventMessage {
   type: "leave_event";
   payload: Record<string, never>; // empty payload
 }
+
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  image: string;
+  user: string;
+  time: string;
+  likes: number;
+  liked: boolean;
+}
+
+export interface PostComment {
+  postId: number,
+  id: number,
+  content: string;
+  image: string | undefined;
+  user: string;
+  likes: number;
+  liked: boolean;
+}
