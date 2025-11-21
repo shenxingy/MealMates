@@ -31,7 +31,6 @@ export default function PostPage() {
         <Pressable onPress={onRefresh}>
           <Text>Refresh</Text>
         </Pressable>
-        <Text>fuck index</Text>
         <PostList
           data={posts}
           numColumns={2}
