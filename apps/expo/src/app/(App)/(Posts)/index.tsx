@@ -20,7 +20,10 @@ export default function PostPage() {
     router.push({ pathname: "/(App)/(Posts)/create" });
   };
   useEffect(() => {
-    onRefresh();
+    const func = async () => {
+      await onRefresh();
+    };
+    void func();
   }, []);
 
   return (

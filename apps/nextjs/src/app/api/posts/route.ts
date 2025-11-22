@@ -19,7 +19,6 @@ export async function POST(req: Request) {
 
   const fileName = `${Date.now()}-${file.name}`;
   // Upload to Supabase Storage
-  // console.log("storing");
   const { error } = await supabase.storage.from("Post").upload(fileName, file);
   if (error) {
     console.log(error);
@@ -46,10 +45,6 @@ export async function POST(req: Request) {
 
 export function GET() {
   const data = PostData.getPosts();
-  console.log(data);
-  console.log(PostData.getPost(0));
-  console.log(PostData.getPost(1));
-  console.log(PostData.getPost(2));
   return NextResponse.json({
     data: data,
     message: "Success",

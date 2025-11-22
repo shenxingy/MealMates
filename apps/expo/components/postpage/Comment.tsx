@@ -1,5 +1,5 @@
 import type { ImageSize } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { PostComment } from "~/definition";
@@ -17,7 +17,7 @@ export default function Comment({
 }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
-  const getSize = async (): Promise<void> => {
+  const getSize = async () => {
     if (!props.image) return;
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
@@ -28,7 +28,12 @@ export default function Comment({
     console.log(res);
     onRefresh();
   };
-  getSize();
+  useEffect(() => {
+    const func = async () => {
+      await getSize();
+    };
+    void func();
+  }, []);
   return (
     <View style={[styles.container]}>
       <View>

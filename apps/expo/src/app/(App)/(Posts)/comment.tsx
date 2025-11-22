@@ -1,15 +1,6 @@
 import type { ImageSize } from "react-native";
 import { useState } from "react";
-import {
-  Alert,
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -43,7 +34,7 @@ export default function Comment() {
     });
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0].uri);
-      getSize(result.assets[0].uri);
+      void getSize(result.assets[0].uri);
       setAlert(undefined);
     }
   };
@@ -66,16 +57,16 @@ export default function Comment() {
         uri: image,
         name: "img", // any name is fine
         type: imageType,
-      } as any);
+      });
     }
     const host: string = getBaseUrl();
-    const res = await fetch(host + "/posts/" + postId + "/comments", {
+    const res = await fetch(host + "/api/posts/" + postId + "/comments", {
       method: "POST",
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
-    const data = await res.json();
-    console.log(data);
+    const data = (await res.json()) as { message: string };
+    // console.log(data);
     if (data.message === "Success") {
       router.back();
     } else {

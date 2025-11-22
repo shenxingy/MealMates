@@ -1,7 +1,6 @@
 import type { ImageSize } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
 
 import type { Post } from "~/definition";
 import { likePost } from "~/utils/api";
@@ -21,7 +20,6 @@ export default function PostDetail({
     setWidth(size.width);
     setHeight(size.height);
   };
-  const router = useRouter();
   const timePassed = () => {
     const date1: Date = new Date();
     const date2: Date = new Date(props.time);
@@ -40,9 +38,14 @@ export default function PostDetail({
   const like = async () => {
     const res = await likePost(props.id, !props.liked);
     console.log(res);
-    onRefresh();
+    void onRefresh();
   };
-  getSize();
+  useEffect(() => {
+    const func = async () => {
+      await getSize();
+    };
+    void func();
+  }, []);
   return (
     <View style={[styles.container]}>
       <Image

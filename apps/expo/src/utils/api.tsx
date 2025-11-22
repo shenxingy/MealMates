@@ -155,7 +155,7 @@ export const fetchPost = async (id: number) => {
 
 export const likePost = async (id: number, like: boolean) => {
   const data = { like: like };
-  const res = await api.put<ApiResponse<any>>("/api/posts/" + id, data);
+  const res = await api.put<ApiResponse<undefined>>("/api/posts/" + id, data);
   return res.data.message;
 };
 
@@ -173,6 +173,6 @@ export const likeComment = async (
 ) => {
   const url: string = "/api/posts/" + postId + "/comments/" + commentId;
   const data = { like: like };
-  const res = await api.put<ApiResponse<any>>(url, data);
+  const res = await api.put<ApiResponse<undefined>>(url, data);
   return res.data.message;
 };
