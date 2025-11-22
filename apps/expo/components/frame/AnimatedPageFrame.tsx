@@ -24,6 +24,7 @@ export default function AnimatedPageFrame(props: {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
+  headerRight?: React.ReactNode;
   scrollEnabled?: boolean;
   enableReturnButton?: boolean;
   returnButtonText?: string;
@@ -32,6 +33,7 @@ export default function AnimatedPageFrame(props: {
     children,
     baseColor,
     headerTitle,
+    headerRight,
     scrollEnabled = true,
     enableReturnButton = false,
     returnButtonText,
@@ -107,11 +109,24 @@ export default function AnimatedPageFrame(props: {
           scrollEnabled={scrollEnabled}
         >
           <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
-            <Animated.Text
-              style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
             >
-              {headerTitle ?? ""}
-            </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.contentHeader,
+                  { opacity: contentHeaderOpacity, marginBottom: 0 },
+                ]}
+              >
+                {headerTitle ?? ""}
+              </Animated.Text>
+              {headerRight}
+            </View>
             {/* Actual Content Started */}
             {children}
           </View>

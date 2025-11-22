@@ -1,5 +1,7 @@
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
+import { SymbolView } from "expo-symbols";
 import { useRouter } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchSimpleEventList } from "~/utils/api";
@@ -25,11 +27,26 @@ export default function HomePage() {
     router.push(`/event/${eventId}`);
   };
 
+  const handleCreateEvent = () => {
+    router.push("/event/create");
+  };
+
+  const CreateButton = (
+    <Pressable onPress={handleCreateEvent}>
+      {Platform.OS === "ios" ? (
+        <SymbolView name="plus.circle.fill" size={32} tintColor="black" />
+      ) : (
+        <MaterialIcons name="add-circle" size={32} color="black" />
+      )}
+    </Pressable>
+  );
+
   if (isLoading) {
     return (
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
+        headerRight={CreateButton}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -47,6 +64,7 @@ export default function HomePage() {
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
+        headerRight={CreateButton}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -60,7 +78,11 @@ export default function HomePage() {
   }
 
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
+    <AnimatedPageFrame
+      baseColor={baseColor}
+      headerTitle={header}
+      headerRight={CreateButton}
+    >
       <EmptySpace marginTop={30} />
 
       {data?.map((event, _) => (
