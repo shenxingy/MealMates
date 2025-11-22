@@ -32,7 +32,7 @@ export interface Post {
 }
 
 export interface PostComment {
-  id: number,
+  id: number;
   content: string;
   image: string | undefined;
   user: string;

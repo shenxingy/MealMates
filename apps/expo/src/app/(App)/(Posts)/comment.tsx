@@ -1,10 +1,21 @@
-import { View, Text, TextInput, Image, Pressable, StyleSheet, ImageSize, Alert, Platform } from "react-native";
+import type { ImageSize } from "react-native";
 import { useState } from "react";
-import * as ImagePicker from 'expo-image-picker';
+import {
+  Alert,
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
+
+import { getBaseUrl } from "~/utils/base-url";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import Back from "../../../../components/postpage/Back";
-import { getBaseUrl } from "~/utils/base-url";
 
 export default function Comment() {
   const header = "Comment";
@@ -20,11 +31,11 @@ export default function Comment() {
     const size: ImageSize = await Image.getSize(image);
     setWidth(size.width);
     setHeight(size.height);
-  }
+  };
   const changeText = (content: string) => {
     setContent(content);
     setAlert(undefined);
-  }
+  };
   const pick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -35,7 +46,7 @@ export default function Comment() {
       getSize(result.assets[0].uri);
       setAlert(undefined);
     }
-  }
+  };
   const comment = async () => {
     if (image.length === 0 && content.length === 0) {
       setAlert("Please add comment content or upload an image");
@@ -60,45 +71,46 @@ export default function Comment() {
     const host: string = getBaseUrl();
     const res = await fetch(host + "/posts/" + postId + "/comments", {
       method: "POST",
-      headers: { "Content-Type": "multipart/form-data", },
+      headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
     const data = await res.json();
     console.log(data);
     if (data.message === "Success") {
       router.back();
-    }
-    else {
+    } else {
       setAlert("comment failed");
     }
-  }
+  };
 
   return (
     <>
       <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-        <Pressable onPress={router.back} >
+        <Pressable onPress={router.back}>
           <Back text="< Detail" />
         </Pressable>
         <Text>Comment</Text>
         <TextInput value={content} onChangeText={changeText} />
-        <Pressable onPress={pick} >
+        <Pressable onPress={pick}>
           <Text>Choose An Image</Text>
         </Pressable>
-        { image.length > 0 && <Image
-          source={{ uri: image }}
-          style={[ styles.image, {aspectRatio: width / height} ]}
-        />}
-        { alert && <Text>{alert}</Text> }
+        {image.length > 0 && (
+          <Image
+            source={{ uri: image }}
+            style={[styles.image, { aspectRatio: width / height }]}
+          />
+        )}
+        {alert && <Text>{alert}</Text>}
         <Pressable onPress={comment}>
           <Text>Send</Text>
         </Pressable>
       </AnimatedPageFrame>
     </>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   image: {
-    width: '100%'
-  }
-})
+    width: "100%",
+  },
+});

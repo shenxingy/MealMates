@@ -116,8 +116,8 @@ export interface Post {
 }
 
 export interface PostComment {
-  postId: number,
-  id: number,
+  postId: number;
+  id: number;
   content: string;
   image: string | undefined;
   user: string;

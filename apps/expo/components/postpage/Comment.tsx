@@ -1,65 +1,73 @@
-import { Image, ImageSize, Pressable, StyleSheet, Text, View } from "react-native";
-import Like from "./Like";
+import type { ImageSize } from "react-native";
 import { useState } from "react";
-import { likeComment } from "~/utils/api";
-import { PostComment } from "~/definition";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function Comment({ postId, props, onRefresh }:
-  { postId: number, props: PostComment, onRefresh: () => void }
-) {
+import type { PostComment } from "~/definition";
+import { likeComment } from "~/utils/api";
+import Like from "./Like";
+
+export default function Comment({
+  postId,
+  props,
+  onRefresh,
+}: {
+  postId: number;
+  props: PostComment;
+  onRefresh: () => void;
+}) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
-  const getSize = async () => {
+  const getSize = async (): Promise<void> => {
     if (!props.image) return;
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
-  }
+  };
   const like = async () => {
     const res = await likeComment(postId, props.id, !props.liked);
     console.log(res);
     onRefresh();
-  }
+  };
   getSize();
   return (
-    <View style={[ styles.container ]} >
+    <View style={[styles.container]}>
       <View>
-        <Text style={styles.username} >{ props.user }</Text>
-        <Text style={styles.text15} >{ props.content }</Text>
-        { props.image &&
+        <Text style={styles.username}>{props.user}</Text>
+        <Text style={styles.text15}>{props.content}</Text>
+        {props.image && (
           <Image
-            style={[ styles.image, {aspectRatio: width / height} ]}
+            style={[styles.image, { aspectRatio: width / height }]}
             source={{ uri: props.image }}
           />
-        }
+        )}
       </View>
       <Pressable onPress={like}>
         <Like likes={props.likes} liked={props.liked} border={false} />
       </Pressable>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     padding: 10,
-    justifyContent: 'space-between',
-    flexDirection: 'row'
+    justifyContent: "space-between",
+    flexDirection: "row",
   },
   username: {
-    color: '#777',
-    fontWeight: 'bold'
+    color: "#777",
+    fontWeight: "bold",
   },
   text15: {
-    fontSize: 15
+    fontSize: 15,
   },
-    image: {
-    width: '60%',
+  image: {
+    width: "60%",
     margin: 15,
-    borderRadius: 30
+    borderRadius: 30,
   },
   bg: {
-    backgroundColor: '#0ff'
-  }
-})
+    backgroundColor: "#0ff",
+  },
+});

@@ -1,62 +1,69 @@
-import { Button, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import {
+  Button,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
+
+import type { Post, PostComment } from "~/definition";
+import { fetchPost, fetchPostComments } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import { Post, PostComment } from '~/definition';
+import Back from "../../../../components/postpage/Back";
 import Comment from "../../../../components/postpage/Comment";
 import PostDetail from "../../../../components/postpage/Post";
-import Back from "../../../../components/postpage/Back";
-import { fetchPost, fetchPostComments } from "~/utils/api";
 
 export default function PostDetails() {
   // const searchParams = useSearchParams();
   const header = "Post Details";
   const baseColor = "255,178,0";
   const { id } = useLocalSearchParams();
-  const idNum: number = Number(id);
+  const idNum = Number(id);
   const [post, setPost] = useState<Post | undefined>(undefined);
-  const [comments, setComments] = useState<PostComment[] | undefined>(undefined);
+  const [comments, setComments] = useState<PostComment[] | undefined>(
+    undefined,
+  );
   const onRefresh = async () => {
     setPost(await fetchPost(idNum));
     setComments(await fetchPostComments(idNum));
-  }
+  };
   const comment = () => {
-    router.push({ pathname: '/(App)/(Posts)/comment', params: {postId: id}});
-  }
+    router.push({ pathname: "/(App)/(Posts)/comment", params: { postId: id } });
+  };
   const router = useRouter();
   useEffect(() => {
     onRefresh();
   }, []);
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-      <Pressable onPress={router.back} >
+      <Pressable onPress={router.back}>
         <Back text="< Posts" />
       </Pressable>
-      <Pressable onPress={onRefresh} >
+      <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
       </Pressable>
-      <Pressable onPress={comment} >
+      <Pressable onPress={comment}>
         <Text>comment</Text>
       </Pressable>
-      { post?
-        (<PostDetail
-          props={post}
-          onRefresh={onRefresh}
-        />):
-        (
-          <Text>post not found</Text>
-        )
-      }
-      <View style={ styles.line }></View>
-      { post && comments && comments.map((comment, idx) => (
-        <Comment
-          key={idx}
-          postId={post.id}
-          props={comment}
-          onRefresh={onRefresh}
-        />
-      ))}
+      {post ? (
+        <PostDetail props={post} onRefresh={onRefresh} />
+      ) : (
+        <Text>post not found</Text>
+      )}
+      <View style={styles.line}></View>
+      {post &&
+        comments?.map((comment, idx) => (
+          <Comment
+            key={idx}
+            postId={post.id}
+            props={comment}
+            onRefresh={onRefresh}
+          />
+        ))}
     </AnimatedPageFrame>
   );
 }
@@ -68,10 +75,10 @@ const styles = StyleSheet.create({
   // },
   line: {
     borderBottomWidth: 1,
-    borderBottomColor: '#bbb',
-    marginVertical: 10
+    borderBottomColor: "#bbb",
+    marginVertical: 10,
   },
   bg: {
-    backgroundColor: '#00f'
-  }
-})
+    backgroundColor: "#00f",
+  },
+});
