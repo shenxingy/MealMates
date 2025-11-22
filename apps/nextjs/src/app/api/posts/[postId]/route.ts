@@ -20,8 +20,7 @@ export async function PUT(
   { params }: { params: { postId: number } | Promise<{ postId: number }> },
 ) {
   const { postId } = await params;
-  const { like } = await req.json() as { like: boolean };
-  // console.log("id: " + id + ", like: " + like);
+  const { like } = (await req.json()) as { like: boolean };
   const res = like ? PostData.likePost(postId) : PostData.dislikePost(postId);
   return NextResponse.json({
     message: res ? "Success" : "Failure",

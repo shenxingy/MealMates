@@ -10,7 +10,6 @@ export async function GET(
   { params }: { params: { postId: number } | Promise<{ postId: number }> },
 ) {
   const { postId } = await params;
-  console.log("getting comments");
   const data: PostComment[] | undefined = PostData.getComments(postId);
   return NextResponse.json({
     data: data,

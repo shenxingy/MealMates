@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
+import { useLocalSearchParams } from "expo-router/build/hooks";
 
 import type { Post, PostComment } from "~/definition";
 import { fetchPost, fetchPostComments } from "~/utils/api";
@@ -18,7 +11,6 @@ import Comment from "../../../../components/postpage/Comment";
 import PostDetail from "../../../../components/postpage/Post";
 
 export default function PostDetails() {
-  // const searchParams = useSearchParams();
   const header = "Post Details";
   const baseColor = "255,178,0";
   const { id } = useLocalSearchParams();
@@ -36,7 +28,7 @@ export default function PostDetails() {
   };
   const router = useRouter();
   useEffect(() => {
-    onRefresh();
+    void onRefresh();
   }, []);
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>

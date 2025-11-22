@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, View } from "react-native";
 
 import type { Post } from "~/definition";
 import PostItem from "./PostItem";
@@ -47,9 +47,9 @@ export default function PostList({
     const func = async (data: Post[], numColumns: number) => {
       setLists(await getLists(data, numColumns));
     };
-    func(data, numColumns);
+    void func(data, numColumns);
   }, [data, numColumns]);
-  const renderPost = (listItem: any) => {
+  const renderPost = (listItem: { item: Post }) => {
     const post: Post = listItem.item;
     return <PostItem props={post} onRefresh={onRefresh} />;
   };

@@ -1,17 +1,10 @@
 import type { ImageSize } from "react-native";
 import { useState } from "react";
-import {
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 
+import { getBaseUrl } from "~/utils/base-url";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import Back from "../../../../components/postpage/Back";
 
@@ -37,7 +30,7 @@ export default function Create() {
     });
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0].uri);
-      getSize(result.assets[0].uri);
+      void getSize(result.assets[0].uri);
       setAlert(undefined);
     }
   };
@@ -56,19 +49,19 @@ export default function Create() {
       uri: image,
       name: "img", // any name is fine
       type: imageType,
-    } as any);
+    });
     formData.append("user", "current user");
     formData.append("time", new Date().toString());
     formData.append("likes", 0);
     formData.append("liked", false);
-    const host: string = Platform.OS === "android" ? "10.0.2.2" : "localhost";
-    const res = await fetch("http://" + host + ":3000/api/posts", {
+    const host: string = getBaseUrl();
+    const res = await fetch(host + "/api/posts", {
       method: "POST",
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
-    const data = await res.json();
-    console.log(data);
+    const data = (await res.json()) as { message: string };
+    // console.log(data);
     if (data.message === "Success") {
       router.back();
     } else {
