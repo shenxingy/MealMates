@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
 import { createContext } from "react";
+import { Stack } from "expo-router";
 
 export default function PostLayout() {
   return (
@@ -8,7 +8,10 @@ export default function PostLayout() {
         <Stack.Screen name="index" options={{ title: "Posts Page" }} />
         <Stack.Screen name="detail" options={{ title: "Detail Page" }} />
         <Stack.Screen name="create" options={{ title: "Create Page" }} />
-        <Stack.Screen name="comment" options={{ title: "Comment Page", presentation: 'modal'}} />
+        <Stack.Screen
+          name="comment"
+          options={{ title: "Comment Page", presentation: "modal" }}
+        />
       </Stack>
     </>
   );

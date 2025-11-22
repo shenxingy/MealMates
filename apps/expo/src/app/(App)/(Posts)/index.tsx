@@ -1,10 +1,11 @@
-import { Text, Pressable, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
-import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
-import PostList from "../../../../components/postpage/PostList";
-import { Post } from '~/definition';
+
+import type { Post } from "~/definition";
 import { fetchPostList } from "~/utils/api";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
+import PostList from "../../../../components/postpage/PostList";
 
 export default function PostPage() {
   const header = "Posts";
@@ -13,11 +14,11 @@ export default function PostPage() {
   const onRefresh = async () => {
     const data = await fetchPostList();
     setPosts(data);
-  }
+  };
   const router = useRouter();
   const create = () => {
-    router.push({ pathname: '/(App)/(Posts)/create' });
-  }
+    router.push({ pathname: "/(App)/(Posts)/create" });
+  };
   useEffect(() => {
     onRefresh();
   }, []);
@@ -31,11 +32,7 @@ export default function PostPage() {
         <Pressable onPress={onRefresh}>
           <Text>Refresh</Text>
         </Pressable>
-        <PostList
-          data={posts}
-          numColumns={2}
-          onRefresh={onRefresh}
-        />
+        <PostList data={posts} numColumns={2} onRefresh={onRefresh} />
       </AnimatedPageFrame>
     </>
   );
@@ -43,13 +40,13 @@ export default function PostPage() {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
   },
   posts: {
     fontSize: 30,
-    marginTop: 30
+    marginTop: 30,
   },
   bg: {
-    backgroundColor: '#ff0'
-  }
-})
+    backgroundColor: "#ff0",
+  },
+});

@@ -1,26 +1,28 @@
 import { NextResponse } from "next/server";
+
 import { supabase } from "@mealmates/db/client";
-import { PostComment } from "~/app/definition";
+
+import type { PostComment } from "~/app/definition";
 import { PostData } from "~/app/mock/PostData";
 
 export async function GET(
   req: Request,
-  { params }: { params: { postId: number } | Promise<{ postId: number }> }
+  { params }: { params: { postId: number } | Promise<{ postId: number }> },
 ) {
   const { postId } = await params;
   console.log("getting comments");
   const data: PostComment[] | undefined = PostData.getComments(postId);
   return NextResponse.json({
     data: data,
-    message: data? "Success" : "Failure",
+    message: data ? "Success" : "Failure",
   });
 }
 
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("image") as File | null;
-  
-  let imgUrl: string = "";
+
+  let imgUrl = "";
 
   if (file) {
     const fileName = `${Date.now()}-${file.name}`;
@@ -33,9 +35,7 @@ export async function POST(req: Request) {
         message: "Error",
       });
     }
-    const { data } = await supabase.storage
-      .from("Post")
-      .getPublicUrl(fileName);
+    const { data } = supabase.storage.from("Post").getPublicUrl(fileName);
     imgUrl = data.publicUrl;
   }
 
@@ -45,8 +45,8 @@ export async function POST(req: Request) {
     image: imgUrl,
     user: formData.get("user") as string,
     likes: Number(formData.get("likes") as string),
-    liked: formData.get("liked") as string === "true"
-  }
+    liked: (formData.get("liked") as string) === "true",
+  };
   PostData.addComment(Number(formData.get("post") as string), newComment);
   return NextResponse.json({
     message: "Success",

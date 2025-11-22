@@ -10,9 +10,9 @@ import type { AppRouter } from "@mealmates/api";
 import type {
   ApiResponse,
   DetailedEventDTO,
-  SimpleEventDTO,
   Post,
-  PostComment
+  PostComment,
+  SimpleEventDTO,
 } from "~/definition";
 import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
@@ -160,11 +160,17 @@ export const likePost = async (id: number, like: boolean) => {
 };
 
 export const fetchPostComments = async (id: number) => {
-  const res = await api.get<ApiResponse<PostComment[]>>("/api/posts/" + id + "/comments");
+  const res = await api.get<ApiResponse<PostComment[]>>(
+    "/api/posts/" + id + "/comments",
+  );
   return res.data.data;
 };
 
-export const likeComment = async (postId: number, commentId: number, like: boolean) => {
+export const likeComment = async (
+  postId: number,
+  commentId: number,
+  like: boolean,
+) => {
   const url: string = "/api/posts/" + postId + "/comments/" + commentId;
   const data = { like: like };
   const res = await api.put<ApiResponse<any>>(url, data);
