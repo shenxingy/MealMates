@@ -44,12 +44,9 @@ export async function GET(
     const responseData = {
       ...eventData,
       restaurantCoordinates,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      username: user.name,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      avatarUrl: user.image,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      avatarColor: user.avatarColor,
+      username: user.name as unknown as string | null,
+      avatarUrl: user.image as unknown as string | null,
+      avatarColor: user.avatarColor as unknown as string | null,
     };
 
     return NextResponse.json({
