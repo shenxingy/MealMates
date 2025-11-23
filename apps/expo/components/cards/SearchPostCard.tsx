@@ -21,7 +21,7 @@ const SearchPostCard: FC<SearchPostCardProps> = ({ post }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title} numberOfLines={1}>
-        📝 Post
+        📝 {post.title}
       </Text>
       <Text style={styles.content} numberOfLines={3}>
         {post.content}
