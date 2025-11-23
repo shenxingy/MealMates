@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, View } from "react-native";
 
+
+
 import type { Post } from "~/definition";
-import PostItem from "./PostItem";
 import EmptySpace from "../frame/EmptySpace";
+import PostItem from "./PostItem";
+
 
 const getLists = async (data: Post[], numColumns: number) => {
   if (data.length === 0 || numColumns === 0) return [];
@@ -56,17 +59,16 @@ export default function PostList({
     <View style={[styles.container]}>
       {lists.length > 0 &&
         lists.map((list, idx) => (
-          <>
-            <EmptySpace key={`${idx}_empty_space`} marginLeft={5}/>
+          <Fragment key={idx}>
+            <EmptySpace  marginLeft={5}/>
             <FlatList
-              key={idx}
               style={[styles.column]}
               scrollEnabled={false}
               contentContainerStyle={[styles.columnContent]}
               data={list}
               renderItem={renderPost}
             />
-          </>
+          </Fragment>
         ))}
       <EmptySpace marginLeft={5}/>
     </View>

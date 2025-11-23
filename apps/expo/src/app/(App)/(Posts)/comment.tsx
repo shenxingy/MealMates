@@ -6,12 +6,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { getBaseUrl } from "~/utils/base-url";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import Back from "../../../../components/postpage/Back";
 
 export default function Comment() {
   const header = "Comment";
   const baseColor = "255,178,0";
-  const { postId } = useLocalSearchParams();
+  const { postId }: { postId: string } = useLocalSearchParams();
   const [content, setContent] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [width, setWidth] = useState<number>(0);
@@ -60,7 +59,7 @@ export default function Comment() {
       });
     }
     const host: string = getBaseUrl();
-    const res = await fetch(host + "/api/posts/" + postId + "/comments", {
+    const res = await fetch(`${host}/api/posts/${postId}/comments`, {
       method: "POST",
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
@@ -76,10 +75,12 @@ export default function Comment() {
 
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-        <Pressable onPress={router.back}>
-          <Back text="< Detail" />
-        </Pressable>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={header}
+        enableReturnButton={true}
+        returnButtonText="Detail"
+      >
         <Text>Comment</Text>
         <TextInput value={content} onChangeText={changeText} />
         <Pressable onPress={pick}>
