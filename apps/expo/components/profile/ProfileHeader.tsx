@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -8,7 +8,7 @@ interface ProfileHeaderProps {
   onSettingsPress?: () => void;
 }
 
-const ProfileHeader: FC<ProfileHeaderProps> = ({
+const ProfileHeader: ElementType<ProfileHeaderProps> = ({
   onEditPress,
   onSettingsPress,
 }) => {

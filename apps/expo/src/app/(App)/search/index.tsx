@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
-import SegmentedControl from "@react-native-segmented-control/segmented-control";
+import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import SegmentedControl from "@react-native-segmented-control/segmented-control";
 
+import type { SearchType } from "./SearchResultsList";
 import useDebounce from "~/hooks/useDebounce";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import SearchResultsList, { SearchType } from "./SearchResultsList";
+import SearchResultsList from "./SearchResultsList";
 
 export default function SearchPage() {
   const baseColor = "255,120,0";

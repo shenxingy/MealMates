@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,8 +7,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -24,7 +24,7 @@ interface SearchResultsListProps {
   type: SearchType;
 }
 
-const SearchResultsList: FC<SearchResultsListProps> = ({
+const SearchResultsList: ElementType<SearchResultsListProps> = ({
   query,
   debouncedQuery,
   type,

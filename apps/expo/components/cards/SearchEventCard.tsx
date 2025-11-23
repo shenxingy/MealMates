@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -12,7 +12,7 @@ interface SearchEventCardProps {
   event: SearchEventResult;
 }
 
-const SearchEventCard: FC<SearchEventCardProps> = ({ event }) => {
+const SearchEventCard: ElementType<SearchEventCardProps> = ({ event }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title} numberOfLines={1}>
