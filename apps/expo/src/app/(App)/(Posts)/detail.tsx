@@ -30,7 +30,7 @@ export default function PostDetails() {
     void onRefresh();
   }, []);
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true} returnButtonText="Posts">
+    <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true}>
       <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
       </Pressable>

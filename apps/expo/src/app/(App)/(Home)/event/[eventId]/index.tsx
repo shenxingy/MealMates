@@ -66,7 +66,6 @@ const EventDetailsPage = () => {
           headerTitle={`Event #${eventId}`}
           scrollEnabled={false}
           enableReturnButton={true}
-          returnButtonText="Home"
         >
           <EmptySpace marginTop={30} />
           <Text style={{ fontSize: 18 }}>Loading event details...</Text>
@@ -81,7 +80,6 @@ const EventDetailsPage = () => {
       headerTitle={`Event #${eventId}`}
       scrollEnabled={false}
       enableReturnButton={true}
-      returnButtonText="Home"
     >
       <EmptySpace marginTop={30} />
       <Text style={{ fontSize: 18 }}>
