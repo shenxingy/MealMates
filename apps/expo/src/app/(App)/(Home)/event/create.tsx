@@ -83,15 +83,13 @@ export default function CreateEventPage() {
     setDate(currentDate);
 
     // Format the date nicely for the 'scheduleTime' string (e.g., "Mon, Nov 23 - 12:20 PM")
-    const formattedDate = currentDate.toLocaleString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
+    // Change formatting to only show time, e.g., "12:20 PM"
+    const formattedTime = currentDate.toLocaleString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     });
-    setScheduleTime(formattedDate);
+    setScheduleTime(formattedTime);
   };
 
   const handleSubmit = () => {
@@ -160,7 +158,7 @@ export default function CreateEventPage() {
               style={styles.input}
             >
               <Text style={{ color: scheduleTime ? "#1F2937" : "#9CA3AF", fontSize: 16 }}>
-                {scheduleTime || "Select Date & Time"}
+                {scheduleTime || "Select Time"}
               </Text>
             </Pressable>
 
@@ -169,11 +167,11 @@ export default function CreateEventPage() {
               <DateTimePicker
                 testID="dateTimePicker"
                 value={date}
-                mode="datetime"
-                is24Hour={true}
+                mode="time"
                 display="spinner"
                 onChange={handleDateChange}
                 style={{ height: 120, marginTop: 10 }}
+                minimumDate={new Date()} // Prevent selecting past times
               />
             )}
 
@@ -182,10 +180,11 @@ export default function CreateEventPage() {
               <DateTimePicker
                 testID="dateTimePicker"
                 value={date}
-                mode="date" 
-                is24Hour={true}
+                mode="time" 
+                is24Hour={false}
                 display="default"
                 onChange={handleDateChange}
+                minimumDate={new Date()} // Prevent selecting past times
               />
             )}
           </View>
