@@ -13,9 +13,14 @@ import { useRouter } from "expo-router";
 
 import AnimatedPageFrame from "../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../components/frame/EmptySpace";
+// 1. 引入 useDukeAuth
+import { useDukeAuth } from "../../../../hooks/useDukeAuth";
 
 export default function CreateEventPage() {
   const router = useRouter();
+  // 2. 获取用户信息
+  const { userInfo } = useDukeAuth();
+
   const [restaurantName, setRestaurantName] = useState("");
   const [meetPoint, setMeetPoint] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
@@ -30,8 +35,14 @@ export default function CreateEventPage() {
       return;
     }
 
+    // 3. 使用真实用户信息
+    // 注意：userInfo 可能为空，建议处理这种情况，或者使用 "Anonymous" 作为回退
+    const currentUsername = userInfo?.name ?? "Anonymous User";
+    // 如果 userInfo 里有头像字段，也可以在这里获取，例如: userInfo?.picture
+    // const currentAvatarUrl = userInfo?.picture; 
+
     const newEvent = {
-      username: "Current User",
+      username: currentUsername,
       restaurantName,
       meetPoint,
       scheduleTime,
@@ -39,6 +50,8 @@ export default function CreateEventPage() {
       message,
       meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 }, 
       restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
+      // 如果 Schema 中有 avatarUrl，也可以加上
+      // avatarUrl: currentAvatarUrl,
     };
 
     console.log("Creating Event:", newEvent);
