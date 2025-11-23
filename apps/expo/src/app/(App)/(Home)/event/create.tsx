@@ -16,29 +16,33 @@ import EmptySpace from "../../../../../components/frame/EmptySpace";
 
 export default function CreateEventPage() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [time, setTime] = useState("");
-  const [maxParticipants, setMaxParticipants] = useState("");
-  const [description, setDescription] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
+  const [meetPoint, setMeetPoint] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [mood, setMood] = useState("");
+  const [message, setMessage] = useState("");
 
   const baseColor = "255,120,0";
 
   const handleSubmit = () => {
-    if (!title || !location || !time) {
+    if (!restaurantName || !meetPoint || !scheduleTime) {
       Alert.alert("Missing Info", "Please fill in the required fields.");
       return;
     }
 
-    console.log("Creating Event:", {
-      title,
-      location,
-      time,
-      maxParticipants,
-      description,
-    });
+    const newEvent = {
+      username: "Current User",
+      restaurantName,
+      meetPoint,
+      scheduleTime,
+      mood,
+      message,
+      meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 }, 
+      restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
+    };
 
-    // Mock success and go back
+    console.log("Creating Event:", newEvent);
+
     Alert.alert("Success", "Event created successfully!", [
       { text: "OK", onPress: () => router.back() },
     ]);
@@ -58,64 +62,60 @@ export default function CreateEventPage() {
         <EmptySpace marginTop={20} />
 
         <View style={styles.formContainer}>
-          {/* Title Input */}
+          {/* Restaurant Name Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Event Title</Text>
+            <Text style={styles.label}>Restaurant Name</Text>
             <TextInput
               style={styles.input}
-              placeholder="E.g., Lunch at Pitchforks"
+              placeholder="E.g. RING"
               placeholderTextColor="#9CA3AF"
-              value={title}
-              onChangeText={setTitle}
+              value={restaurantName}
+              onChangeText={setRestaurantName}
             />
           </View>
 
-          {/* Location Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Location</Text>
+            <Text style={styles.label}>Meeting Point</Text>
             <TextInput
               style={styles.input}
-              placeholder="Where are you meeting?"
+              placeholder="E.g. Tsuki no mori Girls' School"
               placeholderTextColor="#9CA3AF"
-              value={location}
-              onChangeText={setLocation}
+              value={meetPoint}
+              onChangeText={setMeetPoint}
             />
           </View>
 
-          {/* Time Input */}
+          {/* Schedule Time Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Time</Text>
+            <Text style={styles.label}>Schedule Time</Text>
             <TextInput
               style={styles.input}
-              placeholder="When? (e.g. Today 12:00 PM)"
+              placeholder="E.g. 12:20"
               placeholderTextColor="#9CA3AF"
-              value={time}
-              onChangeText={setTime}
+              value={scheduleTime}
+              onChangeText={setScheduleTime}
             />
           </View>
 
-          {/* Max Participants Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Max Participants</Text>
+            <Text style={styles.label}>Mood (Emoji)</Text>
             <TextInput
               style={styles.input}
-              placeholder="Max people (e.g. 4)"
+              placeholder="E.g. 🤓"
               placeholderTextColor="#9CA3AF"
-              value={maxParticipants}
-              onChangeText={setMaxParticipants}
-              keyboardType="numeric"
+              value={mood}
+              onChangeText={setMood}
             />
           </View>
 
-          {/* Description Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>Message</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Any details? (e.g. specific topic, casual chat)"
+              placeholder="Say something to your mates..."
               placeholderTextColor="#9CA3AF"
-              value={description}
-              onChangeText={setDescription}
+              value={message}
+              onChangeText={setMessage}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -124,7 +124,6 @@ export default function CreateEventPage() {
 
           <EmptySpace marginTop={20} />
 
-          {/* Submit Button */}
           <Pressable
             style={({ pressed }) => [
               styles.submitButton,
