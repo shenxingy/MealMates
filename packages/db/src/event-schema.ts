@@ -9,6 +9,8 @@ export const event = pgTable("event", {
   // ... 下面保持不变 ...
   username: text("username").notNull(),
   avatarUrl: text("avatar_url"),
+  // 新增 avatarColor
+  avatarColor: text("avatar_color").default("#F5F7FB").notNull(), 
   scheduleTime: text("schedule_time").notNull(),
   mood: text("mood"),
   meetPoint: text("meet_point").notNull(),

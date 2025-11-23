@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
   ActivityIndicator, // 引入 ActivityIndicator
+  Image, // 引入 Image
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -91,16 +92,15 @@ export default function CreateEventPage() {
     // 4. 获取当前用户的最新信息
     const currentUsername = userProfile?.name ?? "Anonymous";
     
-    // 获取头像逻辑：
-    // 优先使用用户设置的 image (Emoji)
-    // 如果没有，则构造一个默认头像链接，或者直接存 null (让前端展示时自动回退到首字母)
-    // 这里为了简单和一致，如果你存的是 Emoji，就直接存入 avatarUrl
-    // 如果是 URL 形式的头像系统，这里应该是 URL
+    // 获取头像和颜色
     const currentAvatar = userProfile?.image ?? null;
+    // 获取颜色，默认 #F5F7FB
+    const currentAvatarColor = userProfile?.avatarColor ?? "#F5F7FB";
 
     const newEvent = {
       username: currentUsername,
-      avatarUrl: currentAvatar, // 存入 Emoji 或 URL
+      avatarUrl: currentAvatar,
+      avatarColor: currentAvatarColor, // 存入颜色
       restaurantName,
       meetPoint,
       scheduleTime,
@@ -270,5 +270,18 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  // 新增样式，用于头像容器
+  avatarContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    overflow: "hidden",
+    marginRight: 10,
+  },
+  // 新增样式，用于头像图片
+  avatar: {
+    width: "100%",
+    height: "100%",
   },
 });

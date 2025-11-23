@@ -25,6 +25,8 @@ const CreateEventSchema = z.object({
     latitude: z.number(),
     longitude: z.number(),
   }).optional(),
+  // 新增
+  avatarColor: z.string().optional(),
 });
 
 export const eventRouter = {

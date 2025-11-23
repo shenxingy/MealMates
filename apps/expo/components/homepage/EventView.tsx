@@ -25,6 +25,7 @@ interface LoadedProps {
   meetPoint: string;
   restaurantName: string;
   message?: string;
+  avatarColor?: string; // 新增 prop
 }
 
 type EventViewProps = LoadingProps | LoadedProps;
@@ -44,7 +45,18 @@ const EventView = (props: EventViewProps) => {
     restaurantName,
     message,
     isLoading = false,
+    avatarColor = "#F5F7FB", // 默认值
   } = props;
+
+  // 样式部分动态化
+  const avatarStyle = {
+    backgroundColor: avatarColor,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+    borderRadius: 24,
+  };
 
   return (
     <GlassView
@@ -63,20 +75,20 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-96} end={48} />
               ) : (
                 <>
-                  {/* 修改头像显示逻辑 */}
-                  {avatarUrl ? (
-                    <Image
-                      src={avatarUrl}
-                      alt="Avatar"
-                      style={styles.avatar}
-                    />
+                  {/* 如果有 avatarUrl (Emoji 或 图片)，显示它 */}
+                  {/* 注意：如果是 Emoji，应该用 Text 显示；如果是 URL，用 Image */}
+                  {/* 根据 YouPage 逻辑，image 字段存的是 Emoji 字符，不是 URL */}
+                  
+                  {/* 这里我们需要判断 avatarUrl 是 URL 还是 Emoji */}
+                  {/* 简单判断：是否以 http 开头 */}
+                  {avatarUrl && avatarUrl.startsWith("http") ? (
+                     <Image src={avatarUrl} style={styles.avatar} />
                   ) : (
-                    // 如果没有头像，显示首字母
-                    <View style={[styles.avatar, styles.initialsContainer]}>
-                      <Text style={styles.initialsText}>
-                        {getInitials(username || "?")}
-                      </Text>
-                    </View>
+                     <View style={avatarStyle}>
+                        <Text style={{ fontSize: 24 }}>
+                          {avatarUrl || getInitials(username)}
+                        </Text>
+                     </View>
                   )}
                   
                   {/* Mood Badge 保持不变 */}
