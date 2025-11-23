@@ -3,7 +3,6 @@ import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 
-import { DEFAULT_USER_AVATAR } from "~/utils/api";
 import Skeleton from "../frame/Skeleton";
 
 interface LoadingProps {
@@ -29,6 +28,11 @@ interface LoadedProps {
 }
 
 type EventViewProps = LoadingProps | LoadedProps;
+
+// 添加一个辅助函数获取首字母
+const getInitials = (name: string) => {
+  return name.trim().charAt(0).toUpperCase();
+};
 
 const EventView = (props: EventViewProps) => {
   const {
@@ -59,11 +63,23 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-96} end={48} />
               ) : (
                 <>
-                  <Image
-                    src={avatarUrl ?? DEFAULT_USER_AVATAR}
-                    alt="Avatar"
-                    style={styles.avatar}
-                  />
+                  {/* 修改头像显示逻辑 */}
+                  {avatarUrl ? (
+                    <Image
+                      src={avatarUrl}
+                      alt="Avatar"
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    // 如果没有头像，显示首字母
+                    <View style={[styles.avatar, styles.initialsContainer]}>
+                      <Text style={styles.initialsText}>
+                        {getInitials(username || "?")}
+                      </Text>
+                    </View>
+                  )}
+                  
+                  {/* Mood Badge 保持不变 */}
                   {mood && (
                     <GlassView
                       style={
@@ -305,5 +321,15 @@ const styles = StyleSheet.create({
     gap: 5,
     padding: 15,
     backgroundColor: "rgba(205,205,205,0.5)",
+  },
+  initialsContainer: {
+    backgroundColor: "#ff7800", // 背景颜色
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  initialsText: {
+    color: "white", // 文字颜色
+    fontSize: 20,
+    fontWeight: "bold",
   },
 });
