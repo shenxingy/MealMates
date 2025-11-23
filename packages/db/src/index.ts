@@ -1,3 +1,4 @@
+export { and, desc, eq, ilike, or } from "drizzle-orm";
 export * from "drizzle-orm/sql";
 export { alias } from "drizzle-orm/pg-core";
 export * as schema from "./schema";
