@@ -35,6 +35,12 @@ type SearchResult = Location.LocationGeocodedLocation & {
   formattedAddress?: string;
 };
 
+interface NominatimResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+}
+
 export default function CreateEventPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -42,7 +48,7 @@ export default function CreateEventPage() {
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    getStoredUserId().then(setStoredUserId).catch(console.error);
+    void getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
 
   const { data: userProfile } = useQuery<UserProfile>({
@@ -79,13 +85,10 @@ export default function CreateEventPage() {
       try {
         setIsSearching(true);
         
-        // FIX 2: Use OpenStreetMap Nominatim API (Free, No Key)
-        // limit=5 ensures we get up to 5 results
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}&limit=5&addressdetails=1`,
           {
             headers: {
-              // Nominatim requires a User-Agent
               "User-Agent": "MealMatesApp/1.0" 
             }
           }
@@ -95,10 +98,10 @@ export default function CreateEventPage() {
              throw new Error("Network response was not ok");
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as NominatimResult[];
 
         // Map OpenStreetMap results to our format
-        const results: SearchResult[] = data.map((item: any) => ({
+        const results: SearchResult[] = data.map((item) => ({
              latitude: parseFloat(item.lat),
              longitude: parseFloat(item.lon),
              // Use display_name for full address, or construct one
@@ -141,9 +144,9 @@ export default function CreateEventPage() {
 
   // Initialize location for map
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
+      if (status === Location.PermissionStatus.GRANTED) {
         const location = await Location.getCurrentPositionAsync({});
         setMapRegion({
           latitude: location.coords.latitude,
@@ -160,6 +163,7 @@ export default function CreateEventPage() {
         }
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [scheduleTime, setScheduleTime] = useState("");
@@ -194,9 +198,6 @@ export default function CreateEventPage() {
     setShowEmojiPicker(false);
   };
 
-  // Removed manual text input handler since we use picker now
-  /* const handleMoodChange = ... */
-
   const createEventMutation = useMutation({
     mutationFn: (input: CreateEventInput) => { 
       return trpcClient.event.create.mutate(input);
@@ -215,8 +216,8 @@ export default function CreateEventPage() {
     },
   });
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
+  const handleDateChange = (_event: unknown, selectedDate?: Date) => {
+    const currentDate = selectedDate ?? date;
     
     // On Android, the picker closes automatically after selection
     if (Platform.OS === "android") {
@@ -236,9 +237,6 @@ export default function CreateEventPage() {
   };
 
   const handleConfirmLocation = () => {
-    // Here you might want to reverse geocode to get the name
-    // For now we just close the map and keep the coordinates
-    // setRestaurantName("Pinned Location"); // Optional: Auto-fill name
     setShowMapPicker(false);
   };
 
@@ -303,9 +301,6 @@ export default function CreateEventPage() {
               {Platform.OS === "ios" ? (
                 <AppleMaps.View
                   style={{ flex: 1 }}
-                  // KEY CHANGE: Only use cameraPosition if you really need to Force move it.
-                  // If mapRegion is constantly updating, it might be locking the map.
-                  // Let's try binding it strictly but ensuring updates happen correctly.
                   cameraPosition={{
                     coordinates: {
                         latitude: mapRegion.latitude,
@@ -316,11 +311,7 @@ export default function CreateEventPage() {
                   properties={{
                     isMyLocationEnabled: true
                   }}
-                  // CHANGE: Update BOTH coordinates state AND mapRegion state
-                  // This ensures the "cameraPosition" prop stays in sync with where the user dragged
                   onCameraMove={(e) => {
-                    console.log("📍 Camera moved to:", e.coordinates); // Debug log
-                    
                     const { latitude, longitude } = e.coordinates;
                     if (latitude !== undefined && longitude !== undefined) {
                          // Update the pin location data
@@ -460,7 +451,7 @@ export default function CreateEventPage() {
               </View>
             )}
             
-            {/* NEW: If no results but text exists, suggest opening map */}
+            {/* If no results but text exists, suggest opening map */}
             {searchResults.length === 0 && restaurantName.length > 2 && !restaurantCoordinates && (
                  <View style={styles.searchResultsContainer}>
                     <TouchableOpacity 

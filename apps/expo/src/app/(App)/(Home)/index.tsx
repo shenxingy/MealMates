@@ -16,9 +16,8 @@ export default function HomePage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["event", "all"],
-    queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return (trpcClient as any).event.all.query();
+    queryFn: () => {
+      return trpcClient.event.all.query();
     },
   });
 
@@ -95,12 +94,11 @@ export default function HomePage() {
             <EventView
               scheduleTime={event.scheduleTime}
               username={event.username}
-              avatarUrl={event.avatarUrl}
+              avatarUrl={event.avatarUrl ?? undefined}
               avatarColor={event.avatarColor}
-              mood={event.mood}
-              meetPoint={event.meetPoint}
+              mood={event.mood ?? undefined}
               restaurantName={event.restaurantName}
-              message={event.message}
+              message={event.message ?? undefined}
               isLoading={isLoading}
             />
           </Pressable>
