@@ -115,7 +115,7 @@ export default function MapModalPage() {
       markers.push({
         coordinates: restaurantCoord,
         title: restaurantName,
-        systemImage: "fork.knife",
+        systemImage: "flag.fill",
         id: "restaurant",
       });
     }
@@ -406,8 +406,8 @@ export default function MapModalPage() {
           pressableStyle={styles.restaurantButtonContainer}
           androidStyle={styles.restaurantAndroidContainer}
           glassViewStyle={styles.restaurantGlassView}
-          SFSymbolName="fork.knife"
-          MaterialSymbolName="restaurant"
+          SFSymbolName="flag.fill"
+          MaterialSymbolName="flag"
         />
       )}
       {Platform.OS === "ios" ? (
