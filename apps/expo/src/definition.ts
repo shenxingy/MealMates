@@ -60,7 +60,7 @@ export interface MessageHandlers {
 export interface UseApiSocketOptions {
   userId: string;
   eventId: string;
-  enabled: boolean; // 控制是否启用 WebSocket
+  enabled: boolean;
   handlers?: MessageHandlers;
 }
 

@@ -13,4 +13,8 @@ export interface DetailedEventDTO extends SimpleEventDTO {
     latitude: number;
     longitude: number;
   };
+  meetPointCoordinates: {
+    latitude: number;
+    longitude: number;
+  };
 }
