@@ -11,7 +11,7 @@ import {
   ActivityIndicator, // 引入 ActivityIndicator
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -24,6 +24,8 @@ type UserProfile = RouterOutputs["user"]["byId"];
 
 export default function CreateEventPage() {
   const router = useRouter();
+  // 2. 获取 queryClient 实例
+  const queryClient = useQueryClient();
   
   // 1. 状态：存储用户ID
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
@@ -55,9 +57,13 @@ export default function CreateEventPage() {
   const createEventMutation = useMutation({
     mutationFn: (input: any) => { 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return trpcClient.event.create.mutate(input);
+      return (trpcClient as any).event.create.mutate(input);
     },
     onSuccess: () => {
+      // 3. 关键步骤：让首页的列表查询失效，强制刷新
+      // 注意：这里的 queryKey 必须与 HomePage 中 useQuery 的 queryKey 完全一致
+      queryClient.invalidateQueries({ queryKey: ["event", "all"] });
+
       Alert.alert("Success", "Event created successfully!", [
         { text: "OK", onPress: () => router.back() },
       ]);
