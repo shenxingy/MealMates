@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -43,6 +44,11 @@ export default function CreateEventPage() {
 
   const [restaurantName, setRestaurantName] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
+  
+  // Add state for the Date picker
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+
   const [mood, setMood] = useState("");
   const [message, setMessage] = useState("");
 
@@ -65,6 +71,28 @@ export default function CreateEventPage() {
       Alert.alert("Error", "Failed to create event. Please try again.");
     },
   });
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    
+    // On Android, the picker closes automatically after selection
+    if (Platform.OS === "android") {
+      setShowPicker(false);
+    }
+
+    setDate(currentDate);
+
+    // Format the date nicely for the 'scheduleTime' string (e.g., "Mon, Nov 23 - 12:20 PM")
+    const formattedDate = currentDate.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+    setScheduleTime(formattedDate);
+  };
 
   const handleSubmit = () => {
     if (!storedUserId) {
@@ -126,13 +154,40 @@ export default function CreateEventPage() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Schedule Time</Text>
-            <TextInput
+            {/* Replace TextInput with a Pressable that toggles the picker */}
+            <Pressable 
+              onPress={() => setShowPicker(!showPicker)}
               style={styles.input}
-              placeholder="E.g. 12:20"
-              placeholderTextColor="#9CA3AF"
-              value={scheduleTime}
-              onChangeText={setScheduleTime}
-            />
+            >
+              <Text style={{ color: scheduleTime ? "#1F2937" : "#9CA3AF", fontSize: 16 }}>
+                {scheduleTime || "Select Date & Time"}
+              </Text>
+            </Pressable>
+
+            {/* iOS: Show Spinner Inline when expanded */}
+            {showPicker && Platform.OS === "ios" && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="datetime"
+                is24Hour={true}
+                display="spinner"
+                onChange={handleDateChange}
+                style={{ height: 120, marginTop: 10 }}
+              />
+            )}
+
+            {/* Android: Show Modal (only when showPicker is true) */}
+            {showPicker && Platform.OS === "android" && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date" 
+                is24Hour={true}
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
           </View>
 
           <View style={styles.inputGroup}>
