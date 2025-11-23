@@ -568,7 +568,8 @@ export default function CreateEventPage() {
               style={styles.input}
               onPress={() => setShowEmojiPicker(true)}
             >
-               <Text style={{ color: mood ? "#1F2937" : "#9CA3AF", fontSize: 24 }}>
+               {/* Update fontSize logic here */}
+               <Text style={{ color: mood ? "#1F2937" : "#9CA3AF", fontSize: mood ? 24 : 16 }}>
                   {mood || "Select Emoji"}
                </Text>
             </Pressable>
