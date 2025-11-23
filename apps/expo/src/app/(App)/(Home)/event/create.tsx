@@ -13,13 +13,14 @@ import {
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { RouterOutputs } from "~/utils/api";
+import type { RouterInputs, RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../components/frame/EmptySpace";
 
 type UserProfile = RouterOutputs["user"]["byId"];
+type CreateEventInput = RouterInputs["event"]["create"];
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -41,7 +42,6 @@ export default function CreateEventPage() {
   });
 
   const [restaurantName, setRestaurantName] = useState("");
-  const [meetPoint, setMeetPoint] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [mood, setMood] = useState("");
   const [message, setMessage] = useState("");
@@ -49,11 +49,11 @@ export default function CreateEventPage() {
   const baseColor = "255,120,0";
 
   const createEventMutation = useMutation({
-    mutationFn: (input: any) => { 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return (trpcClient as any).event.create.mutate(input);
+    mutationFn: (input: CreateEventInput) => { 
+      return trpcClient.event.create.mutate(input);
     },
     onSuccess: () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       queryClient.invalidateQueries({ queryKey: ["event", "all"] });
 
       Alert.alert("Success", "Event created successfully!", [
@@ -72,7 +72,7 @@ export default function CreateEventPage() {
       return;
     }
 
-    if (!restaurantName || !meetPoint || !scheduleTime) {
+    if (!restaurantName || !scheduleTime) {
       Alert.alert("Missing Info", "Please fill in the required fields.");
       return;
     }
@@ -82,17 +82,14 @@ export default function CreateEventPage() {
     const currentAvatar = userProfile?.image ?? null;
     const currentAvatarColor = userProfile?.avatarColor ?? "#F5F7FB";
 
-    const newEvent = {
+    const newEvent: CreateEventInput = {
       username: currentUsername,
       avatarUrl: currentAvatar,
       avatarColor: currentAvatarColor,
       restaurantName,
-      meetPoint,
       scheduleTime,
-      mood,
-      message,
-      // TODO: Replace with real map picker
-      meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
+      mood: mood || undefined,
+      message: message || undefined,
       // TODO: Replace with real map picker
       restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
     };
@@ -124,17 +121,6 @@ export default function CreateEventPage() {
               placeholderTextColor="#9CA3AF"
               value={restaurantName}
               onChangeText={setRestaurantName}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Meeting Point</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="E.g. Tsuki no mori Girls' School"
-              placeholderTextColor="#9CA3AF"
-              value={meetPoint}
-              onChangeText={setMeetPoint}
             />
           </View>
 

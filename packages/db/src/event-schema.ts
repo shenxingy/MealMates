@@ -11,17 +11,13 @@ export const event = pgTable("event", {
 
   mood: text("mood"),
 
-  meetPoint: text("meet_point").notNull(),
   restaurantName: text("restaurant_name").notNull(),
 
   message: text("message"),
-
-  meetPointCoordinates: json("meet_point_coordinates")
-    .$type<{ latitude: number; longitude: number }>()
-    .notNull(),
     
   restaurantCoordinates: json("restaurant_coordinates")
-    .$type<{ latitude: number; longitude: number }>(),
+    .$type<{ latitude: number; longitude: number }>()
+    .notNull(),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

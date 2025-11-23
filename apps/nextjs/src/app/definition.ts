@@ -4,17 +4,12 @@ export interface SimpleEventDTO {
   username: string;
   scheduleTime: string;
   mood?: string;
-  meetPoint: string;
   restaurantName: string;
   message?: string;
 }
 
 export interface DetailedEventDTO extends SimpleEventDTO {
-  meetPointCoordinates: {
-    latitude: number;
-    longitude: number;
-  };
-  restaurantCoordinates?: {
+  restaurantCoordinates: {
     latitude: number;
     longitude: number;
   };
