@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -12,7 +12,7 @@ interface SearchPostCardProps {
   post: SearchPostResult;
 }
 
-const SearchPostCard: FC<SearchPostCardProps> = ({ post }) => {
+const SearchPostCard: ElementType<SearchPostCardProps> = ({ post }) => {
   const createdAtLabel =
     post.createdAt instanceof Date
       ? post.createdAt.toLocaleString()

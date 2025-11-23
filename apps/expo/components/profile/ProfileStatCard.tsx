@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -8,7 +8,7 @@ export interface ProfileStat {
   icon: keyof typeof Ionicons.glyphMap;
 }
 
-const ProfileStatCard: FC<ProfileStat> = ({ label, value, icon }) => {
+const ProfileStatCard: ElementType<ProfileStat> = ({ label, value, icon }) => {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrapper}>

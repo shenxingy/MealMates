@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { StyleSheet, View } from "react-native";
 
 import type { ProfileStat } from "./ProfileStatCard";
@@ -8,7 +8,7 @@ interface ProfileStatsRowProps {
   stats: ProfileStat[];
 }
 
-const ProfileStatsRow: FC<ProfileStatsRowProps> = ({ stats }) => {
+const ProfileStatsRow: ElementType<ProfileStatsRowProps> = ({ stats }) => {
   return (
     <View style={styles.container}>
       {stats.map((stat) => (

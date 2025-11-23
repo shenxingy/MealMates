@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -31,7 +31,7 @@ interface ProfileSummarySectionProps {
   showLogoutSpinner: boolean;
 }
 
-const ProfileSummarySection: FC<ProfileSummarySectionProps> = ({
+const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
   isFetchingProfile,
   profileError,
   shouldPromptSignIn,

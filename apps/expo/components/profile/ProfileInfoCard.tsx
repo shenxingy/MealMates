@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
@@ -13,7 +13,7 @@ interface ProfileInfoCardProps {
   avatarColor?: string;
 }
 
-const ProfileInfoCard: FC<ProfileInfoCardProps> = ({
+const ProfileInfoCard: ElementType<ProfileInfoCardProps> = ({
   name,
   email,
   avatarEmoji,
