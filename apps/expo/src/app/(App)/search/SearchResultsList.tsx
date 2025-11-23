@@ -2,11 +2,13 @@ import type { FC } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -27,6 +29,7 @@ const SearchResultsList: FC<SearchResultsListProps> = ({
   debouncedQuery,
   type,
 }) => {
+  const router = useRouter();
   const trimmedQuery = query.trim();
   const trimmedDebounced = debouncedQuery.trim();
 
@@ -79,7 +82,19 @@ const SearchResultsList: FC<SearchResultsListProps> = ({
 
   const renderItem = ({ item }: { item: SearchResult }) => {
     if (item.type === "event") {
-      return <SearchEventCard event={item} />;
+      return (
+        <Pressable
+          onPress={() =>
+            router.push(`/(App)/(Home)/event/${item.id.toString()}`)
+          }
+          style={({ pressed }) => [
+            styles.pressableCard,
+            pressed && styles.cardPressed,
+          ]}
+        >
+          <SearchEventCard event={item} />
+        </Pressable>
+      );
     }
 
     return <SearchPostCard post={item} />;
@@ -107,6 +122,12 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 120,
     gap: 0,
+  },
+  pressableCard: {
+    borderRadius: 16,
+  },
+  cardPressed: {
+    opacity: 0.9,
   },
   messageContainer: {
     paddingVertical: 32,
