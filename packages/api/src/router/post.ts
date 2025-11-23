@@ -2,14 +2,20 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
 import { desc, eq } from "@mealmates/db";
-import { CreatePostSchema, Post } from "@mealmates/db/schema";
+import { post } from "@mealmates/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
+export const CreatePostSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().optional(),
+  image: z.url(),
+});
+
 export const postRouter = {
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.Post.findMany({
-      orderBy: desc(Post.id),
+    return ctx.db.query.post.findMany({
+      orderBy: desc(post.id),
       limit: 10,
     });
   }),
@@ -17,18 +23,29 @@ export const postRouter = {
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
-      return ctx.db.query.Post.findFirst({
-        where: eq(Post.id, input.id),
+      return ctx.db.query.post.findFirst({
+        where: eq(post.id, input.id),
       });
     }),
 
   create: protectedProcedure
     .input(CreatePostSchema)
-    .mutation(({ ctx, input }) => {
-      return ctx.db.insert(Post).values(input);
+    .mutation(async ({ ctx, input }) => {
+      const newPost = await ctx.db
+        .insert(post)
+        .values({
+          id: crypto.randomUUID(),
+          userId: ctx.session.user.id,
+          title: input.title,
+          content: input.content,
+          image: input.image,
+        })
+        .returning();
+
+      return newPost[0];
     }),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
-    return ctx.db.delete(Post).where(eq(Post.id, input));
+    return ctx.db.delete(post).where(eq(post.id, input));
   }),
 } satisfies TRPCRouterRecord;

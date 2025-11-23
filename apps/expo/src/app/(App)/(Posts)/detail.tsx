@@ -10,7 +10,7 @@ import Comment from "../../../../components/postpage/Comment";
 import PostDetail from "../../../../components/postpage/Post";
 
 export default function PostDetails() {
-  const header = "Post Details";
+  // const header = "Post Details";
   const baseColor = "255,178,0";
   const { id } = useLocalSearchParams();
   const idNum = Number(id);
@@ -30,10 +30,10 @@ export default function PostDetails() {
     void onRefresh();
   }, []);
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true} returnButtonText="Posts">
-      <Pressable onPress={onRefresh}>
+    <AnimatedPageFrame baseColor={baseColor} headerTitle={undefined} enableReturnButton={true} returnButtonText="Posts">
+      {/* <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
-      </Pressable>
+      </Pressable> */}
       <Pressable onPress={comment}>
         <Text>comment</Text>
       </Pressable>
