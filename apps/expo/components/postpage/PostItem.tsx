@@ -9,10 +9,8 @@ import Like from "./Like";
 
 export default function PostItem({
   props,
-  onRefresh,
 }: {
   props: Post;
-  onRefresh: () => Promise<void>;
 }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
@@ -31,7 +29,6 @@ export default function PostItem({
   const like = async () => {
     const res = await likePost(props.id, !props.liked);
     console.log(res);
-    void onRefresh();
   };
   useEffect(() => {
     const func = async () => {

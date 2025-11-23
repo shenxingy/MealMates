@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
@@ -20,14 +20,35 @@ import LinearGradientBackground from "../background/LinearGradientBackground";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
-export default function AnimatedPageFrame(props: {
+interface BasePageProps {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
-  scrollEnabled?: boolean;
   enableReturnButton?: boolean;
   returnButtonText?: string;
-}) {
+}
+
+// Simple page - no scrollEnabled specified, no onRefresh
+interface SimplePageProps extends BasePageProps {
+  scrollEnabled?: false;
+  onRefresh?: never;
+}
+
+// Scrollable page - scrollEnabled: true, but no onRefresh
+interface ScrollablePageProps extends BasePageProps {
+  scrollEnabled: true;
+  onRefresh?: never;
+}
+
+// Refreshable page - scrollEnabled: true and onRefresh required
+interface RefreshablePageProps extends BasePageProps {
+  scrollEnabled?: true;
+  onRefresh: () => void | Promise<void>;
+}
+
+type PageFrameProps = SimplePageProps | ScrollablePageProps | RefreshablePageProps;
+
+export default function AnimatedPageFrame(props: PageFrameProps) {
   const {
     children,
     baseColor,
@@ -35,10 +56,22 @@ export default function AnimatedPageFrame(props: {
     scrollEnabled = true,
     enableReturnButton = false,
     returnButtonText,
+    onRefresh
   } = props;
-  // Create a single Animated.Value instance without accessing ref.current during render
+
+  // Create a single Animated.Value instance
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
+
+  // Pull to refresh tracking
+  const [_isRefreshing, setIsRefreshing] = useState(false);
+  const scrollYValue = useRef(0);
+  const isPulling = useRef(false);
+
+  // Update scroll Y value
+  scrollY.addListener(({ value }) => {
+    scrollYValue.current = value;
+  });
 
   // Gradient color
   const startColor = `rgba(${baseColor},0.5)`;
@@ -88,6 +121,24 @@ export default function AnimatedPageFrame(props: {
     router.back();
   };
 
+  // Handle scroll begin - user starts scrolling
+  const handleScrollBeginDrag = () => {
+    isPulling.current = true;
+  };
+
+  // Handle scroll end - user releases the scroll
+  const handleScrollEndDrag = async () => {
+    if (isPulling.current && scrollYValue.current < -100 && onRefresh) {
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+    isPulling.current = false;
+  };
+
   return (
     <LinearGradientBackground
       startColor={startColor}
@@ -105,6 +156,8 @@ export default function AnimatedPageFrame(props: {
           )}
           scrollEventThrottle={16}
           scrollEnabled={scrollEnabled}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
         >
           <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
             <Animated.Text
