@@ -9,6 +9,7 @@ interface LoadingProps {
   isLoading: true;
   scheduleTime?: string;
   avatarUrl?: string;
+  avatarColor?: string;
   username?: string;
   mood?: string;
   meetPoint?: string;
@@ -20,17 +21,16 @@ interface LoadedProps {
   isLoading?: false;
   scheduleTime: string;
   avatarUrl?: string;
+  avatarColor?: string;
   username: string;
   mood?: string;
   meetPoint: string;
   restaurantName: string;
   message?: string;
-  avatarColor?: string; // 新增 prop
 }
 
 type EventViewProps = LoadingProps | LoadedProps;
 
-// 添加一个辅助函数获取首字母
 const getInitials = (name: string) => {
   return name.trim().charAt(0).toUpperCase();
 };
@@ -40,19 +40,18 @@ const EventView = (props: EventViewProps) => {
     scheduleTime,
     username,
     avatarUrl,
+    avatarColor = "#F5F7FB",
     mood,
     meetPoint,
     restaurantName,
     message,
     isLoading = false,
-    avatarColor = "#F5F7FB", // 默认值
   } = props;
 
-  // 样式部分动态化
   const avatarStyle = {
     backgroundColor: avatarColor,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
     width: "100%",
     height: "100%",
     borderRadius: 24,
@@ -75,23 +74,19 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-96} end={48} />
               ) : (
                 <>
-                  {/* 如果有 avatarUrl (Emoji 或 图片)，显示它 */}
-                  {/* 注意：如果是 Emoji，应该用 Text 显示；如果是 URL，用 Image */}
-                  {/* 根据 YouPage 逻辑，image 字段存的是 Emoji 字符，不是 URL */}
-                  
-                  {/* 这里我们需要判断 avatarUrl 是 URL 还是 Emoji */}
-                  {/* 简单判断：是否以 http 开头 */}
                   {avatarUrl && avatarUrl.startsWith("http") ? (
-                     <Image src={avatarUrl} style={styles.avatar} />
+                    <Image
+                      src={avatarUrl}
+                      alt="Avatar"
+                      style={styles.avatar}
+                    />
                   ) : (
-                     <View style={avatarStyle}>
-                        <Text style={{ fontSize: 24 }}>
-                          {avatarUrl || getInitials(username)}
-                        </Text>
-                     </View>
+                    <View style={avatarStyle}>
+                      <Text style={{ fontSize: 24 }}>
+                        {avatarUrl || getInitials(username || "?")}
+                      </Text>
+                    </View>
                   )}
-                  
-                  {/* Mood Badge 保持不变 */}
                   {mood && (
                     <GlassView
                       style={
@@ -292,6 +287,7 @@ const styles = StyleSheet.create({
   shimmerOverlay: {
     width: "200%",
     height: "100%",
+    borderRadius: 24,
   },
   userNameText: {
     fontSize: 20,
@@ -333,15 +329,5 @@ const styles = StyleSheet.create({
     gap: 5,
     padding: 15,
     backgroundColor: "rgba(205,205,205,0.5)",
-  },
-  initialsContainer: {
-    backgroundColor: "#ff7800", // 背景颜色
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  initialsText: {
-    color: "white", // 文字颜色
-    fontSize: 20,
-    fontWeight: "bold",
   },
 });
