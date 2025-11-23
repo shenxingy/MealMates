@@ -235,14 +235,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  // Deprecated but keeping for safety if referenced elsewhere in file (though I replaced usages)
-  cardContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
-    borderRadius: 24,
-    padding: 16,
-    marginBottom: 12,
-    overflow: "hidden",
-  },
   userCardContent: {
     flexDirection: "row",
     alignItems: "center",
