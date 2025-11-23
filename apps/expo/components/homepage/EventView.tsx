@@ -12,7 +12,6 @@ interface LoadingProps {
   avatarColor?: string;
   username?: string;
   mood?: string;
-  meetPoint?: string;
   restaurantName?: string;
   message?: string;
 }
@@ -24,7 +23,6 @@ interface LoadedProps {
   avatarColor?: string;
   username: string;
   mood?: string;
-  meetPoint: string;
   restaurantName: string;
   message?: string;
 }
@@ -42,20 +40,10 @@ const EventView = (props: EventViewProps) => {
     avatarUrl,
     avatarColor = "#F5F7FB",
     mood,
-    meetPoint,
     restaurantName,
     message,
     isLoading = false,
   } = props;
-
-  const avatarStyle = {
-    backgroundColor: avatarColor,
-    justifyContent: "center" as const,
-    alignItems: "center" as const,
-    width: "100%",
-    height: "100%",
-    borderRadius: 24,
-  };
 
   return (
     <GlassView
@@ -74,16 +62,25 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-96} end={48} />
               ) : (
                 <>
-                  {avatarUrl && avatarUrl.startsWith("http") ? (
+                  {avatarUrl?.startsWith("http") ? (
                     <Image
                       src={avatarUrl}
                       alt="Avatar"
                       style={styles.avatar}
                     />
                   ) : (
-                    <View style={avatarStyle}>
+                    <View
+                      style={[
+                        styles.avatar,
+                        {
+                          backgroundColor: avatarColor,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        },
+                      ]}
+                    >
                       <Text style={{ fontSize: 24 }}>
-                        {avatarUrl || getInitials(username || "?")}
+                        {avatarUrl ?? getInitials(username ?? "?")}
                       </Text>
                     </View>
                   )}
@@ -129,23 +126,10 @@ const EventView = (props: EventViewProps) => {
             )}
           </View>
         </View>
+        
+        {/* Removed Meet Point section */}
+
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
-          <View style={styles.detailedInfo}>
-            {Platform.OS === "ios" ? (
-              <SymbolView name="mappin" style={{ width: 24, height: 24 }} />
-            ) : (
-              <Ionicons name="location" size={24} color="#ff7800" />
-            )}
-            {isLoading ? (
-              <View style={{ width: 200, height: 30 }}>
-                <Skeleton isLoading={isLoading} start={-400} end={200} />
-              </View>
-            ) : (
-              <Text style={styles.normalText}>{meetPoint}</Text>
-            )}
-          </View>
-        </View>
-        <View style={styles.detailedInfoContainer}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
               <SymbolView name="storefront" style={{ width: 24, height: 24 }} />

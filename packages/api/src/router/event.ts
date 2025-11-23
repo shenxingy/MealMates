@@ -11,18 +11,13 @@ const CreateEventSchema = z.object({
   avatarUrl: z.string().nullable().optional(),
   avatarColor: z.string().optional(),
   restaurantName: z.string(),
-  meetPoint: z.string(),
   scheduleTime: z.string(),
   mood: z.string().optional(),
   message: z.string().optional(),
-  meetPointCoordinates: z.object({
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
   restaurantCoordinates: z.object({
     latitude: z.number(),
     longitude: z.number(),
-  }).optional(),
+  }),
 });
 
 export const eventRouter = {

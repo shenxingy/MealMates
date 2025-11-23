@@ -7,11 +7,9 @@ import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
 import { GoogleMapsMarker } from "expo-maps/build/google/GoogleMaps.types";
 
-import { calculateCenterCoordinates, calculateZoomLevel } from "~/utils/map";
+import { calculateZoomLevel } from "~/utils/map";
 
 interface NoPropMiniMapProps {
-  meetPointCoord?: Coordinates;
-  meetPoint?: string;
   restaurant?: string;
   restaurantCoord?: Coordinates;
   joined?: boolean;
@@ -20,8 +18,6 @@ interface NoPropMiniMapProps {
 }
 
 interface NotJoinedMiniMapProps {
-  meetPointCoord: Coordinates;
-  meetPoint: string;
   restaurant?: string;
   restaurantCoord?: Coordinates;
   joined: false;
@@ -30,8 +26,6 @@ interface NotJoinedMiniMapProps {
 }
 
 interface JoinedMiniMapProps {
-  meetPointCoord: Coordinates;
-  meetPoint: string;
   restaurant?: string;
   restaurantCoord?: Coordinates;
   joined: true;
@@ -46,8 +40,6 @@ type MiniMapProps =
 
 export default function MiniMap(props: MiniMapProps) {
   const {
-    meetPoint,
-    meetPointCoord,
     restaurant,
     restaurantCoord,
     joined,
@@ -64,48 +56,36 @@ export default function MiniMap(props: MiniMapProps) {
 
   useEffect(() => {
     const configMap = () => {
-      if (meetPointCoord == null) {
+      if (restaurantCoord == null) {
         return;
       }
-      let center: Coordinates | undefined = meetPointCoord;
-      let zoom = calculateZoomLevel([meetPointCoord]);
-      const appleMarker: AppleMapsMarker[] = [
+      
+      // Center on restaurant
+      const center: Coordinates = restaurantCoord;
+      const zoomLevel = calculateZoomLevel([restaurantCoord]);
+
+      const appleMarkers: AppleMapsMarker[] = [
         {
-          coordinates: meetPointCoord,
-          title: meetPoint,
-          systemImage: "flag.fill",
-          id: "meet-point",
+          coordinates: restaurantCoord,
+          title: restaurant,
+          systemImage: "fork.knife",
+          id: "restaurant-point",
         },
       ];
-      const googleMarker: GoogleMapsMarker[] = [
+      const googleMarkers: GoogleMapsMarker[] = [
         {
-          coordinates: meetPointCoord,
-          title: meetPoint,
+          coordinates: restaurantCoord,
+          title: restaurant,
         },
       ];
-      if (restaurantCoord != null) {
-        center = calculateCenterCoordinates([meetPointCoord, restaurantCoord]);
-        zoom = calculateZoomLevel([meetPointCoord, restaurantCoord]);
-        if (restaurant != null) {
-          appleMarker.push({
-            coordinates: restaurantCoord,
-            title: restaurant,
-            systemImage: "fork.knife",
-            id: "restaurant-point",
-          });
-          googleMarker.push({
-            coordinates: restaurantCoord,
-            title: restaurant,
-          });
-        }
-      }
+
       setCoordinates(center);
-      setZoom(zoom);
-      setAppleMarker(appleMarker);
-      setGoogleMarker(googleMarker);
+      setZoom(zoomLevel);
+      setAppleMarker(appleMarkers);
+      setGoogleMarker(googleMarkers);
     };
     void configMap();
-  }, [meetPoint, meetPointCoord, restaurant, restaurantCoord]);
+  }, [restaurant, restaurantCoord]);
 
   return (
     <>
