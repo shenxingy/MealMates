@@ -33,12 +33,25 @@ type CreateEventInput = RouterInputs["event"]["create"];
 // Define a type that includes both location and address info
 type SearchResult = Location.LocationGeocodedLocation & {
   formattedAddress?: string;
+  placeId?: string;
 };
 
-interface NominatimResult {
-  lat: string;
-  lon: string;
-  display_name: string;
+interface GooglePlacesAutocompleteResult {
+  predictions: {
+    description: string;
+    place_id: string;
+  }[];
+}
+
+interface GooglePlaceDetailsResult {
+  result?: {
+    geometry?: {
+      location?: {
+        lat: number;
+        lng: number;
+      };
+    };
+  };
 }
 
 export default function CreateEventPage() {
@@ -85,8 +98,14 @@ export default function CreateEventPage() {
       try {
         setIsSearching(true);
         
+        const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+            console.error("Google Maps API Key is missing");
+            return;
+        }
+
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}&limit=5&addressdetails=1`,
+          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&key=${apiKey}&types=establishment|geocode`,
           {
             headers: {
               "User-Agent": "MealMatesApp/1.0" 
@@ -98,19 +117,21 @@ export default function CreateEventPage() {
              throw new Error("Network response was not ok");
         }
 
-        const data = (await response.json()) as NominatimResult[];
+        const data = (await response.json()) as GooglePlacesAutocompleteResult;
 
-        // Map OpenStreetMap results to our format
-        const results: SearchResult[] = data.map((item) => ({
-             latitude: parseFloat(item.lat),
-             longitude: parseFloat(item.lon),
-             // Use display_name for full address, or construct one
-             formattedAddress: item.display_name 
+        // Map Google Places results to our format
+        // Note: Auto-complete doesn't give lat/lon, so we set them to 0 initially
+        // We'll fetch the actual coordinates when the user selects a result.
+        const results: SearchResult[] = data.predictions.map((item) => ({
+             latitude: 0, 
+             longitude: 0,
+             formattedAddress: item.description,
+             placeId: item.place_id
         }));
 
         setSearchResults(results); 
       } catch (e) {
-        console.log("Geocoding error (maybe no results):", e);
+        console.log("Autocomplete error (maybe no results):", e);
         setSearchResults([]);
       } finally {
         setIsSearching(false);
@@ -120,26 +141,66 @@ export default function CreateEventPage() {
     }
   };
 
-  const handleSelectSearchResult = (location: SearchResult) => {
+  const handleSelectSearchResult = async (location: SearchResult) => {
     // 1. Hide results
     setSearchResults([]);
-    
-    // 2. Update map region to selected location
-    setMapRegion({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-    });
-    
-    // Update the coordinates immediately so the pin starts there
-    setRestaurantCoordinates({
-        latitude: location.latitude,
-        longitude: location.longitude
-    });
+    setRestaurantName(location.formattedAddress ?? "");
 
-    // 3. Open the map picker
-    setShowMapPicker(true);
+    // 2. If we have a placeId, fetch the details to get coordinates
+    if (location.placeId) {
+        try {
+            setIsSearching(true);
+            const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/place/details/json?place_id=${location.placeId}&fields=geometry&key=${apiKey}`
+            );
+            
+            if (!response.ok) throw new Error("Failed to fetch place details");
+            
+            const data = (await response.json()) as GooglePlaceDetailsResult;
+            
+            if (data.result?.geometry?.location) {
+                const { lat, lng } = data.result.geometry.location;
+                
+                // Update map region to selected location
+                setMapRegion({
+                    latitude: lat,
+                    longitude: lng,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                });
+                
+                // Update the coordinates immediately
+                setRestaurantCoordinates({
+                    latitude: lat,
+                    longitude: lng
+                });
+                
+                // 3. Open the map picker
+                setShowMapPicker(true);
+            }
+        } catch (e) {
+            console.error("Error fetching place details:", e);
+            Alert.alert("Error", "Could not fetch location details.");
+        } finally {
+            setIsSearching(false);
+        }
+    } else {
+        // Fallback for existing behavior if no placeId (shouldn't happen with Google Places)
+        setMapRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005,
+        });
+        
+        setRestaurantCoordinates({
+            latitude: location.latitude,
+            longitude: location.longitude
+        });
+
+        setShowMapPicker(true);
+    }
   };
 
   // Initialize location for map
@@ -443,9 +504,9 @@ export default function CreateEventPage() {
                     onPress={() => handleSelectSearchResult(result)}
                   >
                     <Text style={styles.searchResultText}>
-                      {result.formattedAddress ? `📍 ${result.formattedAddress}` : `📍 Location near: ${result.latitude.toFixed(3)}, ${result.longitude.toFixed(3)}`}
+                      {result.formattedAddress ?? "Unknown Location"}
                     </Text>
-                    <Text style={{fontSize: 10, color: "gray"}}>Tap to pin on map</Text>
+                    <Text style={{fontSize: 10, color: "gray"}}>Tap to select and pin on map</Text>
                   </TouchableOpacity>
                 ))}
               </View>
