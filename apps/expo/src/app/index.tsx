@@ -28,16 +28,7 @@ export default function Index() {
   useEffect(() => {
     if (isAuthenticated && userInfo) {
       console.log("User authenticated:", userInfo);
-      Alert.alert(
-        "Welcome!",
-        `Successfully logged in as ${userInfo.name} (${userInfo.email})`,
-        [
-          {
-            text: "Continue",
-            onPress: () => router.replace("/(App)/(Home)"),
-          },
-        ],
-      );
+      router.replace("/(App)/(Home)");
     }
   }, [isAuthenticated, userInfo, router]);
 
