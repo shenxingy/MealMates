@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { getStoredUserId } from "~/utils/user-storage";
 
 import { fetchDetailedEvent } from "~/utils/api";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
@@ -16,6 +18,12 @@ const EventDetailsPage = () => {
   const baseColor = "255,140,0";
   const router = useRouter();
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void getStoredUserId().then(setCurrentUserId);
+  }, []);
+
   const {
     data,
     isLoading,
@@ -24,6 +32,8 @@ const EventDetailsPage = () => {
     queryFn: () => fetchDetailedEvent(eventId),
     enabled: !!eventId,
   });
+
+  const creatorId = data?.userId;
 
   const restaurantCoord: Coordinates | undefined =
     data?.restaurantCoordinates ?? undefined;
@@ -192,11 +202,13 @@ const EventDetailsPage = () => {
       <EmptySpace marginTop={100} />
 
       {/* Join Button - Floating */}
-      <View style={styles.joinButtonContainer}>
-        <Pressable style={styles.joinButton}>
-            <Text style={styles.joinButtonText}>Join</Text>
-        </Pressable>
-      </View>
+      {currentUserId && creatorId && currentUserId !== creatorId && (
+        <View style={styles.joinButtonContainer}>
+          <Pressable style={styles.joinButton}>
+              <Text style={styles.joinButtonText}>Join</Text>
+          </Pressable>
+        </View>
+      )}
 
     </AnimatedPageFrame>
   );

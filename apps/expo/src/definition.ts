@@ -16,6 +16,7 @@ export interface SimpleEventDTO {
 }
 
 export interface DetailedEventDTO extends SimpleEventDTO {
+  userId: string;
   meetPointCoordinates: {
     latitude: number;
     longitude: number;
