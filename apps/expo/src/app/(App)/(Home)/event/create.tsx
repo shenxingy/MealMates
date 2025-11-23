@@ -11,6 +11,7 @@ import {
   View,
   Modal,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
@@ -19,7 +20,6 @@ import * as Location from "expo-location";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Constants from "expo-constants";
 
 import type { RouterInputs, RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -34,11 +34,6 @@ type CreateEventInput = RouterInputs["event"]["create"];
 type SearchResult = Location.LocationGeocodedLocation & {
   formattedAddress?: string;
 };
-
-// Add this helper function outside the component
-// NOTE: You need a valid Google Maps API Key with Places API enabled.
-// We'll try to read it from your app config or env.
-const GOOGLE_API_KEY = Constants.expoConfig?.android?.config?.googleMaps?.apiKey || ""; 
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -62,8 +57,6 @@ export default function CreateEventPage() {
   const [restaurantName, setRestaurantName] = useState("");
   // Change state type to include address info
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  
-  // FIX 1: Re-introduce isSearching state
   const [isSearching, setIsSearching] = useState(false);
 
   const [restaurantCoordinates, setRestaurantCoordinates] = useState<{
@@ -177,8 +170,33 @@ export default function CreateEventPage() {
 
   const [mood, setMood] = useState("");
   const [message, setMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const baseColor = "255,120,0";
+
+  const EMOJI_LIST = [
+    "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "🥲", "🥹",
+    "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘",
+    "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐",
+    "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟",
+    "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭",
+    "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨",
+    "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🫢", "🫡", "🤫",
+    "🫠", "🤥", "😶", "🫥", "😐", "😑", "😬", "🙄", "😯", "😦",
+    "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "😵‍💫", "🤐",
+    "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈",
+    "👋", "✌️", "🤞", "🤟", "🤘", "🤙", "👍", "👎", "👊", "🙌",
+    "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔",
+    "🔥", "✨", "🌟", "💯", "💢", "💥", "💤", "💦", "💨", "🎉"
+  ];
+
+  const handleSelectEmoji = (emoji: string) => {
+    setMood(emoji);
+    setShowEmojiPicker(false);
+  };
+
+  // Removed manual text input handler since we use picker now
+  /* const handleMoodChange = ... */
 
   const createEventMutation = useMutation({
     mutationFn: (input: CreateEventInput) => { 
@@ -357,6 +375,42 @@ export default function CreateEventPage() {
         </View>
       </Modal>
 
+      {/* Emoji Picker Modal */}
+      <Modal
+        visible={showEmojiPicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEmojiPicker(false)}
+      >
+        <Pressable 
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} 
+            onPress={() => setShowEmojiPicker(false)}
+        >
+            <View style={styles.emojiPickerContainer}>
+                <View style={styles.emojiPickerHeader}>
+                    <Text style={styles.emojiPickerTitle}>Select Mood</Text>
+                    <TouchableOpacity onPress={() => setShowEmojiPicker(false)}>
+                        <Text style={{ color: "#6B7280", fontSize: 16 }}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+                <FlatList
+                    data={EMOJI_LIST}
+                    numColumns={7}
+                    keyExtractor={(item) => item}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity 
+                            style={styles.emojiItem}
+                            onPress={() => handleSelectEmoji(item)}
+                        >
+                            <Text style={{ fontSize: 30 }}>{item}</Text>
+                        </TouchableOpacity>
+                    )}
+                />
+            </View>
+        </Pressable>
+      </Modal>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -375,6 +429,7 @@ export default function CreateEventPage() {
                   value={restaurantName}
                   onChangeText={handleRestaurantNameChange}
                 />
+                {isSearching && <ActivityIndicator size="small" color="#000" />}
                 <Pressable 
                     onPress={() => setShowMapPicker(true)}
                     style={styles.mapButton}
@@ -469,13 +524,14 @@ export default function CreateEventPage() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Mood (Emoji)</Text>
-            <TextInput
+            <Pressable
               style={styles.input}
-              placeholder="E.g. 🤓"
-              placeholderTextColor="#9CA3AF"
-              value={mood}
-              onChangeText={setMood}
-            />
+              onPress={() => setShowEmojiPicker(true)}
+            >
+               <Text style={{ color: mood ? "#1F2937" : "#9CA3AF", fontSize: 24 }}>
+                  {mood || "Select Emoji"}
+               </Text>
+            </Pressable>
           </View>
 
           <View style={styles.inputGroup}>
@@ -650,5 +706,39 @@ const styles = StyleSheet.create({
       color: "white",
       fontSize: 16,
       fontWeight: "bold",
+  },
+  emojiPickerContainer: {
+    marginTop: 'auto',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '50%',
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: -2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  emojiPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emojiPickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  emojiItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 50,
+    margin: 5,
   },
 });
