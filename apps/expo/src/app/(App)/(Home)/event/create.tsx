@@ -9,10 +9,17 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Location from "expo-location";
+import { AppleMaps, GoogleMaps } from "expo-maps";
+import { SymbolView } from "expo-symbols";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Constants from "expo-constants";
 
 import type { RouterInputs, RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -22,6 +29,16 @@ import EmptySpace from "../../../../../components/frame/EmptySpace";
 
 type UserProfile = RouterOutputs["user"]["byId"];
 type CreateEventInput = RouterInputs["event"]["create"];
+
+// Define a type that includes both location and address info
+type SearchResult = Location.LocationGeocodedLocation & {
+  formattedAddress?: string;
+};
+
+// Add this helper function outside the component
+// NOTE: You need a valid Google Maps API Key with Places API enabled.
+// We'll try to read it from your app config or env.
+const GOOGLE_API_KEY = Constants.expoConfig?.android?.config?.googleMaps?.apiKey || ""; 
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -43,6 +60,115 @@ export default function CreateEventPage() {
   });
 
   const [restaurantName, setRestaurantName] = useState("");
+  // Change state type to include address info
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  
+  // FIX 1: Re-introduce isSearching state
+  const [isSearching, setIsSearching] = useState(false);
+
+  const [restaurantCoordinates, setRestaurantCoordinates] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 36.0014,
+    longitude: -78.9382,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+
+  // Function to handle text input and search
+  const handleRestaurantNameChange = async (text: string) => {
+    setRestaurantName(text);
+    
+    if (text.length > 2) {
+      try {
+        setIsSearching(true);
+        
+        // FIX 2: Use OpenStreetMap Nominatim API (Free, No Key)
+        // limit=5 ensures we get up to 5 results
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}&limit=5&addressdetails=1`,
+          {
+            headers: {
+              // Nominatim requires a User-Agent
+              "User-Agent": "MealMatesApp/1.0" 
+            }
+          }
+        );
+        
+        if (!response.ok) {
+             throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+
+        // Map OpenStreetMap results to our format
+        const results: SearchResult[] = data.map((item: any) => ({
+             latitude: parseFloat(item.lat),
+             longitude: parseFloat(item.lon),
+             // Use display_name for full address, or construct one
+             formattedAddress: item.display_name 
+        }));
+
+        setSearchResults(results); 
+      } catch (e) {
+        console.log("Geocoding error (maybe no results):", e);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleSelectSearchResult = (location: SearchResult) => {
+    // 1. Hide results
+    setSearchResults([]);
+    
+    // 2. Update map region to selected location
+    setMapRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+    });
+    
+    // Update the coordinates immediately so the pin starts there
+    setRestaurantCoordinates({
+        latitude: location.latitude,
+        longitude: location.longitude
+    });
+
+    // 3. Open the map picker
+    setShowMapPicker(true);
+  };
+
+  // Initialize location for map
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const location = await Location.getCurrentPositionAsync({});
+        setMapRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
+        // Default coordinate if none selected
+        if (!restaurantCoordinates) {
+           setRestaurantCoordinates({
+             latitude: location.coords.latitude,
+             longitude: location.coords.longitude
+           });
+        }
+      }
+    })();
+  }, []);
+
   const [scheduleTime, setScheduleTime] = useState("");
   
   // Add state for the Date picker
@@ -92,6 +218,13 @@ export default function CreateEventPage() {
     setScheduleTime(formattedTime);
   };
 
+  const handleConfirmLocation = () => {
+    // Here you might want to reverse geocode to get the name
+    // For now we just close the map and keep the coordinates
+    // setRestaurantName("Pinned Location"); // Optional: Auto-fill name
+    setShowMapPicker(false);
+  };
+
   const handleSubmit = () => {
     if (!storedUserId) {
       Alert.alert("Error", "You must be logged in to create an event.");
@@ -100,6 +233,11 @@ export default function CreateEventPage() {
 
     if (!restaurantName || !scheduleTime) {
       Alert.alert("Missing Info", "Please fill in the required fields.");
+      return;
+    }
+
+    if (!restaurantCoordinates) {
+      Alert.alert("Missing Location", "Please select a location on the map.");
       return;
     }
 
@@ -116,8 +254,7 @@ export default function CreateEventPage() {
       scheduleTime,
       mood: mood || undefined,
       message: message || undefined,
-      // TODO: Replace with real map picker
-      restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
+      restaurantCoordinates: restaurantCoordinates,
     };
 
     console.log("Creating Event:", newEvent);
@@ -131,6 +268,95 @@ export default function CreateEventPage() {
       headerTitle="Create Event"
       enableReturnButton={true}
     >
+      {/* Map Picker Modal */}
+      <Modal
+        visible={showMapPicker}
+        animationType="slide"
+        onRequestClose={() => setShowMapPicker(false)}
+      >
+        <View style={{ flex: 1 }}>
+          <View style={styles.mapHeader}>
+             <Text style={styles.mapTitle}>Drag to Select Location</Text>
+             <TouchableOpacity onPress={() => setShowMapPicker(false)} style={styles.closeButton}>
+                <Text style={{color: "white", fontWeight: "bold"}}>Close</Text>
+             </TouchableOpacity>
+          </View>
+          
+          <View style={{ flex: 1 }}>
+              {Platform.OS === "ios" ? (
+                <AppleMaps.View
+                  style={{ flex: 1 }}
+                  // KEY CHANGE: Only use cameraPosition if you really need to Force move it.
+                  // If mapRegion is constantly updating, it might be locking the map.
+                  // Let's try binding it strictly but ensuring updates happen correctly.
+                  cameraPosition={{
+                    coordinates: {
+                        latitude: mapRegion.latitude,
+                        longitude: mapRegion.longitude
+                    },
+                    zoom: 15
+                  }}
+                  properties={{
+                    isMyLocationEnabled: true
+                  }}
+                  // CHANGE: Update BOTH coordinates state AND mapRegion state
+                  // This ensures the "cameraPosition" prop stays in sync with where the user dragged
+                  onCameraMove={(e) => {
+                    console.log("📍 Camera moved to:", e.coordinates); // Debug log
+                    
+                    const { latitude, longitude } = e.coordinates;
+                    if (latitude !== undefined && longitude !== undefined) {
+                         // Update the pin location data
+                         setRestaurantCoordinates({ latitude, longitude });
+                         
+                         // Sync the map region state so it doesn't snap back on re-render
+                         setMapRegion(prev => ({
+                             ...prev,
+                             latitude,
+                             longitude
+                         }));
+                    }
+                  }}
+                />
+              ) : (
+                <GoogleMaps.View
+                  style={{ flex: 1 }}
+                  cameraPosition={{
+                     coordinates: {
+                        latitude: mapRegion.latitude,
+                        longitude: mapRegion.longitude
+                    },
+                    zoom: 15
+                  }}
+                  properties={{
+                    isMyLocationEnabled: true
+                  }}
+                  onCameraMove={(e) => {
+                    const { latitude, longitude } = e.coordinates;
+                    if (latitude !== undefined && longitude !== undefined) {
+                        setRestaurantCoordinates({ latitude, longitude });
+                        setMapRegion(prev => ({
+                            ...prev,
+                            latitude,
+                            longitude
+                        }));
+                    }
+                  }}
+                />
+              )}
+              
+              {/* Center Pin */}
+              <View style={styles.centerMarker} pointerEvents="none">
+                <Text style={{fontSize: 40}}>📍</Text>
+              </View>
+
+              <Pressable style={styles.confirmLocationButton} onPress={handleConfirmLocation}>
+                 <Text style={styles.confirmLocationText}>Confirm Location</Text>
+              </Pressable>
+          </View>
+        </View>
+      </Modal>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -141,13 +367,65 @@ export default function CreateEventPage() {
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Restaurant Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="E.g. RING"
-              placeholderTextColor="#9CA3AF"
-              value={restaurantName}
-              onChangeText={setRestaurantName}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, zIndex: 10 }}>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="E.g. RING or search address..."
+                  placeholderTextColor="#9CA3AF"
+                  value={restaurantName}
+                  onChangeText={handleRestaurantNameChange}
+                />
+                <Pressable 
+                    onPress={() => setShowMapPicker(true)}
+                    style={styles.mapButton}
+                >
+                    {Platform.OS === "ios" ? (
+                        <SymbolView name="map.fill" size={24} tintColor="white" />
+                    ) : (
+                        <MaterialIcons name="map" size={24} color="white" />
+                    )}
+                </Pressable>
+            </View>
+
+            {/* Search Results Dropdown */}
+            {/* If we have results, show them */}
+            {searchResults.length > 0 && (
+              <View style={styles.searchResultsContainer}>
+                {searchResults.map((result, index) => (
+                  <TouchableOpacity 
+                    key={`${result.latitude}-${index}`}
+                    style={styles.searchResultItem}
+                    onPress={() => handleSelectSearchResult(result)}
+                  >
+                    <Text style={styles.searchResultText}>
+                      {result.formattedAddress ? `📍 ${result.formattedAddress}` : `📍 Location near: ${result.latitude.toFixed(3)}, ${result.longitude.toFixed(3)}`}
+                    </Text>
+                    <Text style={{fontSize: 10, color: "gray"}}>Tap to pin on map</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            
+            {/* NEW: If no results but text exists, suggest opening map */}
+            {searchResults.length === 0 && restaurantName.length > 2 && !restaurantCoordinates && (
+                 <View style={styles.searchResultsContainer}>
+                    <TouchableOpacity 
+                        style={styles.searchResultItem}
+                        onPress={() => setShowMapPicker(true)}
+                    >
+                        <Text style={styles.searchResultText}>
+                            🗺️ Pin "{restaurantName}" on Map
+                        </Text>
+                        <Text style={{fontSize: 10, color: "gray"}}>Cannot find address? Select manually.</Text>
+                    </TouchableOpacity>
+                 </View>
+            )}
+
+            {restaurantCoordinates && (
+                <Text style={{ fontSize: 12, color: "#6B7280", marginTop: 4, marginLeft: 4 }}>
+                    📍 Location set: {restaurantCoordinates.latitude.toFixed(4)}, {restaurantCoordinates.longitude.toFixed(4)}
+                </Text>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -291,5 +569,86 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  mapButton: {
+    backgroundColor: "#255,120,0", 
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  searchResultsContainer: {
+    position: "absolute",
+    top: 85, // Adjust based on input height + label
+    left: 0,
+    right: 60, // Leave space for the map button
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 100, // Ensure it floats above other elements
+  },
+  searchResultItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  searchResultText: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 2,
+  },
+  mapHeader: {
+      paddingTop: 60,
+      paddingBottom: 20,
+      paddingHorizontal: 20,
+      backgroundColor: "black",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+  },
+  mapTitle: {
+      color: "white",
+      fontSize: 18,
+      fontWeight: "bold",
+  },
+  closeButton: {
+      padding: 8,
+  },
+  centerMarker: {
+    position: "absolute",
+    top: 0, bottom: 0, left: 0, right: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -35, // Offset for pin visual
+  },
+  confirmLocationButton: {
+      position: "absolute",
+      bottom: 50,
+      alignSelf: "center",
+      backgroundColor: "black",
+      paddingVertical: 16,
+      paddingHorizontal: 32,
+      borderRadius: 30,
+      shadowColor: "#000",
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      elevation: 5,
+  },
+  confirmLocationText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "bold",
   },
 });
