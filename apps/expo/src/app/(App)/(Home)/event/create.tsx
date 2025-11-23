@@ -481,16 +481,6 @@ export default function CreateEventPage() {
                   onChangeText={handleRestaurantNameChange}
                 />
                 {isSearching && <ActivityIndicator size="small" color="#000" />}
-                <Pressable 
-                    onPress={() => setShowMapPicker(true)}
-                    style={styles.mapButton}
-                >
-                    {Platform.OS === "ios" ? (
-                        <SymbolView name="map.fill" size={24} tintColor="white" />
-                    ) : (
-                        <MaterialIcons name="map" size={24} color="white" />
-                    )}
-                </Pressable>
             </View>
 
             {/* Search Results Dropdown */}
@@ -527,11 +517,11 @@ export default function CreateEventPage() {
                  </View>
             )}
 
-            {restaurantCoordinates && (
+            {restaurantCoordinates ? (
                 <Text style={{ fontSize: 12, color: "#6B7280", marginTop: 4, marginLeft: 4 }}>
                     📍 Location set: {restaurantCoordinates.latitude.toFixed(4)}, {restaurantCoordinates.longitude.toFixed(4)}
                 </Text>
-            )}
+            ) : null}
           </View>
 
           <View style={styles.inputGroup}>
@@ -694,7 +684,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 85, // Adjust based on input height + label
     left: 0,
-    right: 60, // Leave space for the map button
+    right: 0, // Changed from 60 to 0 to fill the space
     backgroundColor: "white",
     borderRadius: 12,
     padding: 8,
