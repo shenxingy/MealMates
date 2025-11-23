@@ -9,13 +9,22 @@ import Like from "./Like";
 
 export default function PostItem({
   props,
-  onRefresh,
 }: {
   props: Post;
-  onRefresh: () => Promise<void>;
 }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
+  const [liked, setLiked] = useState(false);
+  const [thunbsup, setThunbsup] = useState(0);
+
+  useEffect(() => {
+    const syncThumbsup = () => {
+      setLiked(props.liked);
+      setThunbsup(props.likes);
+    }
+    void syncThumbsup();
+  }, [props.liked, props.likes]);
+
   const getSize = async () => {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
@@ -29,9 +38,18 @@ export default function PostItem({
     });
   };
   const like = async () => {
-    const res = await likePost(props.id, !props.liked);
-    console.log(res);
-    void onRefresh();
+    try {
+      const res = await likePost(props.id, !liked);
+      console.log(res);
+      setLiked(!liked);
+      if (liked) {
+        setThunbsup(thunbsup - 1);
+      } else {
+        setThunbsup(thunbsup + 1);
+      }
+    } catch (error) {
+      console.error("Error liking the post:", error);
+    }
   };
   useEffect(() => {
     const func = async () => {
@@ -49,7 +67,7 @@ export default function PostItem({
       <View style={[styles.bottom]}>
         <Text style={styles.grayText}>{props.user}</Text>
         <Pressable onPress={like}>
-          <Like likes={props.likes} liked={props.liked} border={true} />
+          <Like likes={thunbsup} liked={liked} border={true} />
         </Pressable>
       </View>
     </Pressable>
