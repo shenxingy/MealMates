@@ -57,9 +57,9 @@ export default function PostList({
         lists.map((list, idx) => (
           <FlatList
             key={idx}
-            style={[styles.colume]}
+            style={[styles.column]}
             scrollEnabled={false}
-            contentContainerStyle={[styles.columeContent]}
+            contentContainerStyle={[styles.columnContent]}
             data={list}
             renderItem={renderPost}
           />
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
   },
-  columeContent: {
+  columnContent: {
     alignItems: "center",
     width: "100%",
   },
-  colume: {
+  column: {
     width: "100%",
   },
   bg: {

@@ -26,6 +26,7 @@ interface BasePageProps {
   headerTitle?: string;
   enableReturnButton?: boolean;
   returnButtonText?: string;
+  paddingHorizontal?: number;
 }
 
 // Simple page - no scrollEnabled specified, no onRefresh
@@ -46,17 +47,21 @@ interface RefreshablePageProps extends BasePageProps {
   onRefresh: () => void | Promise<void>;
 }
 
-type PageFrameProps = SimplePageProps | ScrollablePageProps | RefreshablePageProps;
+type PageFrameProps =
+  | SimplePageProps
+  | ScrollablePageProps
+  | RefreshablePageProps;
 
 export default function AnimatedPageFrame(props: PageFrameProps) {
   const {
     children,
     baseColor,
     headerTitle,
+    paddingHorizontal,
     scrollEnabled = true,
     enableReturnButton = false,
     returnButtonText,
-    onRefresh
+    onRefresh,
   } = props;
 
   // Create a single Animated.Value instance
@@ -159,14 +164,16 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
           onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
         >
-          <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
+          <View style={{ paddingTop: insets.top + 58 }}>
             <Animated.Text
               style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
             >
               {headerTitle ?? ""}
             </Animated.Text>
             {/* Actual Content Started */}
-            {children}
+            <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
+              {children}
+            </View>
           </View>
         </Animated.ScrollView>
 
@@ -265,6 +272,7 @@ const styles = StyleSheet.create({
     paddingBottom: 200,
   },
   contentHeader: {
+    paddingLeft: 20,
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 10,
