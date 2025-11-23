@@ -8,9 +8,6 @@ import { publicProcedure } from "../trpc";
 
 const CreateEventSchema = z.object({
   userId: z.string(),
-  username: z.string(),
-  avatarUrl: z.string().nullable().optional(),
-  avatarColor: z.string().optional(),
   restaurantName: z.string(),
   scheduleTime: z.string(),
   mood: z.string().optional(),
@@ -26,10 +23,26 @@ const CreateEventSchema = z.object({
 });
 
 export const eventRouter = {
-  all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.event.findMany({
+  all: publicProcedure.query(async ({ ctx }) => {
+    const events = await ctx.db.query.event.findMany({
       orderBy: desc(event.createdAt),
       limit: 20,
+      with: {
+        user: true,
+      },
+    });
+
+    return events.map((row) => {
+      const { user, ...eventData } = row;
+      return {
+        ...eventData,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        username: user.name,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        avatarUrl: user.image,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        avatarColor: user.avatarColor,
+      };
     });
   }),
 

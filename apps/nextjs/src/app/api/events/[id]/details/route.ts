@@ -21,6 +21,9 @@ export async function GET(
   try {
     const foundEvent = await db.query.event.findFirst({
       where: eq(event.id, eventId),
+      with: {
+        user: true,
+      },
     });
 
     if (!foundEvent) {
@@ -36,9 +39,17 @@ export async function GET(
     const restaurantCoordinates =
       (foundEvent.restaurantCoordinates as unknown) ?? DEFAULT_RESTAURANT;
 
+    const { user, ...eventData } = foundEvent;
+
     const responseData = {
-      ...foundEvent,
+      ...eventData,
       restaurantCoordinates,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      username: user.name,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      avatarUrl: user.image,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      avatarColor: user.avatarColor,
     };
 
     return NextResponse.json({
