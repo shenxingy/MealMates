@@ -18,8 +18,6 @@ import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Location from "expo-location";
 import { AppleMaps, GoogleMaps } from "expo-maps";
-import { SymbolView } from "expo-symbols";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import type { RouterInputs, RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -215,13 +213,13 @@ export default function CreateEventPage() {
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         });
-        // Default coordinate if none selected
-        if (!restaurantCoordinates) {
-           setRestaurantCoordinates({
-             latitude: location.coords.latitude,
-             longitude: location.coords.longitude
-           });
-        }
+        // Remove the following block so we don't auto-set the pin
+        // if (!restaurantCoordinates) {
+        //    setRestaurantCoordinates({
+        //      latitude: location.coords.latitude,
+        //      longitude: location.coords.longitude
+        //    });
+        // }
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,6 +321,7 @@ export default function CreateEventPage() {
     const currentAvatarColor = userProfile?.avatarColor ?? "#F5F7FB";
 
     const newEvent: CreateEventInput = {
+      userId: storedUserId,
       username: currentUsername,
       avatarUrl: currentAvatar,
       avatarColor: currentAvatarColor,
@@ -331,6 +330,7 @@ export default function CreateEventPage() {
       mood: mood || undefined,
       message: message || undefined,
       restaurantCoordinates: restaurantCoordinates,
+      meetPointCoordinates: restaurantCoordinates,
     };
 
     console.log("Creating Event:", newEvent);

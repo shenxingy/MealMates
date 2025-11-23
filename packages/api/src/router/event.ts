@@ -7,6 +7,7 @@ import { event } from "@mealmates/db/schema";
 import { publicProcedure } from "../trpc";
 
 const CreateEventSchema = z.object({
+  userId: z.string(),
   username: z.string(),
   avatarUrl: z.string().nullable().optional(),
   avatarColor: z.string().optional(),
@@ -15,6 +16,10 @@ const CreateEventSchema = z.object({
   mood: z.string().optional(),
   message: z.string().optional(),
   restaurantCoordinates: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
+  meetPointCoordinates: z.object({
     latitude: z.number(),
     longitude: z.number(),
   }),

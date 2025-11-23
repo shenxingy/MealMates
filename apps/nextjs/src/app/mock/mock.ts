@@ -53,26 +53,31 @@ export const detailedEventMockData: DetailedEventDTO[] = [
   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[0]!,
+    meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
     restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
   },
   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[1]!,
+    meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
     restaurantCoordinates: { latitude: 36.01126, longitude: -78.88182 },
   },
   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[2]!,
+    meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
     restaurantCoordinates: { latitude: 36.00162, longitude: -78.93363 },
   },
   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[3]!,
+    meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
     restaurantCoordinates: { latitude: 36.00162, longitude: -78.93853 },
   },
   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ...simpleEventMockData[4]!,
+    meetPointCoordinates: { latitude: 40.7128, longitude: -74.006 },
     restaurantCoordinates: { latitude: 40.713, longitude: -74.0062 },
   },
 ];
