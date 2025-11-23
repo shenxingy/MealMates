@@ -1,11 +1,11 @@
 import type { AppleMapsMarker } from "expo-maps/build/apple/AppleMaps.types";
+import type { GoogleMapsMarker } from "expo-maps/build/google/GoogleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
 import { useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
-import { GoogleMapsMarker } from "expo-maps/build/google/GoogleMaps.types";
 
 import { calculateZoomLevel } from "~/utils/map";
 
@@ -59,7 +59,7 @@ export default function MiniMap(props: MiniMapProps) {
       if (restaurantCoord == null) {
         return;
       }
-      
+
       // Center on restaurant
       const center: Coordinates = restaurantCoord;
       const zoomLevel = calculateZoomLevel([restaurantCoord]);

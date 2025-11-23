@@ -111,12 +111,14 @@ open ios/MealMates.xcworkspace
 ```
 
 Then in Xcode:
+
 1. Connect your iPhone via USB
 2. Select your personal Apple ID as the Team (free account works)
 3. Select your device as the build target
 4. Click ▶️ to run
 
 ⚠️ **Free Apple ID Limitations**:
+
 - App signature expires every 7 days (need to rebuild)
 - Limited number of devices
 - Cannot publish to App Store

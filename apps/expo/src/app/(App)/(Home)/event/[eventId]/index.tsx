@@ -1,14 +1,21 @@
 import type { Coordinates } from "expo-maps/src/shared.types";
-import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { getStoredUserId } from "~/utils/user-storage";
+import { useQuery } from "@tanstack/react-query";
 
 import { fetchDetailedEvent } from "~/utils/api";
+import { getStoredUserId } from "~/utils/user-storage";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
@@ -24,10 +31,7 @@ const EventDetailsPage = () => {
     void getStoredUserId().then(setCurrentUserId);
   }, []);
 
-  const {
-    data,
-    isLoading,
-  } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["eventDetails", eventId],
     queryFn: () => fetchDetailedEvent(eventId),
     enabled: !!eventId,
@@ -46,7 +50,9 @@ const EventDetailsPage = () => {
   const scheduleTime = data?.scheduleTime ?? "TBD";
   const message = data?.message ?? "No message provided.";
 
-  const cardStyle = isLiquidGlassAvailable() ? styles.glassCard : styles.nonGlassCard;
+  const cardStyle = isLiquidGlassAvailable()
+    ? styles.glassCard
+    : styles.nonGlassCard;
 
   const shareLocationCallback = () => {
     console.log("Share location button pressed");
@@ -102,17 +108,11 @@ const EventDetailsPage = () => {
       <EmptySpace marginTop={20} />
 
       {/* User Card */}
-      <GlassView
-        style={cardStyle}
-        glassEffectStyle="regular"
-      >
+      <GlassView style={cardStyle} glassEffectStyle="regular">
         <View style={styles.userCardContent}>
           <View style={styles.avatarContainer}>
             {avatarUrl?.startsWith("http") ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.avatar}
-              />
+              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
             ) : (
               <View
                 style={[
@@ -124,18 +124,16 @@ const EventDetailsPage = () => {
                   },
                 ]}
               >
-                <Text style={{ fontSize: 20 }}>
-                  {getInitials(username)}
-                </Text>
+                <Text style={{ fontSize: 20 }}>{getInitials(username)}</Text>
               </View>
             )}
           </View>
           <Text style={styles.userName}>{username}</Text>
           <View style={styles.timeContainer}>
             {Platform.OS === "ios" ? (
-                <SymbolView name="clock.fill" size={16} tintColor="#3B82F6" />
+              <SymbolView name="clock.fill" size={16} tintColor="#3B82F6" />
             ) : (
-                <Ionicons name="time" size={16} color="#3B82F6" />
+              <Ionicons name="time" size={16} color="#3B82F6" />
             )}
             <Text style={styles.timeText}>{scheduleTime}</Text>
           </View>
@@ -145,43 +143,55 @@ const EventDetailsPage = () => {
       {/* Location Info Row */}
       <View style={styles.locationRow}>
         {/* Meet At Card */}
-        <GlassView style={[cardStyle, styles.locationCard]} glassEffectStyle="regular">
-            <View style={styles.locationHeader}>
-                {Platform.OS === "ios" ? (
-                    <SymbolView name="location.fill" size={18} tintColor="#3B82F6" />
-                ) : (
-                    <Ionicons name="navigate" size={18} color="#3B82F6" />
-                )}
-                <Text style={styles.locationLabel}>Meet At</Text>
-            </View>
-            <Text style={styles.locationValue}>
-              {restaurantLatitude.toFixed(4)}, {restaurantLongitude.toFixed(4)}
-            </Text>
+        <GlassView
+          style={[cardStyle, styles.locationCard]}
+          glassEffectStyle="regular"
+        >
+          <View style={styles.locationHeader}>
+            {Platform.OS === "ios" ? (
+              <SymbolView name="location.fill" size={18} tintColor="#3B82F6" />
+            ) : (
+              <Ionicons name="navigate" size={18} color="#3B82F6" />
+            )}
+            <Text style={styles.locationLabel}>Meet At</Text>
+          </View>
+          <Text style={styles.locationValue}>
+            {restaurantLatitude.toFixed(4)}, {restaurantLongitude.toFixed(4)}
+          </Text>
         </GlassView>
 
         {/* Restaurant Card */}
-        <GlassView style={[cardStyle, styles.locationCard]} glassEffectStyle="regular">
-            <View style={styles.locationHeader}>
-                {Platform.OS === "ios" ? (
-                    <SymbolView name="cup.and.saucer.fill" size={18} tintColor="#F97316" />
-                ) : (
-                    <Ionicons name="restaurant" size={18} color="#F97316" />
-                )}
-                <Text style={[styles.locationLabel, { color: "#F97316" }]}>Restaurant</Text>
-            </View>
-            <Text style={styles.locationValue}>{restaurantName}</Text>
+        <GlassView
+          style={[cardStyle, styles.locationCard]}
+          glassEffectStyle="regular"
+        >
+          <View style={styles.locationHeader}>
+            {Platform.OS === "ios" ? (
+              <SymbolView
+                name="cup.and.saucer.fill"
+                size={18}
+                tintColor="#F97316"
+              />
+            ) : (
+              <Ionicons name="restaurant" size={18} color="#F97316" />
+            )}
+            <Text style={[styles.locationLabel, { color: "#F97316" }]}>
+              Restaurant
+            </Text>
+          </View>
+          <Text style={styles.locationValue}>{restaurantName}</Text>
         </GlassView>
       </View>
 
       {/* Message Card */}
       <GlassView style={cardStyle} glassEffectStyle="regular">
         <View style={styles.messageHeader}>
-            {Platform.OS === "ios" ? (
-                <SymbolView name="message.fill" size={18} tintColor="#3B82F6" />
-            ) : (
-                <Ionicons name="chatbubble" size={18} color="#3B82F6" />
-            )}
-            <Text style={styles.locationLabel}>Message</Text>
+          {Platform.OS === "ios" ? (
+            <SymbolView name="message.fill" size={18} tintColor="#3B82F6" />
+          ) : (
+            <Ionicons name="chatbubble" size={18} color="#3B82F6" />
+          )}
+          <Text style={styles.locationLabel}>Message</Text>
         </View>
         <Text style={styles.messageText}>{message}</Text>
       </GlassView>
@@ -205,11 +215,10 @@ const EventDetailsPage = () => {
       {currentUserId && creatorId && currentUserId !== creatorId && (
         <View style={styles.joinButtonContainer}>
           <Pressable style={styles.joinButton}>
-              <Text style={styles.joinButtonText}>Join</Text>
+            <Text style={styles.joinButtonText}>Join</Text>
           </Pressable>
         </View>
       )}
-
     </AnimatedPageFrame>
   );
 };

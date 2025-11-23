@@ -25,14 +25,16 @@ import { getStoredUserId } from "~/utils/user-storage";
 import { excludingPointsOfInterest } from "../../../../../../components/eventpage/MiniMap";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
 
+const LOCATION_UPDATE_INTERVAL =
+  process.env.EXPO_PUBLIC_LOCATION_UPDATE_INTERVAL;
+
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const LOCATION_UPDATE_INTERVAL = process.env.EXPO_PUBLIC_LOCATION_UPDATE_INTERVAL
   const [userId, setUserId] = useState<string>("");
   const eventId = params.eventId as string;
   const shared = params.shared === "true";
-  
+
   const restaurantName = params.restaurantName as string;
   const restaurantLatitude = params.restaurantLatitude
     ? parseFloat(params.restaurantLatitude as string)
@@ -108,7 +110,7 @@ export default function MapModalPage() {
   // compute marker lists
   const appleMarkerList = useMemo(() => {
     const markers: AppleMapsMarker[] = [];
-    
+
     if (restaurantCoord) {
       markers.push({
         coordinates: restaurantCoord,
@@ -132,11 +134,7 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [
-    restaurantCoord,
-    restaurantName,
-    userLocations,
-  ]);
+  }, [restaurantCoord, restaurantName, userLocations]);
 
   const googleMarkerList = useMemo(() => {
     const markers: GoogleMapsMarker[] = [];
@@ -161,11 +159,7 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [
-    restaurantCoord,
-    restaurantName,
-    userLocations,
-  ]);
+  }, [restaurantCoord, restaurantName, userLocations]);
 
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =
@@ -278,7 +272,9 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const interval = LOCATION_UPDATE_INTERVAL ? Number(LOCATION_UPDATE_INTERVAL) : 30000; // 30 seconds
+    const interval = LOCATION_UPDATE_INTERVAL
+      ? Number(LOCATION_UPDATE_INTERVAL)
+      : 30000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
     }, interval);
@@ -290,7 +286,7 @@ export default function MapModalPage() {
 
   const appleMap = useRef<AppleMapsViewType>(null);
   const googleMap = useRef<GoogleMapsViewType>(null);
-  
+
   const handleCameraToMyLocation = () => {
     console.log(
       "locationPerm & currentLocation:",
@@ -348,25 +344,19 @@ export default function MapModalPage() {
         if (centerCoord && Platform.OS === "ios") {
           appleMap.current?.setCameraPosition({
             coordinates: centerCoord,
-            zoom: calculateZoomLevel([
-              restaurantCoord,
-              currentCoord,
-            ]),
+            zoom: calculateZoomLevel([restaurantCoord, currentCoord]),
           });
         }
         if (centerCoord && Platform.OS === "android") {
           googleMap.current?.setCameraPosition({
             coordinates: centerCoord,
-            zoom: calculateZoomLevel([
-              restaurantCoord,
-              currentCoord,
-            ]),
+            zoom: calculateZoomLevel([restaurantCoord, currentCoord]),
           });
         }
         setRestaurantView(0);
       } else {
         // Toggle back to restaurant only if no location or already viewing both
-         if (Platform.OS === "ios") {
+        if (Platform.OS === "ios") {
           appleMap.current?.setCameraPosition({
             coordinates: restaurantCoord,
             zoom: calculateZoomLevel([restaurantCoord]),
@@ -384,10 +374,12 @@ export default function MapModalPage() {
   };
 
   // Initial camera position: Restaurant if available, else default
-  const initialCameraPosition = restaurantCoord ? {
-    coordinates: restaurantCoord,
-    zoom: calculateZoomLevel([restaurantCoord]),
-  } : undefined;
+  const initialCameraPosition = restaurantCoord
+    ? {
+        coordinates: restaurantCoord,
+        zoom: calculateZoomLevel([restaurantCoord]),
+      }
+    : undefined;
 
   return (
     <>

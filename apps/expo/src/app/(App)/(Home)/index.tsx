@@ -1,8 +1,8 @@
 import { Platform, Pressable, View } from "react-native";
-import { SymbolView } from "expo-symbols";
 import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useQuery } from "@tanstack/react-query"; 
+import { useQuery } from "@tanstack/react-query";
 
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
