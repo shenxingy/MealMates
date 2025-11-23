@@ -3,6 +3,7 @@ import { FlatList, Image, StyleSheet, View } from "react-native";
 
 import type { Post } from "~/definition";
 import PostItem from "./PostItem";
+import EmptySpace from "../frame/EmptySpace";
 
 const getLists = async (data: Post[], numColumns: number) => {
   if (data.length === 0 || numColumns === 0) return [];
@@ -55,15 +56,19 @@ export default function PostList({
     <View style={[styles.container]}>
       {lists.length > 0 &&
         lists.map((list, idx) => (
-          <FlatList
-            key={idx}
-            style={[styles.column]}
-            scrollEnabled={false}
-            contentContainerStyle={[styles.columnContent]}
-            data={list}
-            renderItem={renderPost}
-          />
+          <>
+            <EmptySpace key={`${idx}_empty_space`} marginLeft={5}/>
+            <FlatList
+              key={idx}
+              style={[styles.column]}
+              scrollEnabled={false}
+              contentContainerStyle={[styles.columnContent]}
+              data={list}
+              renderItem={renderPost}
+            />
+          </>
         ))}
+      <EmptySpace marginLeft={5}/>
     </View>
   );
 }
@@ -72,6 +77,8 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   columnContent: {
     alignItems: "center",
