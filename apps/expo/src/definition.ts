@@ -6,6 +6,7 @@ export interface ApiResponse<T> {
 export interface SimpleEventDTO {
   id: number;
   avatarUrl?: string;
+  avatarColor?: string;
   username: string;
   scheduleTime: string;
   mood?: string;
