@@ -57,7 +57,12 @@ export const searchRouter = {
         const posts = await ctx.db
           .select()
           .from(Post)
-          .where(ilike(Post.content, pattern))
+          .where(
+            or(
+              ilike(Post.title, pattern),
+              ilike(Post.content, pattern),
+            ),
+          )
           .orderBy(desc(Post.createdAt))
           .limit(30);
 
