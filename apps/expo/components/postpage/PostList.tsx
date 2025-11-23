@@ -36,11 +36,9 @@ const getLists = async (data: Post[], numColumns: number) => {
 export default function PostList({
   data,
   numColumns,
-  onRefresh,
 }: {
   data: Post[];
   numColumns: number;
-  onRefresh: () => Promise<void>;
 }) {
   const [lists, setLists] = useState<Post[][]>([]);
   useEffect(() => {
@@ -51,7 +49,7 @@ export default function PostList({
   }, [data, numColumns]);
   const renderPost = (listItem: { item: Post }) => {
     const post: Post = listItem.item;
-    return <PostItem props={post} onRefresh={onRefresh} />;
+    return <PostItem props={post}/>;
   };
   return (
     <View style={[styles.container]}>

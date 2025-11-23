@@ -28,14 +28,11 @@ export default function PostPage() {
 
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
+      <AnimatedPageFrame baseColor={baseColor} headerTitle={header} onRefresh={onRefresh}>
         <Pressable onPress={create}>
           <Text>New Post</Text>
         </Pressable>
-        <Pressable onPress={onRefresh}>
-          <Text>Refresh</Text>
-        </Pressable>
-        <PostList data={posts} numColumns={2} onRefresh={onRefresh} />
+        <PostList data={posts} numColumns={2} />
       </AnimatedPageFrame>
     </>
   );
