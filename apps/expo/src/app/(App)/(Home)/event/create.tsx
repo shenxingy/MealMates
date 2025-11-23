@@ -17,15 +17,14 @@ import * as Location from "expo-location";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { RouterInputs, RouterOutputs } from "~/utils/api";
+import type { RouterInputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../components/frame/EmptySpace";
 
-type UserProfile = RouterOutputs["user"]["byId"];
 type CreateEventInput = RouterInputs["event"]["create"];
 
 type SearchResult = Location.LocationGeocodedLocation & {
@@ -60,15 +59,6 @@ export default function CreateEventPage() {
   useEffect(() => {
     void getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
-
-  const { data: userProfile } = useQuery<UserProfile>({
-    queryKey: ["userProfile", storedUserId],
-    enabled: !!storedUserId,
-    queryFn: async () => {
-      if (!storedUserId) throw new Error("No user ID");
-      return trpcClient.user.byId.query({ id: storedUserId });
-    },
-  });
 
   const [restaurantName, setRestaurantName] = useState("");
   // Change state type to include address info
@@ -114,7 +104,8 @@ export default function CreateEventPage() {
           throw new Error("Network response was not ok");
         }
 
-        const data = (await response.json()) as GooglePlacesAutocompleteResult;
+        const json = (await response.json()) as unknown;
+        const data = json as GooglePlacesAutocompleteResult;
 
         // Map Google Places results to our format
         // Note: Auto-complete doesn't give lat/lon, so we set them to 0 initially
@@ -154,7 +145,8 @@ export default function CreateEventPage() {
 
         if (!response.ok) throw new Error("Failed to fetch place details");
 
-        const data = (await response.json()) as GooglePlaceDetailsResult;
+        const json = (await response.json()) as unknown;
+        const data = json as GooglePlaceDetailsResult;
 
         if (data.result?.geometry?.location) {
           const { lat, lng } = data.result.geometry.location;
@@ -420,16 +412,8 @@ export default function CreateEventPage() {
       return;
     }
 
-    const currentUsername = userProfile?.name ?? "Anonymous";
-
-    const currentAvatar = userProfile?.image ?? null;
-    const currentAvatarColor = userProfile?.avatarColor ?? "#F5F7FB";
-
     const newEvent: CreateEventInput = {
       userId: storedUserId,
-      username: currentUsername,
-      avatarUrl: currentAvatar,
-      avatarColor: currentAvatarColor,
       restaurantName,
       scheduleTime,
       mood: mood || undefined,
