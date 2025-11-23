@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
-import { LinearGradient as MaskGradient } from "expo-linear-gradient";
+import { LinearGradient, LinearGradient as MaskGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -91,131 +91,150 @@ export default function AnimatedPageFrame(props: {
   };
 
   return (
-    <LinearGradientBackground
-      startColor={startColor}
-      endColor={endColor}
-      scrollY={scrollY}
-      speed={1}
-    >
-      <View style={{ flex: 1 }}>
-        <Animated.ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.container}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false },
-          )}
-          scrollEventThrottle={16}
-          scrollEnabled={scrollEnabled}
-        >
-          <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
+    <>
+      <LinearGradientBackground
+        startColor={startColor}
+        endColor={endColor}
+        scrollY={scrollY}
+        speed={1}
+      >
+        <View style={{ flex: 1 }}>
+          <Animated.ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.container}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false },
+            )}
+            scrollEventThrottle={16}
+            scrollEnabled={scrollEnabled}
+          >
             <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 10,
-              }}
+              style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}
             >
               <Animated.Text
                 style={[
                   styles.contentHeader,
-                  { opacity: contentHeaderOpacity, marginBottom: 0 },
+                  { opacity: contentHeaderOpacity },
                 ]}
               >
                 {headerTitle ?? ""}
               </Animated.Text>
-              {headerRight}
+              {/* Actual Content Started */}
+              {children}
             </View>
-            {/* Actual Content Started */}
-            {children}
-          </View>
-        </Animated.ScrollView>
+          </Animated.ScrollView>
 
-        {/* Header gradient-masked blur overlay */}
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: overlayHeight,
-            opacity: blurOpacity,
-          }}
-        >
-          <MaskedView
-            style={{ flex: 1 }}
-            maskElement={
-              <MaskGradient
-                // Change blur settings here
-                colors={[gradientColor, maskGradientColor, endColor]}
-                locations={[0, 0.7, 1]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
+          {/* Header gradient-masked blur overlay */}
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: overlayHeight,
+              opacity: blurOpacity,
+            }}
+          >
+            <MaskedView
+              style={{ flex: 1 }}
+              maskElement={
+                <MaskGradient
+                  // Change blur settings here
+                  colors={[gradientColor, maskGradientColor, endColor]}
+                  locations={[0, 0.7, 1]}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              }
+            >
+              <AnimatedBlurView
+                intensity={blurIntensity}
+                tint="systemChromeMaterial"
                 style={StyleSheet.absoluteFill}
               />
-            }
-          >
-            <AnimatedBlurView
-              intensity={blurIntensity}
-              tint="systemChromeMaterial"
-              style={StyleSheet.absoluteFill}
-            />
-          </MaskedView>
-        </Animated.View>
+            </MaskedView>
+          </Animated.View>
 
-        {/* Header on top */}
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: insets.top,
-            left: 0,
-            right: 0,
-            alignItems: "center",
-            opacity: topHeaderOpacity,
-            transform: [
-              {
-                translateY: topHeaderTranslateY,
-              },
-            ],
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-            {headerTitle ?? ""}
-          </Text>
-        </Animated.View>
-      </View>
-      {/* Return button */}
-      {enableReturnButton && (
-        <Pressable onPress={handleReturnButton} style={styles.returnPressable}>
-          <GlassView
-            style={
-              isLiquidGlassAvailable()
-                ? styles.returnGlassButton
-                : styles.returnButton
-            }
-            isInteractive
+          {/* Header on top */}
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: insets.top,
+              left: 0,
+              right: 0,
+              alignItems: "center",
+              opacity: topHeaderOpacity,
+              transform: [
+                {
+                  translateY: topHeaderTranslateY,
+                },
+              ],
+            }}
           >
-            <View style={styles.returnButtonContainer}>
-              {Platform.OS === "ios" ? (
-                <SymbolView
-                  name="chevron.backward"
-                  size={17}
-                  tintColor="black"
-                />
-              ) : (
-                <MaterialIcons name="arrow-back-ios" size={17} color="black" />
-              )}
-              {returnButtonText && (
-                <Text style={styles.returnButtonText}>{returnButtonText}</Text>
-              )}
-            </View>
-          </GlassView>
-        </Pressable>
-      )}
-    </LinearGradientBackground>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              {headerTitle ?? ""}
+            </Text>
+          </Animated.View>
+        </View>
+        {/* Return button */}
+        {enableReturnButton && (
+          <Pressable
+            onPress={handleReturnButton}
+            style={[
+              { top: isLiquidGlassAvailable() ? insets.top : insets.top + 5 },
+              styles.returnPressable,
+            ]}
+          >
+            <GlassView
+              style={
+                isLiquidGlassAvailable()
+                  ? styles.returnGlassButton
+                  : styles.returnButton
+              }
+              isInteractive
+            >
+              <View style={styles.returnButtonContainer}>
+                {Platform.OS === "ios" ? (
+                  <SymbolView
+                    name="chevron.backward"
+                    size={17}
+                    tintColor="black"
+                  />
+                ) : (
+                  <MaterialIcons
+                    name="arrow-back-ios"
+                    size={17}
+                    color="black"
+                  />
+                )}
+                {returnButtonText && (
+                  <Text style={styles.returnButtonText}>
+                    {returnButtonText}
+                  </Text>
+                )}
+              </View>
+            </GlassView>
+          </Pressable>
+        )}
+      </LinearGradientBackground>
+      {Platform.OS == "ios" && !isLiquidGlassAvailable() &&
+        (
+          <View style={{position:"absolute", left: 0, right:0, bottom:0, height: insets.bottom + 100, backgroundColor: "transparent"}} pointerEvents="none">
+            <LinearGradient
+              colors={["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.7)", "rgba(255, 255, 255, 1)"]}
+              locations={[0, 0.3, 1]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{flex: 1}}
+            />
+          </View>
+        )
+      }
+    </>
   );
 }
 
@@ -233,7 +252,6 @@ const styles = StyleSheet.create({
   },
   returnPressable: {
     position: "absolute",
-    top: 60,
     left: 20,
   },
   returnGlassButton: {
