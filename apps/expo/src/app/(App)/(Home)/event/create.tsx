@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -10,16 +10,37 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 
+import type { RouterOutputs } from "~/utils/api";
+import { trpcClient } from "~/utils/api";
+import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../components/frame/EmptySpace";
-// 1. 引入 useDukeAuth
-import { useDukeAuth } from "../../../../hooks/useDukeAuth";
+
+// 定义 UserProfile 类型
+type UserProfile = RouterOutputs["user"]["byId"];
 
 export default function CreateEventPage() {
   const router = useRouter();
-  // 2. 获取用户信息
-  const { userInfo } = useDukeAuth();
+  
+  // 1. 状态：存储用户ID
+  const [storedUserId, setStoredUserId] = useState<string | null>(null);
+
+  // 2. 加载 storedUserId
+  useEffect(() => {
+    getStoredUserId().then(setStoredUserId).catch(console.error);
+  }, []);
+
+  // 3. 查询用户详细信息
+  const { data: userProfile } = useQuery<UserProfile>({
+    queryKey: ["userProfile", storedUserId],
+    enabled: !!storedUserId, // 只有拿到了 ID 才查询
+    queryFn: async () => {
+      if (!storedUserId) throw new Error("No user ID");
+      return trpcClient.user.byId.query({ id: storedUserId });
+    },
+  });
 
   const [restaurantName, setRestaurantName] = useState("");
   const [meetPoint, setMeetPoint] = useState("");
@@ -35,23 +56,26 @@ export default function CreateEventPage() {
       return;
     }
 
-    // 3. 使用真实用户信息
-    // 注意：userInfo 可能为空，建议处理这种情况，或者使用 "Anonymous" 作为回退
-    const currentUsername = userInfo?.name ?? "Anonymous User";
-    // 如果 userInfo 里有头像字段，也可以在这里获取，例如: userInfo?.picture
-    // const currentAvatarUrl = userInfo?.picture; 
+    // 4. 获取当前用户的最新信息
+    const currentUsername = userProfile?.name ?? "Anonymous";
+    
+    // 获取头像逻辑：
+    // 优先使用用户设置的 image (Emoji)
+    // 如果没有，则构造一个默认头像链接，或者直接存 null (让前端展示时自动回退到首字母)
+    // 这里为了简单和一致，如果你存的是 Emoji，就直接存入 avatarUrl
+    // 如果是 URL 形式的头像系统，这里应该是 URL
+    const currentAvatar = userProfile?.image ?? null;
 
     const newEvent = {
       username: currentUsername,
+      avatarUrl: currentAvatar, // 存入 Emoji 或 URL
       restaurantName,
       meetPoint,
       scheduleTime,
       mood,
       message,
-      meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 }, 
+      meetPointCoordinates: { latitude: 36.00162, longitude: -78.93963 },
       restaurantCoordinates: { latitude: 36.01126, longitude: -78.92182 },
-      // 如果 Schema 中有 avatarUrl，也可以加上
-      // avatarUrl: currentAvatarUrl,
     };
 
     console.log("Creating Event:", newEvent);
