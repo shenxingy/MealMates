@@ -39,5 +39,4 @@ export const eventRouter = {
       const [newEvent] = await ctx.db.insert(event).values(input).returning();
       return newEvent;
     }),
-
 } satisfies TRPCRouterRecord;

@@ -63,11 +63,7 @@ const EventView = (props: EventViewProps) => {
               ) : (
                 <>
                   {avatarUrl?.startsWith("http") ? (
-                    <Image
-                      src={avatarUrl}
-                      alt="Avatar"
-                      style={styles.avatar}
-                    />
+                    <Image src={avatarUrl} alt="Avatar" style={styles.avatar} />
                   ) : (
                     <View
                       style={[
@@ -126,7 +122,7 @@ const EventView = (props: EventViewProps) => {
             )}
           </View>
         </View>
-        
+
         {/* Removed Meet Point section */}
 
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
