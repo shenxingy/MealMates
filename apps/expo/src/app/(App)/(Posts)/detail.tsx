@@ -6,7 +6,6 @@ import { useLocalSearchParams } from "expo-router/build/hooks";
 import type { Post, PostComment } from "~/definition";
 import { fetchPost, fetchPostComments } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import Back from "../../../../components/postpage/Back";
 import Comment from "../../../../components/postpage/Comment";
 import PostDetail from "../../../../components/postpage/Post";
 
@@ -31,10 +30,7 @@ export default function PostDetails() {
     void onRefresh();
   }, []);
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-      <Pressable onPress={router.back}>
-        <Back text="< Posts" />
-      </Pressable>
+    <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true} returnButtonText="Posts">
       <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
       </Pressable>
