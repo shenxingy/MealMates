@@ -48,6 +48,9 @@ cp .env.example .env
 
 # Edit .env and add your Supabase credentials
 # Ask your team lead for the shared Supabase project URL and keys
+
+# Add to .env: Google Maps API Key (Required for Location Search & Maps)
+# EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
 That's it! The database schema is already deployed to Supabase, so you don't need to run any database migrations.

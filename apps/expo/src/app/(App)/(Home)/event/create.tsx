@@ -28,7 +28,6 @@ import EmptySpace from "../../../../../components/frame/EmptySpace";
 type UserProfile = RouterOutputs["user"]["byId"];
 type CreateEventInput = RouterInputs["event"]["create"];
 
-// Define a type that includes both location and address info
 type SearchResult = Location.LocationGeocodedLocation & {
   formattedAddress?: string;
   placeId?: string;
