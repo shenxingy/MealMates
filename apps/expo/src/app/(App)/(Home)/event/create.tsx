@@ -8,9 +8,10 @@ import {
   Text,
   TextInput,
   View,
+  ActivityIndicator, // 引入 ActivityIndicator
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
@@ -50,7 +51,32 @@ export default function CreateEventPage() {
 
   const baseColor = "255,120,0";
 
+  // 定义 create mutation
+  const createEventMutation = useMutation({
+    mutationFn: (input: any) => { 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return trpcClient.event.create.mutate(input);
+    },
+    onSuccess: () => {
+      Alert.alert("Success", "Event created successfully!", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    },
+    onError: (error) => {
+      console.error("Failed to create event:", error);
+      Alert.alert("Error", "Failed to create event. Please try again.");
+    },
+  });
+
+  // 优化 handleSubmit
   const handleSubmit = () => {
+    // 1. 登录检查
+    if (!storedUserId) {
+      Alert.alert("Error", "You must be logged in to create an event.");
+      return;
+    }
+
+    // 2. 表单必填检查
     if (!restaurantName || !meetPoint || !scheduleTime) {
       Alert.alert("Missing Info", "Please fill in the required fields.");
       return;
@@ -80,9 +106,8 @@ export default function CreateEventPage() {
 
     console.log("Creating Event:", newEvent);
 
-    Alert.alert("Success", "Event created successfully!", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
+    // 调用 mutation
+    createEventMutation.mutate(newEvent);
   };
 
   return (
@@ -162,13 +187,22 @@ export default function CreateEventPage() {
           <EmptySpace marginTop={20} />
 
           <Pressable
+            // 3. 禁用按钮防止重复提交
+            disabled={createEventMutation.isPending}
             style={({ pressed }) => [
               styles.submitButton,
               pressed && styles.submitButtonPressed,
+              // 可选：禁用时改变样式
+              createEventMutation.isPending && { opacity: 0.7 } 
             ]}
             onPress={handleSubmit}
           >
-            <Text style={styles.submitButtonText}>Create Event</Text>
+            {/* 4. 显示 Loading */}
+            {createEventMutation.isPending ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.submitButtonText}>Create Event</Text>
+            )}
           </Pressable>
 
           <EmptySpace marginTop={40} />
