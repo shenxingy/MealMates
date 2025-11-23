@@ -49,7 +49,7 @@ export default function PostDetail({
   };
   const like = async () => {
     try {
-      const res = await likePost(props.id, !props.liked);
+      const res = await likePost(props.id, !liked);
       console.log(res);
       setLiked(!liked);
       if (liked) {
