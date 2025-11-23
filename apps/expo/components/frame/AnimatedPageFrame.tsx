@@ -112,14 +112,17 @@ export default function AnimatedPageFrame(props: {
             <View
               style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}
             >
-              <Animated.Text
-                style={[
-                  styles.contentHeader,
-                  { opacity: contentHeaderOpacity },
-                ]}
-              >
-                {headerTitle ?? ""}
-              </Animated.Text>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <Animated.Text
+                    style={[
+                      styles.contentHeader,
+                      { opacity: contentHeaderOpacity, marginBottom: 0 },
+                    ]}
+                  >
+                    {headerTitle ?? ""}
+                  </Animated.Text>
+                  {headerRight}
+              </View>
               {/* Actual Content Started */}
               {children}
             </View>
