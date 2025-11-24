@@ -38,8 +38,9 @@ export const searchRouter = {
             or(
               ilike(event.message, pattern),
               ilike(event.restaurantName, pattern),
-              ilike(event.meetPoint, pattern),
+              ilike(event.scheduleTime, pattern),
               ilike(event.mood, pattern),
+              ilike(event.userId, pattern),
             ),
           )
           .orderBy(desc(event.createdAt))
