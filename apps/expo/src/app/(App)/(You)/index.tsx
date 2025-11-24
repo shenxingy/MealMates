@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { ProfileStat } from "../../../../components/profile";
@@ -105,7 +105,6 @@ const normalizeHexColor = (value: string) => {
 const isValidHexColor = (value: string) => HEX_COLOR_REGEX.test(value);
 
 export default function YouPage() {
-  const router = useRouter();
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
   const [isLoadingUserId, setIsLoadingUserId] = useState(true);
   const [isEditVisible, setIsEditVisible] = useState(false);
@@ -315,12 +314,10 @@ export default function YouPage() {
       await logout();
       setStoredUserIdState(null);
       handleCloseEditModal();
-      await loadUserId();
+      console.log("isAuthenticated", isAuthenticated);
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
       Alert.alert("Logout failed", "Please try again.");
-    } finally {
-      router.replace("/");
     }
   };
 
