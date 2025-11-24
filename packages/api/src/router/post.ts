@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { desc, eq } from "@mealmates/db";
+import { desc, eq, and } from "@mealmates/db";
 import { post, comment, commentLike, postLike, user } from "@mealmates/db/schema";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
@@ -111,12 +111,26 @@ export const CreatePostLikeSchema = z.object({
 });
 
 export const postLikeRouter = {
-  count: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.comment.findMany({
-      orderBy: desc(comment.createdAt),
-      // limit
-    });
-  }),
+  count: publicProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const likes = await ctx.db.query.postLike.findMany({
+        where: eq(postLike.postId, input.postId),
+      });
+      return likes.length;
+    }),
+  
+  liked: publicProcedure
+    .input(z.object({ postId: z.string(), userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const like = await ctx.db.query.postLike.findMany({
+        where: and(
+          eq(postLike.postId, input.postId),
+          eq(postLike.postId, input.postId)
+        )
+      });
+      return like.length > 0;
+    }),
 
   create: protectedProcedure
     .input(CreatePostLikeSchema)
@@ -139,12 +153,26 @@ export const CreateCommentLikeSchema = z.object({
 });
 
 export const commentLikeRouter = {
-  all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.comment.findMany({
-      orderBy: desc(comment.createdAt),
-      // limit
-    });
-  }),
+  count: publicProcedure
+    .input(z.object({ commentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const likes = await ctx.db.query.postLike.findMany({
+        where: eq(commentLike.commentId, input.commentId),
+      });
+      return likes.length;
+    }),
+  
+  liked: publicProcedure
+    .input(z.object({ commentId: z.string(), userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const like = await ctx.db.query.postLike.findMany({
+        where: and(
+          eq(commentLike.commentId, input.commentId),
+          eq(commentLike.userId, input.userId)
+        )
+      });
+      return like.length > 0;
+    }),
 
   create: protectedProcedure
     .input(CreateCommentLikeSchema)

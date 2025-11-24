@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 
 import type { Post, PostComment } from "~/definition";
@@ -56,10 +56,12 @@ export default function PostDetails() {
       return trpcClient.comment.byPost.query({ postId: id });
     },
   });
-  const onRefresh = async () => {
-    console.log("refreshing!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.log(postData);
-    console.log(commentsData);
+  const onRefresh = () => {
+    postData.refetch();
+    commentsData.refetch();
+
+  };
+  const showData = () => {
     if (postData.data) {
       const data = postData.data;
       const newPost: Post = {
@@ -90,19 +92,24 @@ export default function PostDetails() {
     setComments(newComments);
     // setPost(await fetchPost(idNum));
     // setComments(await fetchPostComments(idNum));
-  };
+  }
   const comment = () => {
     router.push({ pathname: "/(App)/(Posts)/comment", params: { postId: id } });
   };
   const router = useRouter();
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh();
+    }, [postData.refetch, commentsData.refetch])
+  );
   useEffect(() => {
-    void onRefresh();
+    showData();
   }, [postData.data, postData.isLoading, commentsData.data, commentsData.isLoading]);
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true}>
-      <Pressable onPress={onRefresh}>
+      {/* <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
-      </Pressable>
+      </Pressable> */}
       <Pressable onPress={comment}>
         <Text>comment</Text>
       </Pressable>
