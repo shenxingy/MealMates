@@ -1,14 +1,5 @@
 import type { ImageSourcePropType } from "react-native";
-import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 
 import mealmatesHeroAsset from "../../assets/mealmates.png";
 import { DukeRegisterButton } from "../../components/auth";
@@ -18,26 +9,9 @@ import { useDukeAuth } from "../hooks/useDukeAuth";
 const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 
 export default function Index() {
-  const router = useRouter();
-
-  const { isLoading, isAuthenticated, userInfo, error, login } = useDukeAuth();
+  const { isLoading, login } = useDukeAuth();
   const header = "MealMates";
   const baseColor = "195,227,255";
-
-  // Navigate to home when authenticated
-  useEffect(() => {
-    if (isAuthenticated && userInfo) {
-      console.log("User authenticated:", userInfo);
-      router.replace("/(App)/(Home)");
-    }
-  }, [isAuthenticated, userInfo, router]);
-
-  // Show error alerts
-  useEffect(() => {
-    if (error) {
-      Alert.alert("Authentication Error", error);
-    }
-  }, [error]);
 
   const handleDukeAuth = async () => {
     try {
