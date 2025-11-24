@@ -28,6 +28,7 @@ import SymbolButton from "../../../../../../components/frame/SymbolButton";
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const LOCATION_UPDATE_INTERVAL = process.env.EXPO_PUBLIC_LOCATION_UPDATE_INTERVAL
   const [userId, setUserId] = useState<string>("");
   const eventId = params.eventId as string;
   const shared = params.shared === "true";
@@ -303,10 +304,10 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
+    const interval = LOCATION_UPDATE_INTERVAL ? Number(LOCATION_UPDATE_INTERVAL) : 30000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
-    }, LOCATION_UPDATE_INTERVAL);
+    }, interval);
 
     return () => {
       clearInterval(locationInterval);
