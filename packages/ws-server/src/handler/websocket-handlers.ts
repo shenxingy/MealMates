@@ -145,7 +145,9 @@ function handleShareLocationEvent(
       ws, // exclude sender
     );
 
-    console.log(`[SocketManager] User ${ws.userId} shared location in event ${ws.eventId}`);
+    console.log(
+      `[SocketManager] User ${ws.userId} shared location in event ${ws.eventId}`,
+    );
   }
 }
 

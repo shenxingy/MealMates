@@ -48,6 +48,9 @@ cp .env.example .env
 
 # Edit .env and add your Supabase credentials
 # Ask your team lead for the shared Supabase project URL and keys
+
+# Add to .env: Google Maps API Key (Required for Location Search & Maps)
+# EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
 That's it! The database schema is already deployed to Supabase, so you don't need to run any database migrations.
@@ -108,12 +111,14 @@ open ios/MealMates.xcworkspace
 ```
 
 Then in Xcode:
+
 1. Connect your iPhone via USB
 2. Select your personal Apple ID as the Team (free account works)
 3. Select your device as the build target
 4. Click ▶️ to run
 
 ⚠️ **Free Apple ID Limitations**:
+
 - App signature expires every 7 days (need to rebuild)
 - Limited number of devices
 - Cannot publish to App Store
