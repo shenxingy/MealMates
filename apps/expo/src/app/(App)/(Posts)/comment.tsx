@@ -1,11 +1,13 @@
 import type { ImageSize } from "react-native";
-import { useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { getBaseUrl } from "~/utils/base-url";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
+import { trpcClient } from "~/utils/api";
+import { getStoredUserId } from "~/utils/user-storage";
 
 export default function Comment() {
   const header = "Comment";
@@ -15,7 +17,11 @@ export default function Comment() {
   const [image, setImage] = useState<string>("");
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
-  const [alert, setAlert] = useState<string | undefined>(undefined);
+  // const [alert, setAlert] = useState<string | undefined>(undefined);
+  const [storedUserId, setStoredUserId] = useState<string | null>(null);
+  useEffect(() => {
+    getStoredUserId().then(setStoredUserId).catch(console.error);
+  }, []);
   const router = useRouter();
   const getSize = async (image: string) => {
     const size: ImageSize = await Image.getSize(image);
@@ -24,7 +30,6 @@ export default function Comment() {
   };
   const changeText = (content: string) => {
     setContent(content);
-    setAlert(undefined);
   };
   const pick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -34,12 +39,15 @@ export default function Comment() {
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0].uri);
       void getSize(result.assets[0].uri);
-      setAlert(undefined);
     }
   };
   const comment = async () => {
+    if (!storedUserId) {
+      Alert.alert("please login");
+      return;
+    }
     if (image.length === 0 && content.length === 0) {
-      setAlert("Please add comment content or upload an image");
+      Alert.alert("Please add comment content or upload an image");
       return;
     }
     const formData = new FormData();
@@ -64,12 +72,23 @@ export default function Comment() {
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
-    const data = (await res.json()) as { message: string };
-    // console.log(data);
+    const data = (await res.json()) as { data: string, message: string };
     if (data.message === "Success") {
-      router.back();
+      try {
+        const res = await trpcClient.comment.create.mutate({
+          postId: postId,
+          userId: storedUserId,
+          content: content,
+          image: data.data
+        });
+        router.back();
+      } catch (error: unknown) {
+        console.error("[POST CREATE] Failed:", error);
+        const message = error instanceof Error ? error.message : "Failed to create post";
+        Alert.alert("Create failed", message);
+      }
     } else {
-      setAlert("comment failed");
+      Alert.alert("comment failed");
     }
   };
 
@@ -92,7 +111,6 @@ export default function Comment() {
             style={[styles.image, { aspectRatio: width / height }]}
           />
         )}
-        {alert && <Text>{alert}</Text>}
         <Pressable onPress={comment}>
           <Text>Send</Text>
         </Pressable>

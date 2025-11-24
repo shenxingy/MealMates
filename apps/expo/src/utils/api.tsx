@@ -14,8 +14,8 @@ import type {
   PostComment,
   SimpleEventDTO,
 } from "~/definition";
-import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
+import { getStoredUserId } from "./user-storage";
 
 export const DEFAULT_USER_AVATAR =
   "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_default.png";
@@ -100,13 +100,17 @@ export const trpcClient = createTRPCClient<AppRouter>({
     httpBatchLink({
       transformer: superjson,
       url: `${getBaseUrl()}/api/trpc`,
-      headers() {
+      async headers() {
         const headers = new Map<string, string>();
         headers.set("x-trpc-source", "expo-react");
 
-        const cookies = authClient.getCookie();
-        if (cookies) {
-          headers.set("Cookie", cookies);
+        try {
+          const dukeUserId = await getStoredUserId();
+          if (dukeUserId) {
+            headers.set("x-duke-user-id", dukeUserId);
+          }
+        } catch (error) {
+          console.warn("[tRPC] Failed to read Duke user id from storage", error);
         }
         return Object.fromEntries(headers);
       },

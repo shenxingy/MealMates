@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query"; 
 import type { Post } from "~/definition";
 import { trpcClient } from "~/utils/api";
@@ -13,42 +13,51 @@ export default function PostPage() {
   const header = "Posts";
   const baseColor = "255,178,0";
   const [posts, setPosts] = useState<Post[]>([]);
-  const { data, isLoading, error } = useQuery({
+  const [load, setLoad] = useState<Boolean>(true);
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["post", "all"],
     queryFn: () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return trpcClient.post.all.query();
     },
   });
-  const onRefresh = async () => {
-    if (error) console.log(error);
-    else if (isLoading) console.log("loading...");
-    else {
-      const newPosts: Post[] = [];
-      data?.forEach((post) => {
-        const newPost: Post = {
-          id: post.id,
-          title: post.title,
-          content: post.content ? post.content : "",
-          image: post.image,
-          user: post.user ? post.user : "unknown",
-          time: post.createdAt.toString(),
-          likes: 0,
-          liked: false
-        };
-        newPosts.push(newPost);
-      });
-      setPosts(newPosts);
-    }
+  const onRefresh = () => {
+    void refetch();
   };
+
+  const showData = () => {
+    const newPosts: Post[] = [];
+    data?.forEach((post) => {
+      const newPost: Post = {
+        id: post.id,
+        title: post.title,
+        content: post.content ? post.content : "",
+        image: post.image,
+        user: post.user ? post.user : "unknown",
+        time: post.createdAt.toString(),
+        likes: 0,
+        liked: false
+      };
+      newPosts.push(newPost);
+    });
+    setPosts(newPosts);
+  }
   
   const router = useRouter();
   const create = () => {
     router.push({ pathname: "/(App)/(Posts)/create" });
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh();
+    }, [refetch])
+  );
+
   useEffect(() => {
-    void onRefresh();
-  }, [data, isLoading]);
+    setLoad(isLoading);
+    showData();
+  }, [data, isLoading, error]);
 
   return (
     <>
@@ -59,7 +68,11 @@ export default function PostPage() {
         paddingHorizontal={0}
       >
         <EmptySpace marginTop={30} />
-        <PostList data={posts} numColumns={2} />
+        { load ? (
+          <Text>Loading...</Text>
+        ) : (
+          <PostList data={posts} numColumns={2} />
+        ) }
       </AnimatedPageFrame>
       <SymbolButton
         onPress={create}

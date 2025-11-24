@@ -18,7 +18,7 @@ export default function Create() {
   const [image, setImage] = useState<string>("");
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
-  const [alert, setAlert] = useState<string | undefined>(undefined);
+  // const [alert, setAlert] = useState<string | undefined>(undefined);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
   const router = useRouter();
   useEffect(() => {
@@ -37,7 +37,6 @@ export default function Create() {
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0].uri);
       void getSize(result.assets[0].uri);
-      setAlert(undefined);
     }
   };
   // const createPost = useMutation({
@@ -57,17 +56,18 @@ export default function Create() {
 
   const post = async () => {
     if (!storedUserId) {
-      setAlert("please login");
+      Alert.alert("please login");
       return;
     }
     if (title.length === 0) {
-      setAlert("Please enter a title");
+      Alert.alert("Please enter a title");
       return;
     }
     if (image.length === 0) {
-      setAlert("Please upload an image");
+      Alert.alert("Please upload an image");
       return;
     }
+    console.log(storedUserId);
     const formData = new FormData();
     const uriParts = image.split(".");
     const fileType = uriParts[uriParts.length - 1];
@@ -91,7 +91,6 @@ export default function Create() {
     });
     const data = (await res.json()) as { data: string, message: string };
     if (data.message === "Success") {
-      // console.log("got data: " + data.data + "!!!!!!!!!!!!!!!!!!!!!!!!");
       // const url: string = data.data;
       // const input = {
       //   title: title,
@@ -108,22 +107,19 @@ export default function Create() {
       // });
       try {
         const res = await trpcClient.post.create.mutate({
-          userId: "1fbdd0dd-90d7-4bfc-8c85-1d79d1fbbb37",
+          userId: storedUserId,
           title: title,
           content: content,
-          image: image
+          image: data.data
         });
-        console.log("post created!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         router.back();
       } catch (error: unknown) {
         console.error("[POST CREATE] Failed:", error);
-        const message =
-          error instanceof Error ? error.message : "Failed to create post";
-        // setLastResult(message);
+        const message = error instanceof Error ? error.message : "Failed to create post";
         Alert.alert("Create failed", message);
       }
     } else {
-      setAlert("post failed");
+      Alert.alert("post failed");
     }
   };
 
@@ -154,7 +150,6 @@ export default function Create() {
             style={[styles.image, { aspectRatio: width / height }]}
           />
         )}
-        {alert && <Text>{alert}</Text>}
         <Pressable onPress={post}>
           <Text>Post</Text>
         </Pressable>
