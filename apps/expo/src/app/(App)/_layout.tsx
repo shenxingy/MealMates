@@ -10,7 +10,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 export default function HomePageLayout() {
   return (
     <>
-      <NativeTabs>
+      <NativeTabs minimizeBehavior="onScrollDown">
         <NativeTabs.Trigger name="(Home)">
           <Label>Home</Label>
           {Platform.select({
