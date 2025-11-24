@@ -14,6 +14,10 @@ import {
   LinearGradient,
   LinearGradient as MaskGradient,
 } from "expo-linear-gradient";
+import {
+  LinearGradient,
+  LinearGradient as MaskGradient,
+} from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -27,6 +31,7 @@ export default function AnimatedPageFrame(props: {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
+  headerRight?: React.ReactNode;
   scrollEnabled?: boolean;
   enableReturnButton?: boolean;
   returnButtonText?: string;
@@ -35,6 +40,7 @@ export default function AnimatedPageFrame(props: {
     children,
     baseColor,
     headerTitle,
+    headerRight,
     scrollEnabled = true,
     enableReturnButton = false,
     returnButtonText,
@@ -138,7 +144,42 @@ export default function AnimatedPageFrame(props: {
         speed={1}
       >
         <View style={{ flex: 1 }}>
-          {content}
+          <Animated.ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.container}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false },
+            )}
+            scrollEventThrottle={16}
+            scrollEnabled={scrollEnabled}
+          >
+            <View
+              style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <Animated.Text
+                  style={[
+                    styles.contentHeader,
+                    { opacity: contentHeaderOpacity, marginBottom: 0 },
+                  ]}
+                >
+                  {headerTitle ?? ""}
+                </Animated.Text>
+                {headerRight}
+              </View>
+              {/* Actual Content Started */}
+              {children}
+            </View>
+          </Animated.ScrollView>
+
           {/* Header gradient-masked blur overlay */}
           <Animated.View
             pointerEvents="none"
@@ -235,6 +276,31 @@ export default function AnimatedPageFrame(props: {
           </Pressable>
         )}
       </LinearGradientBackground>
+      {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: insets.bottom + 100,
+            backgroundColor: "transparent",
+          }}
+          pointerEvents="none"
+        >
+          <LinearGradient
+            colors={[
+              "rgba(255, 255, 255, 0)",
+              "rgba(255, 255, 255, 0.7)",
+              "rgba(255, 255, 255, 1)",
+            ]}
+            locations={[0, 0.3, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={{ flex: 1 }}
+          />
+        </View>
+      )}
       {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
         <View
           style={{
