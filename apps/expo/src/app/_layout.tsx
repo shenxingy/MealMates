@@ -33,13 +33,7 @@ function AuthNavigationGate({ children }: { children: ReactNode }) {
     } else if (isAuthenticated && !inAppGroup) {
       setTimeout(() => router.replace("/(App)/(Home)"), 0);
     }
-  }, [
-    isAuthHydrated,
-    isAuthenticated,
-    inAppGroup,
-    rootNavigationKey,
-    router,
-  ]);
+  }, [isAuthHydrated, isAuthenticated, inAppGroup, rootNavigationKey, router]);
 
   if (!isAuthHydrated) return null;
 
@@ -59,7 +53,6 @@ export default function RootLayout() {
   SplashScreen.setOptions({
     duration: 1000,
     fade: true,
-  });
   });
   return (
     <SafeAreaProvider>
