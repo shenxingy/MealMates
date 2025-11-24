@@ -1,6 +1,6 @@
 import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { getStoredUserId } from "~/utils/user-storage";
@@ -40,21 +40,21 @@ export default function Create() {
       setAlert(undefined);
     }
   };
-  const createPost = useMutation({
-    mutationFn: (input: {
-      title: string;
-      content: string;
-      image: string;
-      userId: string;
-    }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return trpcClient.post.create.mutate(input);
-    },
-    onError: (error) => {
-      console.error("Failed to create post:", error);
-    },
-  },
-);
+  // const createPost = useMutation({
+  //   mutationFn: (input: {
+  //     title: string;
+  //     content: string;
+  //     image: string;
+  //     userId: string;
+  //   }) => {
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  //     return trpcClient.post.create.mutate(input);
+  //   },
+  //   onError: (error) => {
+  //     console.error("Failed to create post:", error);
+  //   },
+  // });
+
   const post = async () => {
     if (!storedUserId) {
       setAlert("please login");
@@ -91,23 +91,37 @@ export default function Create() {
     });
     const data = (await res.json()) as { data: string, message: string };
     if (data.message === "Success") {
-      console.log("got data: " + data.data + "!!!!!!!!!!!!!!!!!!!!!!!!");
-      const url: string = data.data;
-      const input = {
-        title: title,
-        content: content,
-        image: data.data,
-        createAt: new Date(),
-        userId: "mock_user_id"
+      // console.log("got data: " + data.data + "!!!!!!!!!!!!!!!!!!!!!!!!");
+      // const url: string = data.data;
+      // const input = {
+      //   title: title,
+      //   content: content,
+      //   image: data.data,
+      //   createAt: new Date(),
+      //   userId: "mock_user_id"
+      // }
+      // createPost.mutate({
+      //   title: title,
+      //   content: content,
+      //   image: url,
+      //   userId: storedUserId,
+      // });
+      try {
+        const res = await trpcClient.post.create.mutate({
+          userId: "1fbdd0dd-90d7-4bfc-8c85-1d79d1fbbb37",
+          title: title,
+          content: content,
+          image: image
+        });
+        console.log("post created!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        router.back();
+      } catch (error: unknown) {
+        console.error("[POST CREATE] Failed:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to create post";
+        // setLastResult(message);
+        Alert.alert("Create failed", message);
       }
-      createPost.mutate({
-        title: title,
-        content: content,
-        image: url,
-        userId: storedUserId,
-      });
-      console.log("post created!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      router.back();
     } else {
       setAlert("post failed");
     }

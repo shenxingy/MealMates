@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
 import { desc, eq } from "@mealmates/db";
-import { post, comment, commentLike, postLike } from "@mealmates/db/schema";
+import { post, comment, commentLike, postLike, user } from "@mealmates/db/schema";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -14,11 +14,26 @@ export const CreatePostSchema = z.object({
 });
 
 export const postRouter = {
+  // all: publicProcedure.query(({ ctx }) => {
+  //   return ctx.db.query.post.findMany({
+  //     orderBy: desc(post.createdAt),
+  //     // limit
+  //   });
+  // }),
+
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.post.findMany({
-      orderBy: desc(post.createdAt),
-      // limit
-    });
+    return ctx.db
+      .select({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        image: post.image,
+        createdAt: post.createdAt,
+        user: user.name
+      })
+      .from(post)
+      .leftJoin(user, eq(post.userId, user.id))
+      .orderBy(desc(post.createdAt));
   }),
 
   byId: publicProcedure

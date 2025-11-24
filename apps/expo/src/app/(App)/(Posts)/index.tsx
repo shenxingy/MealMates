@@ -31,7 +31,7 @@ export default function PostPage() {
           title: post.title,
           content: post.content ? post.content : "",
           image: post.image,
-          user: "current user",
+          user: post.user ? post.user : "unknown",
           time: post.createdAt.toString(),
           likes: 0,
           liked: false
@@ -47,11 +47,8 @@ export default function PostPage() {
     router.push({ pathname: "/(App)/(Posts)/create" });
   };
   useEffect(() => {
-    const func = async () => {
-      await onRefresh();
-    };
-    void func();
-  }, [data]);
+    void onRefresh();
+  }, [data, isLoading]);
 
   return (
     <>

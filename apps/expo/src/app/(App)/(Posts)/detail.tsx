@@ -57,6 +57,9 @@ export default function PostDetails() {
     },
   });
   const onRefresh = async () => {
+    console.log("refreshing!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log(postData);
+    console.log(commentsData);
     if (postData.data) {
       const data = postData.data;
       const newPost: Post = {
@@ -94,7 +97,7 @@ export default function PostDetails() {
   const router = useRouter();
   useEffect(() => {
     void onRefresh();
-  }, []);
+  }, [postData.data, postData.isLoading, commentsData.data, commentsData.isLoading]);
   return (
     <AnimatedPageFrame baseColor={baseColor} headerTitle={undefined} enableReturnButton={true} returnButtonText="Posts">
       {/* <Pressable onPress={onRefresh}>
