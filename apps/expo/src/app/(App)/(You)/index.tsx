@@ -314,7 +314,6 @@ export default function YouPage() {
       await logout();
       setStoredUserIdState(null);
       handleCloseEditModal();
-      console.log("isAuthenticated", isAuthenticated);
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
       Alert.alert("Logout failed", "Please try again.");
