@@ -2,25 +2,27 @@ import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
+
+
 import type { Post } from "~/definition";
 import { likePost } from "~/utils/api";
 import Like from "./Like";
+
 
 export default function PostDetail({
   props,
 }: {
   props: Post;
-  onRefresh: () => Promise<void>;
 }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const [liked, setLiked] = useState(false);
-  const [thunbsup, setThunbsup] = useState(0);
+  const [thumbsup, setThumbsup] = useState(0);
 
   useEffect(() => {
     const syncThumbsup = () => {
       setLiked(props.liked);
-      setThunbsup(props.likes);
+      setThumbsup(props.likes);
     }
     void syncThumbsup();
   }, [props.liked, props.likes]);
@@ -46,18 +48,18 @@ export default function PostDetail({
     return "just now";
   };
   const like = async () => {
-    try {
-      const res = await likePost(props.id, !liked);
-      console.log(res);
-      setLiked(!liked);
-      if (liked) {
-        setThunbsup(thunbsup - 1);
-      } else {
-        setThunbsup(thunbsup + 1);
-      }
-    } catch (error) {
-      console.error("Error liking the post:", error);
-    }
+    // try {
+    //   const res = await likePost(props.id, !liked);
+    //   console.log(res);
+    //   setLiked(!liked);
+    //   if (liked) {
+    //     setThumbsup(thumbsup - 1);
+    //   } else {
+    //     setThumbsup(thumbsup + 1);
+    //   }
+    // } catch (error) {
+    //   console.error("Error liking the post:", error);
+    // }
   };
   useEffect(() => {
     const func = async () => {
@@ -80,7 +82,7 @@ export default function PostDetail({
             <Text style={styles.grayText}>{timePassed()}</Text>
           </View>
           <Pressable onPress={like}>
-            <Like likes={thunbsup} liked={liked} border={true} />
+            <Like likes={thumbsup} liked={liked} border={true} />
           </Pressable>
         </View>
       </View>

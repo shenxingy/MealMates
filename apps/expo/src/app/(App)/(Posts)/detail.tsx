@@ -35,7 +35,7 @@ import { useQuery } from "@tanstack/react-query";
 // }
 
 export default function PostDetails() {
-  // const header = "Post Details";
+  const header = "Post Details";
   const baseColor = "255,178,0";
   const { id } = useLocalSearchParams() as { id: string };
   const [post, setPost] = useState<Post | undefined>(undefined);
@@ -99,15 +99,15 @@ export default function PostDetails() {
     void onRefresh();
   }, [postData.data, postData.isLoading, commentsData.data, commentsData.isLoading]);
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={undefined} enableReturnButton={true} returnButtonText="Posts">
-      {/* <Pressable onPress={onRefresh}>
+    <AnimatedPageFrame baseColor={baseColor} headerTitle={header} enableReturnButton={true}>
+      <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
-      </Pressable> */}
+      </Pressable>
       <Pressable onPress={comment}>
         <Text>comment</Text>
       </Pressable>
       {post ? (
-        <PostDetail props={post} onRefresh={onRefresh} />
+        <PostDetail props={post} />
       ) : (
         <Text>post not found</Text>
       )}
