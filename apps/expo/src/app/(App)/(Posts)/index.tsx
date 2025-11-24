@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-
+import { useQuery } from "@tanstack/react-query"; 
 import type { Post } from "~/definition";
-import { fetchPostList } from "~/utils/api";
+import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import SymbolButton from "../../../../components/frame/SymbolButton";
@@ -13,10 +13,35 @@ export default function PostPage() {
   const header = "Posts";
   const baseColor = "255,178,0";
   const [posts, setPosts] = useState<Post[]>([]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["post", "all"],
+    queryFn: () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return trpcClient.post.all.query();
+    },
+  });
   const onRefresh = async () => {
-    const data = await fetchPostList();
-    setPosts(data);
+    if (error) console.log(error);
+    else if (isLoading) console.log("loading...");
+    else {
+      const newPosts: Post[] = [];
+      data?.forEach((post) => {
+        const newPost: Post = {
+          id: post.id,
+          title: post.title,
+          content: post.content ? post.content : "",
+          image: post.image,
+          user: "current user",
+          time: post.createdAt.toString(),
+          likes: 0,
+          liked: false
+        };
+        newPosts.push(newPost);
+      });
+      setPosts(newPosts);
+    }
   };
+  
   const router = useRouter();
   const create = () => {
     router.push({ pathname: "/(App)/(Posts)/create" });
@@ -26,7 +51,7 @@ export default function PostPage() {
       await onRefresh();
     };
     void func();
-  }, []);
+  }, [data]);
 
   return (
     <>

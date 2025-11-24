@@ -1,12 +1,14 @@
 import type { ImageSize } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-
+import { getStoredUserId } from "~/utils/user-storage";
 import { getBaseUrl } from "~/utils/base-url";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import Back from "../../../../components/postpage/Back";
+import { trpcClient } from "~/utils/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export default function Create() {
   const header = "New Post";
@@ -17,7 +19,11 @@ export default function Create() {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const [alert, setAlert] = useState<string | undefined>(undefined);
+  const [storedUserId, setStoredUserId] = useState<string | null>(null);
   const router = useRouter();
+  useEffect(() => {
+    getStoredUserId().then(setStoredUserId).catch(console.error);
+  }, []);
   const getSize = async (image: string) => {
     const size: ImageSize = await Image.getSize(image);
     setWidth(size.width);
@@ -34,7 +40,30 @@ export default function Create() {
       setAlert(undefined);
     }
   };
+  const createPost = useMutation({
+    mutationFn: (input: {
+      title: string;
+      content: string;
+      image: string;
+      userId: string;
+    }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return trpcClient.post.create.mutate(input);
+    },
+    onError: (error) => {
+      console.error("Failed to create post:", error);
+    },
+  },
+);
   const post = async () => {
+    if (!storedUserId) {
+      setAlert("please login");
+      return;
+    }
+    if (title.length === 0) {
+      setAlert("Please enter a title");
+      return;
+    }
     if (image.length === 0) {
       setAlert("Please upload an image");
       return;
@@ -60,9 +89,24 @@ export default function Create() {
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
-    const data = (await res.json()) as { message: string };
-    // console.log(data);
+    const data = (await res.json()) as { data: string, message: string };
     if (data.message === "Success") {
+      console.log("got data: " + data.data + "!!!!!!!!!!!!!!!!!!!!!!!!");
+      const url: string = data.data;
+      const input = {
+        title: title,
+        content: content,
+        image: data.data,
+        createAt: new Date(),
+        userId: "mock_user_id"
+      }
+      createPost.mutate({
+        title: title,
+        content: content,
+        image: url,
+        userId: storedUserId,
+      });
+      console.log("post created!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       router.back();
     } else {
       setAlert("post failed");
@@ -71,10 +115,15 @@ export default function Create() {
 
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
-        <Pressable onPress={router.back}>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={undefined}
+        enableReturnButton={true}
+        returnButtonText="Posts"
+      >
+        {/* <Pressable onPress={router.back}>
           <Back text="< Posts" />
-        </Pressable>
+        </Pressable> */}
         <Text>Post Title</Text>
         <TextInput value={title} onChangeText={(title) => setTitle(title)} />
         <Text>Post Content</Text>

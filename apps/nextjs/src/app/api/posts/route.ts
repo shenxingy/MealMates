@@ -39,6 +39,7 @@ export async function POST(req: Request) {
   };
   const res = PostData.addPost(newPost);
   return NextResponse.json({
+    data: data.publicUrl,
     message: res ? "Success" : "Failure",
   });
 }

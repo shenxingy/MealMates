@@ -105,7 +105,7 @@ export interface UserLeaveEventMessage {
 }
 
 export interface Post {
-  id: number;
+  id: string;
   title: string;
   content: string;
   image: string;
@@ -116,8 +116,8 @@ export interface Post {
 }
 
 export interface PostComment {
-  postId: number;
-  id: number;
+  postId: string;
+  id: string;
   content: string;
   image: string | undefined;
   user: string;
