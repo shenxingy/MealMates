@@ -48,6 +48,7 @@ export async function POST(req: Request) {
   };
   PostData.addComment(Number(formData.get("post") as string), newComment);
   return NextResponse.json({
+    data: imgUrl,
     message: "Success",
   });
 }

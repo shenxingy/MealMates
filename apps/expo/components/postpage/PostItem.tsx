@@ -38,18 +38,18 @@ export default function PostItem({
     });
   };
   const like = async () => {
-    try {
-      const res = await likePost(props.id, !liked);
-      console.log(res);
-      setLiked(!liked);
-      if (liked) {
-        setThunbsup(thunbsup - 1);
-      } else {
-        setThunbsup(thunbsup + 1);
-      }
-    } catch (error) {
-      console.error("Error liking the post:", error);
-    }
+    // try {
+    //   const res = await likePost(props.id, !liked);
+    //   console.log(res);
+    //   setLiked(!liked);
+    //   if (liked) {
+    //     setThunbsup(thunbsup - 1);
+    //   } else {
+    //     setThunbsup(thunbsup + 1);
+    //   }
+    // } catch (error) {
+    //   console.error("Error liking the post:", error);
+    // }
   };
   useEffect(() => {
     const func = async () => {

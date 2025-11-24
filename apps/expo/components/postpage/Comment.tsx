@@ -10,7 +10,7 @@ export default function Comment({
   postId,
   props,
 }: {
-  postId: number;
+  postId: string;
   props: PostComment;
   onRefresh: () => void;
 }) {
@@ -34,18 +34,18 @@ export default function Comment({
     setHeight(size.height);
   };
   const like = async () => {
-    try {
-      const res = await likeComment(postId, props.id, !props.liked);
-      console.log(res);
-      setLiked(!liked);
-      if (liked) {
-        setThunbsup(thunbsup - 1);
-      } else {
-        setThunbsup(thunbsup + 1);
-      }
-    } catch (error) {
-      console.error("Error liking the post:", error);
-    }
+    // try {
+    //   const res = await likeComment(postId, props.id, !props.liked);
+    //   console.log(res);
+    //   setLiked(!liked);
+    //   if (liked) {
+    //     setThunbsup(thunbsup - 1);
+    //   } else {
+    //     setThunbsup(thunbsup + 1);
+    //   }
+    // } catch (error) {
+    //   console.error("Error liking the post:", error);
+    // }
   };
 
   useEffect(() => {
