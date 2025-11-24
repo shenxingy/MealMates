@@ -105,11 +105,21 @@ export default function AnimatedPageFrame(props: {
       scrollEnabled={scrollEnabled}
     >
       <View style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}>
-        <Animated.Text
-          style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
         >
-          {headerTitle ?? ""}
-        </Animated.Text>
+          <Animated.Text
+            style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
+          >
+            {headerTitle ?? ""}
+          </Animated.Text>
+          {headerRight}
+        </View>
         {children}
       </View>
     </Animated.ScrollView>
@@ -140,42 +150,7 @@ export default function AnimatedPageFrame(props: {
         speed={1}
       >
         <View style={{ flex: 1 }}>
-          <Animated.ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.container}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false },
-            )}
-            scrollEventThrottle={16}
-            scrollEnabled={scrollEnabled}
-          >
-            <View
-              style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <Animated.Text
-                  style={[
-                    styles.contentHeader,
-                    { opacity: contentHeaderOpacity, marginBottom: 0 },
-                  ]}
-                >
-                  {headerTitle ?? ""}
-                </Animated.Text>
-                {headerRight}
-              </View>
-              {/* Actual Content Started */}
-              {children}
-            </View>
-          </Animated.ScrollView>
-
+          {content}
           {/* Header gradient-masked blur overlay */}
           <Animated.View
             pointerEvents="none"
@@ -272,31 +247,6 @@ export default function AnimatedPageFrame(props: {
           </Pressable>
         )}
       </LinearGradientBackground>
-      {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
-        <View
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: insets.bottom + 100,
-            backgroundColor: "transparent",
-          }}
-          pointerEvents="none"
-        >
-          <LinearGradient
-            colors={[
-              "rgba(255, 255, 255, 0)",
-              "rgba(255, 255, 255, 0.7)",
-              "rgba(255, 255, 255, 1)",
-            ]}
-            locations={[0, 0.3, 1]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{ flex: 1 }}
-          />
-        </View>
-      )}
       {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
         <View
           style={{
