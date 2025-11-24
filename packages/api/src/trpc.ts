@@ -11,7 +11,9 @@ import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
 import type { Auth } from "@mealmates/auth";
+import { eq } from "@mealmates/db";
 import { db } from "@mealmates/db/client";
+import { session as sessionTable, user } from "@mealmates/db/schema";
 
 /**
  * 1. CONTEXT
@@ -45,6 +47,46 @@ export const createTRPCContext = async (opts: {
     console.log(
       "[TRPC Context] Could not get session, continuing with null session",
     );
+  }
+
+  // Duke auth fallback: trust the Duke user id header and create a lightweight session record
+  if (!session) {
+    const dukeUserId = opts.headers.get("x-duke-user-id");
+    if (dukeUserId) {
+      const dukeUser = await db.query.user.findFirst({
+        where: eq(user.id, dukeUserId),
+      });
+
+      if (dukeUser) {
+        const dukeToken = `duke:${dukeUserId}`;
+        const existingSession = await db.query.session.findFirst({
+          where: eq(sessionTable.token, dukeToken),
+        });
+
+        // Create a long-lived session record if one doesn't exist
+        if (!existingSession) {
+          const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+          await db.insert(sessionTable).values({
+            id: `duke_${dukeUserId}_${Date.now()}`,
+            token: dukeToken,
+            userId: dukeUserId,
+            expiresAt: new Date(Date.now() + ninetyDaysMs),
+            ipAddress: opts.headers.get("x-forwarded-for") ?? undefined,
+            userAgent: opts.headers.get("user-agent") ?? undefined,
+          });
+        }
+
+        session = {
+          user: {
+            id: dukeUser.id,
+            name: dukeUser.name,
+            email: dukeUser.email,
+            emailVerified: dukeUser.emailVerified,
+            image: dukeUser.image ?? undefined,
+          },
+        };
+      }
+    }
   }
 
   return {
