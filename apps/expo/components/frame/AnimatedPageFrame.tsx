@@ -14,10 +14,6 @@ import {
   LinearGradient,
   LinearGradient as MaskGradient,
 } from "expo-linear-gradient";
-import {
-  LinearGradient,
-  LinearGradient as MaskGradient,
-} from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
