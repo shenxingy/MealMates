@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { user } from "./auth-schema";
@@ -13,7 +13,7 @@ import { user } from "./auth-schema";
 //     .$onUpdateFn(() => sql`now()`),
 // }));
 
-export const post = pgTable("post", {
+export const post = pgTable("post",{
   id: uuid("id").primaryKey().notNull(),
   userId: text("user_id")
       .notNull()
@@ -37,23 +37,37 @@ export const comment = pgTable("comment", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const postLike = pgTable("post_like", {
-  postId: uuid("post_id")
+export const postLike = pgTable("post_like",
+  {
+    postId: uuid("post_id")
       .notNull()
       .references(() => post.id, { onDelete: "cascade" }),
-  userId: text("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-});
+  },
+  (table) => {
+    return [
+      primaryKey({columns: [table.userId, table.postId]}),
+    ];
+  },
+);
 
-export const commentLike = pgTable("comment_like", {
-  commentId: uuid("comment_id")
+export const commentLike = pgTable("comment_like",
+  {
+    commentId: uuid("comment_id")
       .notNull()
       .references(() => comment.id, { onDelete: "cascade" }),
-  userId: text("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-});
+  },
+  (table) => {
+    return [
+      primaryKey({columns: [table.userId, table.commentId]}),
+    ];
+  },
+);
 
 // export const CreatePostSchema = createInsertSchema(post, {
 //   title: z.string().max(256),

@@ -7,7 +7,6 @@ import { post, comment, commentLike, postLike, user } from "@mealmates/db/schema
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const CreatePostSchema = z.object({
-  userId: z.string(),
   title: z.string().min(1).max(200),
   content: z.string().optional(),
   image: z.url().min(1)
@@ -51,7 +50,7 @@ export const postRouter = {
         .insert(post)
         .values({
           id: crypto.randomUUID(),
-          userId: input.userId,
+          userId: ctx.session.user.id,
           title: input.title,
           content: input.content,
           image: input.image,
@@ -71,7 +70,6 @@ export const postRouter = {
 
 export const CreateCommentSchema = z.object({
   postId: z.string(),
-  userId: z.string(),
   content: z.string().optional(),
   image: z.url().optional(),
 });
@@ -93,7 +91,7 @@ export const commentRouter = {
         .insert(comment)
         .values({
           id: crypto.randomUUID(),
-          userId: input.userId,
+          userId: ctx.session.user.id,
           postId: input.postId,
           content: input.content,
           image: input.image,
@@ -107,7 +105,6 @@ export const commentRouter = {
 
 export const CreatePostLikeSchema = z.object({
   postId: z.string(),
-  userId: z.string(),
 });
 
 export const postLikeRouter = {
@@ -120,13 +117,13 @@ export const postLikeRouter = {
       return likes.length;
     }),
   
-  liked: publicProcedure
-    .input(z.object({ postId: z.string(), userId: z.string() }))
+  liked: protectedProcedure
+    .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
       const like = await ctx.db.query.postLike.findMany({
         where: and(
           eq(postLike.postId, input.postId),
-          eq(postLike.postId, input.postId)
+          eq(postLike.userId, ctx.session.user.id)
         )
       });
       return like.length > 0;
@@ -139,36 +136,47 @@ export const postLikeRouter = {
         .insert(postLike)
         .values({
           postId: input.postId,
-          userId: input.userId,
+          userId: ctx.session.user.id,
         })
         .returning();
 
       return newPostLike[0];
     }),
+  
+  delete: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db
+        .delete(postLike)
+        .where(and(
+          eq(postLike.postId, input.postId),
+          eq(postLike.userId, ctx.session.user.id)
+        ));
+        return { success: true };
+    }),
 } satisfies TRPCRouterRecord;
 
 export const CreateCommentLikeSchema = z.object({
   commentId: z.string(),
-  userId: z.string(),
 });
 
 export const commentLikeRouter = {
   count: publicProcedure
     .input(z.object({ commentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const likes = await ctx.db.query.postLike.findMany({
+      const likes = await ctx.db.query.commentLike.findMany({
         where: eq(commentLike.commentId, input.commentId),
       });
       return likes.length;
     }),
   
-  liked: publicProcedure
-    .input(z.object({ commentId: z.string(), userId: z.string() }))
+  liked: protectedProcedure
+    .input(z.object({ commentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const like = await ctx.db.query.postLike.findMany({
+      const like = await ctx.db.query.commentLike.findMany({
         where: and(
           eq(commentLike.commentId, input.commentId),
-          eq(commentLike.userId, input.userId)
+          eq(commentLike.userId, ctx.session.user.id)
         )
       });
       return like.length > 0;
@@ -181,10 +189,22 @@ export const commentLikeRouter = {
         .insert(commentLike)
         .values({
           commentId: input.commentId,
-          userId: input.userId,
+          userId: ctx.session.user.id,
         })
         .returning();
 
       return newCommentLike[0];
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ commentId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db
+        .delete(commentLike)
+        .where(and(
+          eq(commentLike.commentId, input.commentId),
+          eq(commentLike.userId, ctx.session.user.id)
+        ));
+        return { success: true };
     }),
 } satisfies TRPCRouterRecord;

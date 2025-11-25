@@ -107,7 +107,7 @@ export default function Create() {
       // });
       try {
         const res = await trpcClient.post.create.mutate({
-          userId: storedUserId,
+          // userId: storedUserId,
           title: title,
           content: content,
           image: data.data
