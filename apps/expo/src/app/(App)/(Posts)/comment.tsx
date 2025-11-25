@@ -77,13 +77,12 @@ export default function Comment() {
       try {
         const res = await trpcClient.comment.create.mutate({
           postId: postId,
-          userId: storedUserId,
           content: content,
-          image: data.data
+          image: data.data.length > 0 ? data.data : undefined
         });
         router.back();
       } catch (error: unknown) {
-        console.error("[POST CREATE] Failed:", error);
+        console.error("[COMMENT CREATE] Failed:", error);
         const message = error instanceof Error ? error.message : "Failed to create post";
         Alert.alert("Create failed", message);
       }

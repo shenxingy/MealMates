@@ -59,7 +59,6 @@ export default function PostDetails() {
   const onRefresh = () => {
     postData.refetch();
     commentsData.refetch();
-
   };
   const showData = () => {
     if (postData.data) {
@@ -123,9 +122,7 @@ export default function PostDetails() {
         comments?.map((comment, idx) => (
           <Comment
             key={idx}
-            postId={post.id}
             props={comment}
-            onRefresh={onRefresh}
           />
         ))}
     </AnimatedPageFrame>

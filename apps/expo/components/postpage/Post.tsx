@@ -1,12 +1,14 @@
 import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 
 
 import type { Post } from "~/definition";
-import { likePost } from "~/utils/api";
+import { likePost, trpcClient } from "~/utils/api";
 import Like from "./Like";
+import { getStoredUserId } from "~/utils/user-storage";
+import { useQuery } from "@tanstack/react-query";
 
 
 export default function PostDetail({
@@ -18,20 +20,47 @@ export default function PostDetail({
   const [height, setHeight] = useState<number>(0);
   const [liked, setLiked] = useState(false);
   const [thumbsup, setThumbsup] = useState(0);
+  const [storedUserId, setStoredUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const syncThumbsup = () => {
-      setLiked(props.liked);
-      setThumbsup(props.likes);
-    }
-    void syncThumbsup();
-  }, [props.liked, props.likes]);
+    getStoredUserId().then(setStoredUserId).catch(console.error);
+  }, []);
+
+  const {
+    data: likesData,
+    isLoading: likesLoading,
+    error: likesError,
+    refetch: likesRefetch
+  } = useQuery({
+    queryKey: ["postLike", "count", props.id],
+    queryFn: () => {
+      return trpcClient.postLike.count.query({ postId: props.id });
+    },
+  });
+
+  const {
+    data: likedData,
+    isLoading: likedLoading,
+    error: likedError,
+    refetch: likedRefetch
+  } = useQuery({
+    queryKey: ["postLike", "liked", props.id],
+    queryFn: () => {
+      return trpcClient.postLike.liked.query({ postId: props.id });
+    },
+  });
+
+  useEffect(() => {
+    if (likedData !== undefined) setLiked(likedData);
+    if (likesData !== undefined) setThumbsup(likesData);
+  }, [likesData, likedData]);
 
   const getSize = async (): Promise<void> => {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
   };
+
   const timePassed = () => {
     const date1: Date = new Date();
     const date2: Date = new Date(props.time);
@@ -47,7 +76,42 @@ export default function PostDetail({
     if (min > 0) return min > 1 ? min + " mins ago" : "1 min ago";
     return "just now";
   };
+
   const like = async () => {
+    if (!storedUserId) {
+      Alert.alert("please login");
+      return;
+    }
+    try {
+      console.log("likedData: " + likedData);
+      console.log("liked: " + liked);
+      if (likedData === true) {
+        console.log("unliking");
+        const result = await trpcClient.postLike.delete.mutate({
+          postId: props.id,
+        });
+        if (result.success) {
+          setLiked(false);
+          setThumbsup(thumbsup - 1);
+        }
+      }
+      else if (likedData === false) {
+        console.log("liking");
+        const result = await trpcClient.postLike.create.mutate({
+          postId: props.id,
+        });
+        if (result) {
+          setLiked(false);
+          setThumbsup(thumbsup + 1);
+        }
+      }
+      likedRefetch();
+      likesRefetch();
+    } catch (error: unknown) {
+      console.error("[POST LIKE] Failed:", error);
+      const message = error instanceof Error ? error.message : "Failed to like";
+      Alert.alert("Like failed", message);
+    }
     // try {
     //   const res = await likePost(props.id, !liked);
     //   console.log(res);
