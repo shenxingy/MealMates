@@ -1,6 +1,7 @@
 import type { Coordinates } from "expo-maps/src/shared.types";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Platform,
   Pressable,
@@ -12,9 +13,10 @@ import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchDetailedEvent } from "~/utils/api";
+import type { RouterOutputs } from "~/utils/api";
+import { fetchDetailedEvent, trpcClient } from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
@@ -24,6 +26,7 @@ const EventDetailsPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const baseColor = "255,140,0";
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -36,6 +39,24 @@ const EventDetailsPage = () => {
     queryFn: () => fetchDetailedEvent(eventId),
     enabled: !!eventId,
   });
+
+  // Check if user has already joined this event
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { data: joinStatus } = useQuery({
+    queryKey: ["eventJoinStatus", eventId, currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return { joined: false };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return await trpcClient.event.checkJoined.query({
+        eventId: Number(eventId),
+        userId: currentUserId,
+      });
+    },
+    enabled: !!eventId && !!currentUserId,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const hasJoined = Boolean(joinStatus?.joined);
 
   const creatorId = data?.userId;
 
@@ -78,6 +99,97 @@ const EventDetailsPage = () => {
 
   const getInitials = (name: string) => {
     return name.trim().charAt(0).toUpperCase();
+  };
+  
+  const joinMutation = useMutation<
+    RouterOutputs["event"]["join"],
+    Error,
+    { eventId: number; userId: string }
+  >({
+    mutationFn: async ({ eventId: id, userId }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return await trpcClient.event.join.mutate({ eventId: id, userId });
+    },
+    onSuccess: () => {
+      Alert.alert("Success", "You have joined the event!");
+      void queryClient.invalidateQueries({
+        queryKey: ["eventJoinStatus", eventId, currentUserId],
+      });
+    },
+    onError: (error) => {
+      Alert.alert("Error", "Failed to join event: " + error.message);
+    },
+  });
+
+  const leaveMutation = useMutation<
+    RouterOutputs["event"]["leave"],
+    Error,
+    { eventId: number; userId: string }
+  >({
+    mutationFn: async ({ eventId: id, userId }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return await trpcClient.event.leave.mutate({ eventId: id, userId });
+    },
+    onSuccess: () => {
+      Alert.alert("Left", "You have left the event.");
+      void queryClient.invalidateQueries({
+        queryKey: ["eventJoinStatus", eventId, currentUserId],
+      });
+    },
+    onError: (error) => {
+      Alert.alert("Error", "Failed to leave event: " + error.message);
+    },
+  });
+
+  const cancelMutation = useMutation<
+    RouterOutputs["event"]["cancel"],
+    Error,
+    { eventId: number; userId: string }
+  >({
+    mutationFn: async ({ eventId: id, userId }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return await trpcClient.event.cancel.mutate({ eventId: id, userId });
+    },
+    onSuccess: () => {
+      Alert.alert("Cancelled", "Event has been cancelled.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+      void queryClient.invalidateQueries({ queryKey: ["event", "all"] });
+    },
+    onError: (error) => {
+      Alert.alert("Error", "Failed to cancel event: " + error.message);
+    },
+  });
+
+  const handleJoin = () => {
+    if (!eventId || !currentUserId) return;
+    joinMutation.mutate({ eventId: Number(eventId), userId: currentUserId });
+  };
+
+  const handleLeave = () => {
+    if (!eventId || !currentUserId) return;
+    Alert.alert("Leave Event", "Are you sure you want to leave this event?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: () =>
+          leaveMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+      },
+    ]);
+  };
+
+  const handleCancel = () => {
+    if (!eventId || !currentUserId) return;
+    Alert.alert("Cancel Event", "Are you sure you want to cancel this event?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: () =>
+          cancelMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+      },
+    ]);
   };
 
   if (isLoading) {
@@ -211,12 +323,47 @@ const EventDetailsPage = () => {
 
       <EmptySpace marginTop={100} />
 
-      {/* Join Button - Floating */}
-      {currentUserId && creatorId && currentUserId !== creatorId && (
+      {/* Buttons */}
+      {currentUserId && creatorId && (
         <View style={styles.joinButtonContainer}>
-          <Pressable style={styles.joinButton}>
-            <Text style={styles.joinButtonText}>Join</Text>
-          </Pressable>
+          {/* Show Join button if not creator and not joined */}
+          {currentUserId !== creatorId && !hasJoined && (
+            <Pressable
+              style={styles.joinButton}
+              onPress={handleJoin}
+              disabled={joinMutation.isPending}
+            >
+              <Text style={styles.joinButtonText}>
+                {joinMutation.isPending ? "Joining..." : "Join"}
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Show Leave button if already joined */}
+          {currentUserId !== creatorId && hasJoined && (
+            <Pressable
+              style={styles.leaveButton}
+              onPress={handleLeave}
+              disabled={leaveMutation.isPending}
+            >
+              <Text style={styles.leaveButtonText}>
+                {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Show Cancel button for event creator */}
+          {currentUserId === creatorId && (
+            <Pressable
+              style={styles.cancelButton}
+              onPress={handleCancel}
+              disabled={cancelMutation.isPending}
+            >
+              <Text style={styles.cancelButtonText}>
+                {cancelMutation.isPending ? "Cancelling..." : "Cancel Event"}
+              </Text>
+            </Pressable>
+          )}
         </View>
       )}
     </AnimatedPageFrame>
@@ -319,11 +466,12 @@ const styles = StyleSheet.create({
   },
   joinButtonContainer: {
     position: "absolute",
-    bottom: 40,
+    bottom: 15,
     left: 0,
     right: 0,
     alignItems: "center",
     zIndex: 100,
+    gap: 10,
   },
   joinButton: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -341,6 +489,46 @@ const styles = StyleSheet.create({
   },
   joinButtonText: {
     color: "#3B82F6",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#EF4444",
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  cancelButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  leaveButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: "#F87171",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  leaveButtonText: {
+    color: "#EF4444",
     fontSize: 18,
     fontWeight: "bold",
   },
