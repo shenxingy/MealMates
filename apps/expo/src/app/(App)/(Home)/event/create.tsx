@@ -10,7 +10,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import * as Location from "expo-location";
@@ -442,12 +441,15 @@ export default function CreateEventPage() {
         <View style={{ flex: 1 }}>
           <View style={styles.mapHeader}>
             <Text style={styles.mapTitle}>Drag to Select Location</Text>
-            <TouchableOpacity
+            <Pressable
               onPress={() => setShowMapPicker(false)}
-              style={styles.closeButton}
+              style={({ pressed }) => [
+                styles.closeButton,
+                { opacity: pressed ? 0.5 : 1 },
+              ]}
             >
               <Text style={{ color: "white", fontWeight: "bold" }}>Close</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <View style={{ flex: 1 }}>
@@ -535,9 +537,12 @@ export default function CreateEventPage() {
           <View style={styles.emojiPickerContainer}>
             <View style={styles.emojiPickerHeader}>
               <Text style={styles.emojiPickerTitle}>Select Mood</Text>
-              <TouchableOpacity onPress={() => setShowEmojiPicker(false)}>
+              <Pressable
+                onPress={() => setShowEmojiPicker(false)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              >
                 <Text style={{ color: "#6B7280", fontSize: 16 }}>Close</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
             <FlatList
               data={EMOJI_LIST}
@@ -545,12 +550,15 @@ export default function CreateEventPage() {
               keyExtractor={(item) => item}
               contentContainerStyle={{ paddingBottom: 40 }}
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.emojiItem}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.emojiItem,
+                    { opacity: pressed ? 0.5 : 1 },
+                  ]}
                   onPress={() => handleSelectEmoji(item)}
                 >
                   <Text style={{ fontSize: 30 }}>{item}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             />
           </View>
@@ -590,9 +598,12 @@ export default function CreateEventPage() {
             {searchResults.length > 0 && (
               <View style={styles.searchResultsContainer}>
                 {searchResults.map((result, index) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={`${result.latitude}-${index}`}
-                    style={styles.searchResultItem}
+                    style={({ pressed }) => [
+                      styles.searchResultItem,
+                      { opacity: pressed ? 0.5 : 1 },
+                    ]}
                     onPress={() => handleSelectSearchResult(result)}
                   >
                     <Text style={styles.searchResultText}>
@@ -601,7 +612,7 @@ export default function CreateEventPage() {
                     <Text style={{ fontSize: 10, color: "gray" }}>
                       Tap to select and pin on map
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             )}
@@ -611,8 +622,11 @@ export default function CreateEventPage() {
               restaurantName.length > 2 &&
               !restaurantCoordinates && (
                 <View style={styles.searchResultsContainer}>
-                  <TouchableOpacity
-                    style={styles.searchResultItem}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.searchResultItem,
+                      { opacity: pressed ? 0.5 : 1 },
+                    ]}
                     onPress={() => setShowMapPicker(true)}
                   >
                     <Text style={styles.searchResultText}>
@@ -621,7 +635,7 @@ export default function CreateEventPage() {
                     <Text style={{ fontSize: 10, color: "gray" }}>
                       Cannot find address? Select manually.
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               )}
 
