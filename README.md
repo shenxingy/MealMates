@@ -48,10 +48,17 @@ cp .env.example .env
 
 # Edit .env and add your Supabase credentials
 # Ask your team lead for the shared Supabase project URL and keys
-
-# Add to .env: Google Maps API Key (Required for Location Search & Maps)
-# EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
+
+3. **Configure Expo environment variables**
+
+```bash
+# Create .env file in the Expo app directory
+# This is required for Google Maps to work on Android
+echo 'EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key' > apps/expo/.env
+```
+
+> ⚠️ **Important**: The `apps/expo/.env` file must be created BEFORE running `npx expo prebuild`. The Google Maps API key is injected into the Android native code during prebuild. If you add the .env file after prebuild, you need to run `npx expo prebuild --clean` to regenerate the native code.
 
 That's it! The database schema is already deployed to Supabase, so you don't need to run any database migrations.
 
@@ -209,6 +216,28 @@ Make sure the Next.js app is running and check the `getBaseUrl` function in `app
 ### Database connection issues
 
 Verify your `.env` file has the correct Supabase credentials. Contact your team lead if you need access to the shared Supabase project.
+
+### Google Maps not showing on Android (blank map with only Google logo)
+
+This happens when the Google Maps API key is not properly configured. To fix:
+
+1. Make sure `apps/expo/.env` exists with your API key:
+   ```
+   EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
+   ```
+
+2. Regenerate the native code:
+   ```bash
+   cd apps/expo
+   npx expo prebuild --platform android --clean
+   ```
+
+3. Rebuild the Android app:
+   ```bash
+   npx expo run:android
+   ```
+
+> **Note**: iOS uses Apple Maps which doesn't require an API key. Only Android requires the Google Maps API key.
 
 ## Resources
 
