@@ -45,22 +45,11 @@ pnpm i
 ```bash
 # Copy the example env file
 cp .env.example .env
+cp apps/expo/.env.example apps/expo/.env
 
 # Edit .env and add your Supabase credentials
 # Ask your team lead for the shared Supabase project URL and keys
 ```
-
-3. **Configure Expo environment variables**
-
-```bash
-# Create .env file in the Expo app directory
-# This is required for Google Maps to work on Android
-echo 'EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key' > apps/expo/.env
-```
-
-> ⚠️ **Important**: The `apps/expo/.env` file must be created BEFORE running `npx expo prebuild`. The Google Maps API key is injected into the Android native code during prebuild. If you add the .env file after prebuild, you need to run `npx expo prebuild --clean` to regenerate the native code.
-
-That's it! The database schema is already deployed to Supabase, so you don't need to run any database migrations.
 
 > **Note for Database Schema Changes**: Only the person modifying the schema needs to run `pnpm db:push` and `pnpm --filter @mealmates/auth generate`. Other team members just need to configure their `.env` file to point to the same Supabase instance.
 

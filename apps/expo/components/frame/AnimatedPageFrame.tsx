@@ -229,6 +229,11 @@ export default function AnimatedPageFrame(props: {
                     {returnButtonText}
                   </Text>
                 )}
+                {!returnButtonText && Platform.OS == "android" && (
+                  <Text style={styles.returnButtonText}>
+                    Back
+                  </Text>
+                )}
               </View>
             </GlassView>
           </Pressable>

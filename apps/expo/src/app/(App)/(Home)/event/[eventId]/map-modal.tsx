@@ -406,8 +406,8 @@ export default function MapModalPage() {
           pressableStyle={styles.restaurantButtonContainer}
           androidStyle={styles.restaurantAndroidContainer}
           glassViewStyle={styles.restaurantGlassView}
-          SFSymbolName="flag.fill"
-          MaterialSymbolName="flag"
+          SFSymbolName="fork.knife"
+          MaterialSymbolName="restaurant"
         />
       )}
       {Platform.OS === "ios" ? (

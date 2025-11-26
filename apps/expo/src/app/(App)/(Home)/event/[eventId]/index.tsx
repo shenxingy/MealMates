@@ -315,7 +315,7 @@ const EventDetailsPage = () => {
         <MiniMap
           restaurantCoord={restaurantCoord}
           restaurant={restaurantName}
-          joined={true}
+          joined={hasJoined}
           shareLocationCallback={shareLocationCallback}
           onMapPressedCallback={handleOpenMapModal}
         />

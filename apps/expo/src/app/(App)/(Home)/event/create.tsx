@@ -84,7 +84,7 @@ export default function CreateEventPage() {
       try {
         setIsSearching(true);
 
-        const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+        const apiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
         if (!apiKey) {
           console.error("Google Maps API Key is missing");
           return;
