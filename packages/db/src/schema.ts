@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { pgTable } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -9,9 +8,6 @@ export const Post = pgTable("post", (t) => ({
   content: t.text().notNull(),
   image: t.text(),
   createdAt: t.timestamp().defaultNow().notNull(),
-  updatedAt: t
-    .timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
 }));
 
 export const CreatePostSchema = createInsertSchema(Post, {
@@ -20,7 +16,6 @@ export const CreatePostSchema = createInsertSchema(Post, {
 }).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export * from "./auth-schema";

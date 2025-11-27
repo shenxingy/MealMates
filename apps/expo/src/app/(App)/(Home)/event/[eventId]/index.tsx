@@ -40,13 +40,10 @@ const EventDetailsPage = () => {
     enabled: !!eventId,
   });
 
-  // Check if user has already joined this event
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { data: joinStatus } = useQuery({
     queryKey: ["eventJoinStatus", eventId, currentUserId],
     queryFn: async () => {
       if (!currentUserId) return { joined: false };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return await trpcClient.event.checkJoined.query({
         eventId: Number(eventId),
         userId: currentUserId,
@@ -55,7 +52,6 @@ const EventDetailsPage = () => {
     enabled: !!eventId && !!currentUserId,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const hasJoined = Boolean(joinStatus?.joined);
 
   const creatorId = data?.userId;
@@ -100,14 +96,13 @@ const EventDetailsPage = () => {
   const getInitials = (name: string) => {
     return name.trim().charAt(0).toUpperCase();
   };
-  
+
   const joinMutation = useMutation<
     RouterOutputs["event"]["join"],
     Error,
     { eventId: number; userId: string }
   >({
     mutationFn: async ({ eventId: id, userId }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return await trpcClient.event.join.mutate({ eventId: id, userId });
     },
     onSuccess: () => {
@@ -127,7 +122,6 @@ const EventDetailsPage = () => {
     { eventId: number; userId: string }
   >({
     mutationFn: async ({ eventId: id, userId }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return await trpcClient.event.leave.mutate({ eventId: id, userId });
     },
     onSuccess: () => {
@@ -147,7 +141,6 @@ const EventDetailsPage = () => {
     { eventId: number; userId: string }
   >({
     mutationFn: async ({ eventId: id, userId }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return await trpcClient.event.cancel.mutate({ eventId: id, userId });
     },
     onSuccess: () => {
@@ -174,7 +167,10 @@ const EventDetailsPage = () => {
         text: "Yes",
         style: "destructive",
         onPress: () =>
-          leaveMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+          leaveMutation.mutate({
+            eventId: Number(eventId),
+            userId: currentUserId,
+          }),
       },
     ]);
   };
@@ -187,7 +183,10 @@ const EventDetailsPage = () => {
         text: "Yes",
         style: "destructive",
         onPress: () =>
-          cancelMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+          cancelMutation.mutate({
+            eventId: Number(eventId),
+            userId: currentUserId,
+          }),
       },
     ]);
   };

@@ -237,6 +237,10 @@ export default function MapModalPage() {
     void requestPermission();
   }, [shared]);
 
+  const locationUpdateIntervalMs = LOCATION_UPDATE_INTERVAL
+    ? Number(LOCATION_UPDATE_INTERVAL)
+    : 30000; // 30 seconds
+
   // Update location every 30 seconds when permission is granted
   // If sharing is enabled and connected, also share the location
   useEffect(() => {
@@ -272,17 +276,20 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const interval = LOCATION_UPDATE_INTERVAL
-      ? Number(LOCATION_UPDATE_INTERVAL)
-      : 30000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
-    }, interval);
+    }, locationUpdateIntervalMs);
 
     return () => {
       clearInterval(locationInterval);
     };
-  }, [locationPerm, shared, isConnected, shareLocation]);
+  }, [
+    locationPerm,
+    shared,
+    isConnected,
+    shareLocation,
+    locationUpdateIntervalMs,
+  ]);
 
   const appleMap = useRef<AppleMapsViewType>(null);
   const googleMap = useRef<GoogleMapsViewType>(null);
