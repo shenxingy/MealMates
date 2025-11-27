@@ -1,4 +1,4 @@
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -8,6 +8,7 @@ import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import EventView from "../../../../components/homepage/EventView";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 
 export default function HomePage() {
   const baseColor = "255,120,0";
@@ -32,11 +33,15 @@ export default function HomePage() {
 
   const CreateButton = (
     <Pressable onPress={handleCreateEvent}>
-      {Platform.OS === "ios" ? (
-        <SymbolView name="plus.circle.fill" size={32} tintColor="black" />
-      ) : (
-        <MaterialIcons name="add-circle" size={32} color="black" />
-      )}
+      <GlassView style={isLiquidGlassAvailable() ? styles.createGlassButton : styles.createButton} isInteractive>
+        <View style={styles.buttonContainer}>
+          {Platform.OS == "ios" ? (
+            <SymbolView name="plus" size={22} tintColor="black" />
+          ) : (
+            <MaterialIcons name="add" size={28} color="black" />
+          )}
+        </View>
+      </GlassView>
     </Pressable>
   );
 
@@ -107,3 +112,25 @@ export default function HomePage() {
     </AnimatedPageFrame>
   );
 }
+
+const styles = StyleSheet.create(
+  {
+    createGlassButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+    },
+    createButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: "rgba(255,255,255,0.6)"
+    },
+    buttonContainer: {
+      width: "100%",
+      height: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+    }
+  }
+)

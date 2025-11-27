@@ -26,8 +26,7 @@ export default function AuthCallback() {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#0F172A" />
-      <Text style={styles.text}>Finalizing authentication...</Text>
-      <Text style={styles.subtext}>Please wait a moment...</Text>
+      <Text style={styles.text}>Completing authentication...</Text>
     </View>
   );
 }
@@ -44,9 +43,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#0F172A",
-  },
-  subtext: {
-    fontSize: 14,
-    color: "#64748B",
   },
 });

@@ -101,16 +101,14 @@ export const eventRouter = {
   leave: publicProcedure
     .input(z.object({ eventId: z.number(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .delete(schema.eventParticipant)
-        .where(
-          and(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            eq(schema.eventParticipant.eventId, input.eventId),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            eq(schema.eventParticipant.userId, input.userId),
-          ),
-        );
+      await ctx.db.delete(schema.eventParticipant).where(
+        and(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          eq(schema.eventParticipant.eventId, input.eventId),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          eq(schema.eventParticipant.userId, input.userId),
+        ),
+      );
 
       return { success: true };
     }),
@@ -130,7 +128,9 @@ export const eventRouter = {
         throw new Error("Not authorized to cancel this event");
       }
 
-      await ctx.db.delete(schema.event).where(eq(schema.event.id, input.eventId));
+      await ctx.db
+        .delete(schema.event)
+        .where(eq(schema.event.id, input.eventId));
       return { success: true };
     }),
 } satisfies TRPCRouterRecord;
