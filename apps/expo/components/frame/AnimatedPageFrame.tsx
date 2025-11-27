@@ -165,29 +165,31 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
               { useNativeDriver: false },
             )}
-          scrollEventThrottle={16}
-          scrollEnabled={scrollEnabled}
-          onScrollBeginDrag={handleScrollBeginDrag}
-          onScrollEndDrag={handleScrollEndDrag}
-        >
-          <View style={{ paddingTop: insets.top + 58 }}>
-            <Animated.View
-              style={[
-                styles.headerRow,
-                {
-                  opacity: contentHeaderOpacity,
-                  paddingHorizontal: paddingHorizontal ?? 20,
-                },
-              ]}
-            >
-              <Text style={styles.contentHeader}>{headerTitle ?? ""}</Text>
-              {headerRight ? <View style={styles.headerRight}>{headerRight}</View> : null}
-            </Animated.View>
-            {/* Actual Content Started */}
-            <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
-              {children}
+            scrollEventThrottle={16}
+            scrollEnabled={scrollEnabled}
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onScrollEndDrag={handleScrollEndDrag}
+          >
+            <View style={{ paddingTop: insets.top + 58 }}>
+              <Animated.View
+                style={[
+                  styles.headerRow,
+                  {
+                    opacity: contentHeaderOpacity,
+                    paddingHorizontal: paddingHorizontal ?? 20,
+                  },
+                ]}
+              >
+                <Text style={styles.contentHeader}>{headerTitle ?? ""}</Text>
+                {headerRight ? (
+                  <View style={styles.headerRight}>{headerRight}</View>
+                ) : null}
+              </Animated.View>
+              {/* Actual Content Started */}
+              <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
+                {children}
+              </View>
             </View>
-          </View>
           </Animated.ScrollView>
 
           {/* Header gradient-masked blur overlay */}
@@ -244,7 +246,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {headerTitle ?? ""}
               </Text>
-              {headerRight ? <View style={styles.headerRight}>{headerRight}</View> : null}
+              {headerRight}
             </View>
           </Animated.View>
         </View>
@@ -331,7 +333,6 @@ const styles = StyleSheet.create({
   contentHeader: {
     fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 10,
   },
   headerRow: {
     flexDirection: "row",
@@ -339,6 +340,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingLeft: 20,
     paddingRight: 20,
+    marginBottom: 10,
   },
   topHeaderRow: {
     flexDirection: "row",
@@ -346,7 +348,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerRight: {
-    marginLeft: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
   returnPressable: {
     position: "absolute",
