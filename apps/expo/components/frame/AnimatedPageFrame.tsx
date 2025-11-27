@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
@@ -10,10 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
-import {
-  LinearGradient,
-  LinearGradient as MaskGradient,
-} from "expo-linear-gradient";
+import { LinearGradient, LinearGradient as MaskGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -23,27 +20,63 @@ import LinearGradientBackground from "../background/LinearGradientBackground";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
-export default function AnimatedPageFrame(props: {
+interface BasePageProps {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
-  headerRight?: React.ReactNode;
-  scrollEnabled?: boolean;
   enableReturnButton?: boolean;
   returnButtonText?: string;
-}) {
+  paddingHorizontal?: number;
+}
+
+// Simple page - no scrollEnabled specified, no onRefresh
+interface SimplePageProps extends BasePageProps {
+  scrollEnabled?: false;
+  onRefresh?: never;
+}
+
+// Scrollable page - scrollEnabled: true, but no onRefresh
+interface ScrollablePageProps extends BasePageProps {
+  scrollEnabled: true;
+  onRefresh?: never;
+}
+
+// Refreshable page - scrollEnabled: true and onRefresh required
+interface RefreshablePageProps extends BasePageProps {
+  scrollEnabled?: true;
+  onRefresh: () => void | Promise<void>;
+}
+
+type PageFrameProps =
+  | SimplePageProps
+  | ScrollablePageProps
+  | RefreshablePageProps;
+
+export default function AnimatedPageFrame(props: PageFrameProps) {
   const {
     children,
     baseColor,
     headerTitle,
-    headerRight,
+    paddingHorizontal,
     scrollEnabled = true,
     enableReturnButton = false,
     returnButtonText,
+    onRefresh,
   } = props;
-  // Create a single Animated.Value instance without accessing ref.current during render
+
+  // Create a single Animated.Value instance
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
+
+  // Pull to refresh tracking
+  const [_isRefreshing, setIsRefreshing] = useState(false);
+  const scrollYValue = useRef(0);
+  const isPulling = useRef(false);
+
+  // Update scroll Y value
+  scrollY.addListener(({ value }) => {
+    scrollYValue.current = value;
+  });
 
   // Gradient color
   const startColor = `rgba(${baseColor},0.5)`;
@@ -93,83 +126,90 @@ export default function AnimatedPageFrame(props: {
     router.back();
   };
 
+  // Handle scroll begin - user starts scrolling
+  const handleScrollBeginDrag = () => {
+    isPulling.current = true;
+  };
+
+  // Handle scroll end - user releases the scroll
+  const handleScrollEndDrag = async () => {
+    if (isPulling.current && scrollYValue.current < -100 && onRefresh) {
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+    isPulling.current = false;
+  };
+
   return (
     <>
-      <LinearGradientBackground
-        startColor={startColor}
-        endColor={endColor}
-        scrollY={scrollY}
-        speed={1}
-      >
-        <View style={{ flex: 1 }}>
-          <Animated.ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.container}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false },
-            )}
-            scrollEventThrottle={16}
-            scrollEnabled={scrollEnabled}
-          >
-            <View
-              style={{ paddingTop: insets.top + 58, paddingHorizontal: 20 }}
+    <LinearGradientBackground
+      startColor={startColor}
+      endColor={endColor}
+      scrollY={scrollY}
+      speed={1}
+    >
+      <View style={{ flex: 1 }}>
+        <Animated.ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.container}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false },
+          )}
+          scrollEventThrottle={16}
+          scrollEnabled={scrollEnabled}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+        >
+          <View style={{ paddingTop: insets.top + 58 }}>
+            <Animated.Text
+              style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <Animated.Text
-                  style={[
-                    styles.contentHeader,
-                    { opacity: contentHeaderOpacity, marginBottom: 0 },
-                  ]}
-                >
-                  {headerTitle ?? ""}
-                </Animated.Text>
-                {headerRight}
-              </View>
-              {/* Actual Content Started */}
+              {headerTitle ?? ""}
+            </Animated.Text>
+            {/* Actual Content Started */}
+            <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
               {children}
             </View>
-          </Animated.ScrollView>
+          </View>
+        </Animated.ScrollView>
 
-          {/* Header gradient-masked blur overlay */}
-          <Animated.View
-            pointerEvents="none"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: overlayHeight,
-              opacity: blurOpacity,
-            }}
-          >
-            <MaskedView
-              style={{ flex: 1 }}
-              maskElement={
-                <MaskGradient
-                  // Change blur settings here
-                  colors={[gradientColor, maskGradientColor, endColor]}
-                  locations={[0, 0.7, 1]}
-                  start={{ x: 0.5, y: 0 }}
-                  end={{ x: 0.5, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              }
-            >
-              <AnimatedBlurView
-                intensity={blurIntensity}
-                tint="systemChromeMaterial"
+        {/* Header gradient-masked blur overlay */}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: overlayHeight,
+            opacity: blurOpacity,
+          }}
+        >
+          <MaskedView
+            style={{ flex: 1 }}
+            maskElement={
+              <MaskGradient
+                // Change blur settings here
+                colors={[gradientColor, maskGradientColor, endColor]}
+                locations={[0, 0.7, 1]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
-            </MaskedView>
-          </Animated.View>
+            }
+          >
+            <AnimatedBlurView
+              intensity={blurIntensity}
+              tint="systemChromeMaterial"
+              style={StyleSheet.absoluteFill}
+            />
+          </MaskedView>
+        </Animated.View>
 
           {/* Header on top */}
           <Animated.View
@@ -239,31 +279,19 @@ export default function AnimatedPageFrame(props: {
           </Pressable>
         )}
       </LinearGradientBackground>
-      {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
-        <View
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: insets.bottom + 100,
-            backgroundColor: "transparent",
-          }}
-          pointerEvents="none"
-        >
-          <LinearGradient
-            colors={[
-              "rgba(255, 255, 255, 0)",
-              "rgba(255, 255, 255, 0.7)",
-              "rgba(255, 255, 255, 1)",
-            ]}
-            locations={[0, 0.3, 1]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{ flex: 1 }}
-          />
-        </View>
-      )}
+      {Platform.OS == "ios" && !isLiquidGlassAvailable() &&
+        (
+          <View style={{position:"absolute", left: 0, right:0, bottom:0, height: insets.bottom + 100, backgroundColor: "transparent"}} pointerEvents="none">
+            <LinearGradient
+              colors={["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.7)", "rgba(255, 255, 255, 1)"]}
+              locations={[0, 0.3, 1]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{flex: 1}}
+            />
+          </View>
+        )
+      }
     </>
   );
 }
@@ -276,6 +304,7 @@ const styles = StyleSheet.create({
     paddingBottom: 200,
   },
   contentHeader: {
+    paddingLeft: 20,
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 10,
