@@ -276,9 +276,6 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const interval = LOCATION_UPDATE_INTERVAL
-      ? Number(LOCATION_UPDATE_INTERVAL)
-      : 30000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
     }, locationUpdateIntervalMs);

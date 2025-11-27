@@ -60,7 +60,6 @@ export default function RootLayout() {
     duration: 1000,
     fade: true,
   });
-  });
   return (
     <SafeAreaProvider>
       <DukeAuthProvider>
