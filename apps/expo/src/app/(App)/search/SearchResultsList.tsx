@@ -1,7 +1,6 @@
 import type { ElementType } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -104,15 +103,13 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
     item.type === "event" ? `event-${item.id}` : `post-${item.id}`;
 
   return (
-    <FlatList
-      data={results}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-      contentContainerStyle={styles.listContent}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    />
+    <View style={styles.listContent}>
+      {results.map((item) => (
+        <View key={keyExtractor(item)} style={styles.cardWrapper}>
+          {renderItem({ item })}
+        </View>
+      ))}
+    </View>
   );
 };
 
@@ -121,7 +118,10 @@ export default SearchResultsList;
 const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 120,
-    gap: 0,
+    gap: 12,
+  },
+  cardWrapper: {
+    width: "100%",
   },
   pressableCard: {
     borderRadius: 16,

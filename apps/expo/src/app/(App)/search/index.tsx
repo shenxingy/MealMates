@@ -44,7 +44,6 @@ export default function SearchPage() {
     <AnimatedPageFrame
       baseColor={baseColor}
       headerTitle={header}
-      scrollEnabled={false}
     >
       <View style={styles.container}>
         {Platform.OS === "android" && (
