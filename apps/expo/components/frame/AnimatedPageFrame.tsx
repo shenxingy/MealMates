@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
@@ -27,6 +27,7 @@ interface BasePageProps {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
+  headerRight?: React.ReactNode;
   enableReturnButton?: boolean;
   returnButtonText?: string;
   paddingHorizontal?: number;
@@ -60,6 +61,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     children,
     baseColor,
     headerTitle,
+    headerRight,
     paddingHorizontal,
     scrollEnabled = true,
     enableReturnButton = false,
@@ -149,80 +151,87 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
 
   return (
     <>
-    <LinearGradientBackground
-      startColor={startColor}
-      endColor={endColor}
-      scrollY={scrollY}
-      speed={1}
-    >
-      <View style={{ flex: 1 }}>
-        <Animated.ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.container}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false },
-          )}
+      <LinearGradientBackground
+        startColor={startColor}
+        endColor={endColor}
+        scrollY={scrollY}
+        speed={1}
+      >
+        <View style={{ flex: 1 }}>
+          <Animated.ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.container}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false },
+            )}
           scrollEventThrottle={16}
           scrollEnabled={scrollEnabled}
           onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
         >
           <View style={{ paddingTop: insets.top + 58 }}>
-            <Animated.Text
-              style={[styles.contentHeader, { opacity: contentHeaderOpacity }]}
+            <Animated.View
+              style={[
+                styles.headerRow,
+                {
+                  opacity: contentHeaderOpacity,
+                  paddingHorizontal: paddingHorizontal ?? 20,
+                },
+              ]}
             >
-              {headerTitle ?? ""}
-            </Animated.Text>
+              <Text style={styles.contentHeader}>{headerTitle ?? ""}</Text>
+              {headerRight ? <View style={styles.headerRight}>{headerRight}</View> : null}
+            </Animated.View>
             {/* Actual Content Started */}
             <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
               {children}
             </View>
           </View>
-        </Animated.ScrollView>
+          </Animated.ScrollView>
 
-        {/* Header gradient-masked blur overlay */}
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: overlayHeight,
-            opacity: blurOpacity,
-          }}
-        >
-          <MaskedView
-            style={{ flex: 1 }}
-            maskElement={
-              <MaskGradient
-                // Change blur settings here
-                colors={[gradientColor, maskGradientColor, endColor]}
-                locations={[0, 0.7, 1]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
+          {/* Header gradient-masked blur overlay */}
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: overlayHeight,
+              opacity: blurOpacity,
+            }}
+          >
+            <MaskedView
+              style={{ flex: 1 }}
+              maskElement={
+                <MaskGradient
+                  // Change blur settings here
+                  colors={[gradientColor, maskGradientColor, endColor]}
+                  locations={[0, 0.7, 1]}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              }
+            >
+              <AnimatedBlurView
+                intensity={blurIntensity}
+                tint="systemChromeMaterial"
                 style={StyleSheet.absoluteFill}
               />
-            }
-          >
-            <AnimatedBlurView
-              intensity={blurIntensity}
-              tint="systemChromeMaterial"
-              style={StyleSheet.absoluteFill}
-            />
-          </MaskedView>
-        </Animated.View>
+            </MaskedView>
+          </Animated.View>
 
           {/* Header on top */}
           <Animated.View
-            pointerEvents="none"
+            pointerEvents="box-none"
             style={{
               position: "absolute",
               top: insets.top,
               left: 0,
               right: 0,
-              alignItems: "center",
+              paddingHorizontal: 20,
               opacity: topHeaderOpacity,
               transform: [
                 {
@@ -231,9 +240,12 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               ],
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-              {headerTitle ?? ""}
-            </Text>
+            <View style={styles.topHeaderRow}>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                {headerTitle ?? ""}
+              </Text>
+              {headerRight ? <View style={styles.headerRight}>{headerRight}</View> : null}
+            </View>
           </Animated.View>
         </View>
         {/* Return button */}
@@ -273,9 +285,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   </Text>
                 )}
                 {!returnButtonText && Platform.OS == "android" && (
-                  <Text style={styles.returnButtonText}>
-                    Back
-                  </Text>
+                  <Text style={styles.returnButtonText}>Back</Text>
                 )}
               </View>
             </GlassView>
@@ -319,10 +329,24 @@ const styles = StyleSheet.create({
     paddingBottom: 200,
   },
   contentHeader: {
-    paddingLeft: 20,
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  topHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerRight: {
+    marginLeft: 12,
   },
   returnPressable: {
     position: "absolute",

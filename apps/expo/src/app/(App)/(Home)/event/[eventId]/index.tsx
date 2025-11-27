@@ -96,7 +96,7 @@ const EventDetailsPage = () => {
   const getInitials = (name: string) => {
     return name.trim().charAt(0).toUpperCase();
   };
-  
+
   const joinMutation = useMutation<
     RouterOutputs["event"]["join"],
     Error,
@@ -167,7 +167,10 @@ const EventDetailsPage = () => {
         text: "Yes",
         style: "destructive",
         onPress: () =>
-          leaveMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+          leaveMutation.mutate({
+            eventId: Number(eventId),
+            userId: currentUserId,
+          }),
       },
     ]);
   };
@@ -180,7 +183,10 @@ const EventDetailsPage = () => {
         text: "Yes",
         style: "destructive",
         onPress: () =>
-          cancelMutation.mutate({ eventId: Number(eventId), userId: currentUserId }),
+          cancelMutation.mutate({
+            eventId: Number(eventId),
+            userId: currentUserId,
+          }),
       },
     ]);
   };
