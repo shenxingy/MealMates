@@ -3,16 +3,15 @@ import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 
-import { DEFAULT_USER_AVATAR } from "~/utils/api";
 import Skeleton from "../frame/Skeleton";
 
 interface LoadingProps {
   isLoading: true;
   scheduleTime?: string;
   avatarUrl?: string;
+  avatarColor?: string;
   username?: string;
   mood?: string;
-  meetPoint?: string;
   restaurantName?: string;
   message?: string;
 }
@@ -21,22 +20,26 @@ interface LoadedProps {
   isLoading?: false;
   scheduleTime: string;
   avatarUrl?: string;
+  avatarColor?: string;
   username: string;
   mood?: string;
-  meetPoint: string;
   restaurantName: string;
   message?: string;
 }
 
 type EventViewProps = LoadingProps | LoadedProps;
 
+const getInitials = (name: string) => {
+  return name.trim().charAt(0).toUpperCase();
+};
+
 const EventView = (props: EventViewProps) => {
   const {
     scheduleTime,
     username,
     avatarUrl,
+    avatarColor = "#F5F7FB",
     mood,
-    meetPoint,
     restaurantName,
     message,
     isLoading = false,
@@ -59,11 +62,24 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-96} end={48} />
               ) : (
                 <>
-                  <Image
-                    src={avatarUrl ?? DEFAULT_USER_AVATAR}
-                    alt="Avatar"
-                    style={styles.avatar}
-                  />
+                  {avatarUrl?.startsWith("http") ? (
+                    <Image src={avatarUrl} alt="Avatar" style={styles.avatar} />
+                  ) : (
+                    <View
+                      style={[
+                        styles.avatar,
+                        {
+                          backgroundColor: avatarColor,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        },
+                      ]}
+                    >
+                      <Text style={{ fontSize: 24 }}>
+                        {avatarUrl ?? getInitials(username ?? "?")}
+                      </Text>
+                    </View>
+                  )}
                   {mood && (
                     <GlassView
                       style={
@@ -106,23 +122,10 @@ const EventView = (props: EventViewProps) => {
             )}
           </View>
         </View>
+
+        {/* Removed Meet Point section */}
+
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
-          <View style={styles.detailedInfo}>
-            {Platform.OS === "ios" ? (
-              <SymbolView name="mappin" style={{ width: 24, height: 24 }} />
-            ) : (
-              <Ionicons name="location" size={24} color="#ff7800" />
-            )}
-            {isLoading ? (
-              <View style={{ width: 200, height: 30 }}>
-                <Skeleton isLoading={isLoading} start={-400} end={200} />
-              </View>
-            ) : (
-              <Text style={styles.normalText}>{meetPoint}</Text>
-            )}
-          </View>
-        </View>
-        <View style={styles.detailedInfoContainer}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
               <SymbolView name="storefront" style={{ width: 24, height: 24 }} />
@@ -264,6 +267,7 @@ const styles = StyleSheet.create({
   shimmerOverlay: {
     width: "200%",
     height: "100%",
+    borderRadius: 24,
   },
   userNameText: {
     fontSize: 20,
