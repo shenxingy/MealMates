@@ -99,9 +99,7 @@ export function initWebSocketServer(httpServer: HttpServer) {
             handleUserLeaveEvent(ws);
             ws.close();
           } else {
-            console.warn(
-              `[SocketManager] Unknown message type: ${data.type}`,
-            );
+            console.warn(`[SocketManager] Unknown message type: ${data.type}`);
             sendMessage(ws, {
               type: "error",
               payload: {

@@ -35,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     config: {
       googleMaps: {
-        apiKey: "GOOGLE_MAPS_API_KEY",
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
       },
     },
     intentFilters: [
