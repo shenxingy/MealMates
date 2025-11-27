@@ -26,8 +26,8 @@ export default function AuthCallback() {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#0F172A" />
-      <Text style={styles.text}>正在完成认证...</Text>
-      <Text style={styles.subtext}>Completing authentication...</Text>
+      <Text style={styles.text}>Finalizing authentication...</Text>
+      <Text style={styles.subtext}>Please wait a moment...</Text>
     </View>
   );
 }

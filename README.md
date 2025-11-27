@@ -45,12 +45,11 @@ pnpm i
 ```bash
 # Copy the example env file
 cp .env.example .env
+cp apps/expo/.env.example apps/expo/.env
 
 # Edit .env and add your Supabase credentials
 # Ask your team lead for the shared Supabase project URL and keys
 ```
-
-That's it! The database schema is already deployed to Supabase, so you don't need to run any database migrations.
 
 > **Note for Database Schema Changes**: Only the person modifying the schema needs to run `pnpm db:push` and `pnpm --filter @mealmates/auth generate`. Other team members just need to configure their `.env` file to point to the same Supabase instance.
 
@@ -108,12 +107,14 @@ open ios/MealMates.xcworkspace
 ```
 
 Then in Xcode:
+
 1. Connect your iPhone via USB
 2. Select your personal Apple ID as the Team (free account works)
 3. Select your device as the build target
 4. Click ▶️ to run
 
 ⚠️ **Free Apple ID Limitations**:
+
 - App signature expires every 7 days (need to rebuild)
 - Limited number of devices
 - Cannot publish to App Store
@@ -204,6 +205,28 @@ Make sure the Next.js app is running and check the `getBaseUrl` function in `app
 ### Database connection issues
 
 Verify your `.env` file has the correct Supabase credentials. Contact your team lead if you need access to the shared Supabase project.
+
+### Google Maps not showing on Android (blank map with only Google logo)
+
+This happens when the Google Maps API key is not properly configured. To fix:
+
+1. Make sure `apps/expo/.env` exists with your API key:
+   ```
+   EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
+   ```
+
+2. Regenerate the native code:
+   ```bash
+   cd apps/expo
+   npx expo prebuild --platform android --clean
+   ```
+
+3. Rebuild the Android app:
+   ```bash
+   npx expo run:android
+   ```
+
+> **Note**: iOS uses Apple Maps which doesn't require an API key. Only Android requires the Google Maps API key.
 
 ## Resources
 

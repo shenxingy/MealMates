@@ -1,35 +1,51 @@
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchSimpleEventList } from "~/utils/api";
+import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import EventView from "../../../../components/homepage/EventView";
 
 export default function HomePage() {
-  // Gradient color
   const baseColor = "255,120,0";
   const header = "MealMate";
   const router = useRouter();
 
-  // useQuery to fetch simple event list
   const { data, isLoading, error } = useQuery({
-    queryKey: ["simpleEventList"],
-    queryFn: fetchSimpleEventList,
+    queryKey: ["event", "all"],
+    queryFn: () => {
+      return trpcClient.event.all.query();
+    },
   });
 
   const handleEventPress = (eventId: number) => {
     console.log("Event", eventId, "Pressed!");
-    // Navigate to event details page
     router.push(`/event/${eventId}`);
   };
+
+  const handleCreateEvent = () => {
+    router.push("/event/create");
+  };
+
+  const CreateButton = (
+    <Pressable onPress={handleCreateEvent}>
+      {Platform.OS === "ios" ? (
+        <SymbolView name="plus.circle.fill" size={32} tintColor="black" />
+      ) : (
+        <MaterialIcons name="add-circle" size={32} color="black" />
+      )}
+    </Pressable>
+  );
 
   if (isLoading) {
     return (
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
+        headerRight={CreateButton}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -47,6 +63,7 @@ export default function HomePage() {
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
+        headerRight={CreateButton}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -60,7 +77,11 @@ export default function HomePage() {
   }
 
   return (
-    <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
+    <AnimatedPageFrame
+      baseColor={baseColor}
+      headerTitle={header}
+      headerRight={CreateButton}
+    >
       <EmptySpace marginTop={30} />
 
       {data?.map((event, _) => (
@@ -73,11 +94,11 @@ export default function HomePage() {
             <EventView
               scheduleTime={event.scheduleTime}
               username={event.username}
-              avatarUrl={event.avatarUrl}
-              mood={event.mood}
-              meetPoint={event.meetPoint}
+              avatarUrl={event.avatarUrl ?? undefined}
+              avatarColor={event.avatarColor}
+              mood={event.mood ?? undefined}
               restaurantName={event.restaurantName}
-              message={event.message}
+              message={event.message ?? undefined}
               isLoading={isLoading}
             />
           </Pressable>
