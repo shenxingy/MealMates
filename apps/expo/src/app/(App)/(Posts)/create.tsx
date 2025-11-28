@@ -1,6 +1,6 @@
 import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, TextInput } from "react-native";
+import { Alert, Button, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { getStoredUserId } from "~/utils/user-storage";
@@ -134,24 +134,34 @@ export default function Create() {
         {/* <Pressable onPress={router.back}>
           <Back text="< Posts" />
         </Pressable> */}
-        <Text>Post Title</Text>
-        <TextInput value={title} onChangeText={(title) => setTitle(title)} />
-        <Text>Post Content</Text>
+        {/* <Text>Post Title</Text> */}
         <TextInput
+          style={[styles.title, styles.text20]}
+          value={title}
+          onChangeText={(title) => setTitle(title)}
+          placeholder="Post Title"
+        />
+        {/* <Text>Post Content</Text> */}
+        <TextInput
+          style={[styles.content, styles.text20]}
           value={content}
           onChangeText={(content) => setContent(content)}
+          placeholder="Content"
+          multiline={true}
         />
-        <Pressable onPress={pick}>
-          <Text>Choose An Image</Text>
-        </Pressable>
         {image.length > 0 && (
           <Image
             source={{ uri: image }}
             style={[styles.image, { aspectRatio: width / height }]}
           />
         )}
-        <Pressable onPress={post}>
-          <Text>Post</Text>
+        <Pressable onPress={pick} style={styles.button}>
+          <Text style={[styles.text20, styles.textCenter]}>
+            { image.length === 0 ? "Choose An Image" : "Choose Another Image"}
+          </Text>
+        </Pressable>
+        <Pressable onPress={post} style={styles.button}>
+          <Text style={[styles.text20, styles.textCenter]}>Post</Text>
         </Pressable>
       </AnimatedPageFrame>
     </>
@@ -162,4 +172,36 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
   },
+  title: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10
+  },
+  content: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10,
+    height: 200,
+    textAlignVertical: "top",
+  },
+  // buttons: {
+  //   flexDirection: 'row',
+  //   width: "100%",
+  //   justifyContent: 'center',
+  //   borderWidth: 1
+  // },
+  button: {
+    backgroundColor: "#ffb200",
+    borderRadius: 10,
+    padding: 10,
+    margin: 10
+  },
+  text20: {
+    fontSize: 20
+  },
+  textCenter: {
+    textAlign: 'center'
+  }
 });

@@ -109,13 +109,13 @@ export default function PostDetails() {
       {/* <Pressable onPress={onRefresh}>
         <Text>refresh</Text>
       </Pressable> */}
-      <Pressable onPress={comment}>
-        <Text>comment</Text>
+      <Pressable onPress={comment} style={styles.comment}>
+        <Text style={styles.text20}>comment</Text>
       </Pressable>
       {post ? (
         <PostDetail props={post} />
       ) : (
-        <Text>post not found</Text>
+        <Text>Loading...</Text>
       )}
       <View style={styles.line}></View>
       {post &&
@@ -139,7 +139,19 @@ const styles = StyleSheet.create({
     borderBottomColor: "#bbb",
     marginVertical: 10,
   },
-  bg: {
-    backgroundColor: "#00f",
+  comment: {
+    width: '40%',
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10,
+    margin: 10
   },
+  text20: {
+    fontSize: 20,
+    textAlign: 'center'
+  }
+  // bg: {
+  //   backgroundColor: "#00f",
+  // },
 });

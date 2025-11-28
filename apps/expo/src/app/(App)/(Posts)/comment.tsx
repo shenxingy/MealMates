@@ -99,19 +99,27 @@ export default function Comment() {
         enableReturnButton={true}
         returnButtonText="Detail"
       >
-        <Text>Comment</Text>
         <TextInput value={content} onChangeText={changeText} />
-        <Pressable onPress={pick}>
-          <Text>Choose An Image</Text>
-        </Pressable>
+        <TextInput
+          style={[styles.content, styles.text20]}
+          value={content}
+          onChangeText={changeText}
+          placeholder="Content"
+          multiline={true}
+        />
         {image.length > 0 && (
           <Image
             source={{ uri: image }}
             style={[styles.image, { aspectRatio: width / height }]}
           />
         )}
-        <Pressable onPress={comment}>
-          <Text>Send</Text>
+        <Pressable onPress={pick} style={styles.button}>
+          <Text style={[styles.text20, styles.textCenter]}>
+            { image.length === 0 ? "Choose An Image" : "Choose Another Image"}
+          </Text>
+        </Pressable>
+        <Pressable onPress={comment} style={styles.button}>
+          <Text style={[styles.text20, styles.textCenter]}>Send</Text>
         </Pressable>
       </AnimatedPageFrame>
     </>
@@ -121,5 +129,25 @@ export default function Comment() {
 const styles = StyleSheet.create({
   image: {
     width: "100%",
+  },
+  content: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10,
+    height: 200,
+    textAlignVertical: "top",
+  },
+  text20: {
+    fontSize: 20
+  },
+  textCenter: {
+    textAlign: 'center'
+  },
+  button: {
+    backgroundColor: "#ffb200",
+    borderRadius: 10,
+    padding: 10,
+    margin: 10
   },
 });
