@@ -131,9 +131,21 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     extrapolate: "clamp",
   });
 
+  // Scroll to top button fade in
+  const scrollToTopOpacity = scrollY.interpolate({
+    inputRange: [500, 600],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   const router = useRouter();
   const handleReturnButton = () => {
     router.back();
+  };
+
+  const scrollViewRef = useRef<any>(null);
+  const handleScrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   // Handle scroll begin - user starts scrolling
@@ -164,6 +176,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
       >
         <View style={{ flex: 1 }}>
           <Animated.ScrollView
+            ref={scrollViewRef}
             style={{ flex: 1 }}
             contentContainerStyle={styles.container}
             onScroll={Animated.event(
@@ -277,6 +290,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 onPress={headerRightOnPress} 
                 style={({ pressed }) => [
                   styles.headerRightButtonContainer,
+                  styles.topHeaderRightButton,
                   { opacity: pressed ? 0.5 : 1 }
                 ]}
               >
@@ -337,6 +351,43 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             </GlassView>
           </Pressable>
         )}
+        {/* Scroll to top button */}
+        <Animated.View
+          pointerEvents={scrollY.interpolate({
+            inputRange: [250, 300],
+            outputRange: [0, 1],
+            extrapolate: "clamp",
+          }) as any}
+          style={[
+            styles.scrollToTopButton,
+            {
+              bottom: insets.bottom + 80,
+              opacity: scrollToTopOpacity,
+            },
+          ]}
+        >
+          <Pressable
+            onPress={handleScrollToTop}
+            style={({ pressed }) => [
+              styles.scrollToTopButtonContainer,
+              { opacity: pressed ? 0.5 : 1 }
+            ]}
+          >
+            {Platform.OS === "ios" ? (
+              <SymbolView
+                name="chevron.up"
+                size={27}
+                tintColor="black"
+              />
+            ) : (
+              <MaterialIcons
+                name="keyboard-arrow-up"
+                size={24}
+                color="black"
+              />
+            )}
+          </Pressable>
+        </Animated.View>
       </LinearGradientBackground>
       {Platform.OS == "ios" && !isLiquidGlassAvailable() && (
         <View
@@ -388,12 +439,16 @@ const styles = StyleSheet.create({
   },
   topHeaderRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 5,
   },
   headerRightButtonContainer: {
-    marginRight: 3,
+    marginRight: 1,
+  },
+  topHeaderRightButton: {
+    position: "absolute",
+    right: 0,
   },
   headerRightButton: {
     width: 48,
@@ -402,6 +457,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.6)",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 8,
   },
   returnPressable: {
     position: "absolute",
@@ -427,5 +492,27 @@ const styles = StyleSheet.create({
   },
   returnButtonText: {
     fontSize: 17,
+  },
+  scrollToTopButton: {
+    position: "absolute",
+    right: 20,
+  },
+  scrollToTopButtonContainer: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
   },
 });
