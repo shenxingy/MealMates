@@ -42,6 +42,32 @@ export const eventRouter = {
     });
   }),
 
+  list: publicProcedure
+    .input(z.object({ page: z.number().min(1).default(1) }))
+    .query(async ({ ctx, input }) => {
+      const pageSize = 20;
+      const offset = (input.page - 1) * pageSize;
+
+      const events = await ctx.db.query.event.findMany({
+        orderBy: desc(schema.event.createdAt),
+        limit: pageSize,
+        offset: offset,
+        with: {
+          user: true,
+        },
+      });
+
+      return events.map((row) => {
+        const { user, ...eventData } = row;
+        return {
+          ...eventData,
+          username: user.name,
+          avatarUrl: user.image,
+          avatarColor: user.avatarColor,
+        };
+      });
+    }),
+
   create: publicProcedure
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }) => {

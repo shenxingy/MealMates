@@ -34,6 +34,8 @@ interface BasePageProps {
   enableReturnButton?: boolean;
   returnButtonText?: string;
   paddingHorizontal?: number;
+  onEndReached?: () => void;
+  onEndReachedThreshold?: number;
 }
 
 // Simple page - no scrollEnabled specified, no onRefresh
@@ -72,6 +74,8 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     enableReturnButton = false,
     returnButtonText,
     onRefresh,
+    onEndReached,
+    onEndReachedThreshold = 0.5,
   } = props;
 
   // Create a single Animated.Value instance
@@ -82,6 +86,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
   const [_isRefreshing, setIsRefreshing] = useState(false);
   const scrollYValue = useRef(0);
   const isPulling = useRef(false);
+  const hasCalledOnEndReached = useRef(false);
 
   // Update scroll Y value
   scrollY.addListener(({ value }) => {
@@ -166,6 +171,20 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     isPulling.current = false;
   };
 
+  // Handle scroll to detect when reaching end
+  const handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromEnd = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    const threshold = layoutMeasurement.height * onEndReachedThreshold;
+
+    if (distanceFromEnd < threshold && !hasCalledOnEndReached.current) {
+      hasCalledOnEndReached.current = true;
+      onEndReached?.();
+    } else if (distanceFromEnd > threshold) {
+      hasCalledOnEndReached.current = false;
+    }
+  };
+
   return (
     <>
       <LinearGradientBackground
@@ -181,7 +200,10 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             contentContainerStyle={styles.container}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false },
+              { 
+                useNativeDriver: false,
+                listener: handleScroll,
+              },
             )}
             scrollEventThrottle={16}
             scrollEnabled={scrollEnabled}
