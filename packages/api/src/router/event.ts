@@ -86,9 +86,7 @@ export const eventRouter = {
         .from(schema.eventParticipant)
         .where(
           and(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.eventId, input.eventId),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.userId, input.userId),
           ),
         )
@@ -105,9 +103,7 @@ export const eventRouter = {
         .from(schema.eventParticipant)
         .where(
           and(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.eventId, input.eventId),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.userId, input.userId),
           ),
         )
@@ -129,9 +125,7 @@ export const eventRouter = {
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(schema.eventParticipant).where(
         and(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           eq(schema.eventParticipant.eventId, input.eventId),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           eq(schema.eventParticipant.userId, input.userId),
         ),
       );

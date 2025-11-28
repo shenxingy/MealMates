@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import EventView from "../../../../components/homepage/EventView";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 
-type Event = {
+interface Event {
   id: number;
   userId: string;
   restaurantName: string;
@@ -24,7 +21,7 @@ type Event = {
   updatedAt: Date;
   restaurantCoordinates: { latitude: number; longitude: number };
   meetPointCoordinates: { latitude: number; longitude: number };
-};
+}
 
 export default function HomePage() {
   const baseColor = "255,120,0";

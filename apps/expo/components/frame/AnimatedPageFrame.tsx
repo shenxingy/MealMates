@@ -1,4 +1,6 @@
-import React, { ComponentProps, useMemo, useRef, useState } from "react";
+import type { ComponentProps} from "react";
+import type React from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
