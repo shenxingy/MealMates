@@ -393,7 +393,7 @@ export default function MapModalPage() {
       <SymbolButton
         onPress={handleDismiss}
         pressableStyle={styles.dismissButtonContainer}
-        androidStyle={styles.dismissButtonAndroidContainer}
+        nonGlassStyle={styles.dismissButtonAndroidContainer}
         glassViewStyle={styles.dismissButtonGlassView}
         SFSymbolName="xmark"
         MaterialSymbolName="close"
@@ -401,7 +401,7 @@ export default function MapModalPage() {
       <SymbolButton
         onPress={handleCameraToMyLocation}
         pressableStyle={styles.myLocationContainer}
-        androidStyle={styles.myLocationAndroidContainer}
+        nonGlassStyle={styles.myLocationAndroidContainer}
         glassViewStyle={styles.myLocationGlassView}
         SFSymbolName="location"
         MaterialSymbolName="my-location"
@@ -411,7 +411,7 @@ export default function MapModalPage() {
         <SymbolButton
           onPress={handleCameraToRestaurant}
           pressableStyle={styles.restaurantButtonContainer}
-          androidStyle={styles.restaurantAndroidContainer}
+          nonGlassStyle={styles.restaurantAndroidContainer}
           glassViewStyle={styles.restaurantGlassView}
           SFSymbolName="fork.knife"
           MaterialSymbolName="restaurant"

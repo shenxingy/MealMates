@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { ComponentProps, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Platform,
@@ -20,6 +20,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 import LinearGradientBackground from "../background/LinearGradientBackground";
+import SymbolButton from "./SymbolButton";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -27,7 +28,9 @@ interface BasePageProps {
   children: React.ReactNode;
   baseColor: string;
   headerTitle?: string;
-  headerRight?: React.ReactNode;
+  headerRightSFSymbolName?: ComponentProps<typeof SymbolView>["name"];
+  headerRightMaterialSymbolName?: ComponentProps<typeof MaterialIcons>["name"];
+  headerRightOnPress?: () => void;
   enableReturnButton?: boolean;
   returnButtonText?: string;
   paddingHorizontal?: number;
@@ -61,7 +64,9 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     children,
     baseColor,
     headerTitle,
-    headerRight,
+    headerRightSFSymbolName,
+    headerRightMaterialSymbolName,
+    headerRightOnPress,
     paddingHorizontal,
     scrollEnabled = true,
     enableReturnButton = false,
@@ -181,9 +186,31 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 ]}
               >
                 <Text style={styles.contentHeader}>{headerTitle ?? ""}</Text>
-                {headerRight ? (
-                  <View style={styles.headerRight}>{headerRight}</View>
-                ) : null}
+                {headerRightSFSymbolName
+                  && headerRightMaterialSymbolName
+                  && headerRightOnPress
+                  && <Pressable
+                    onPress={headerRightOnPress}
+                    style={({ pressed }) => [
+                      styles.headerRightButtonContainer,
+                      styles.headerRightButton,
+                      { opacity: pressed ? 0.5 : 1 }
+                    ]}
+                  >
+                    {Platform.OS === "ios" ? (
+                      <SymbolView
+                        name={headerRightSFSymbolName}
+                        size={23}
+                        tintColor="black"
+                      />
+                    ) : (
+                      <MaterialIcons
+                        name={headerRightMaterialSymbolName}
+                        size={23}
+                        color="black"
+                      />
+                    )}
+                  </Pressable>}
               </Animated.View>
               {/* Actual Content Started */}
               <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
@@ -246,7 +273,24 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {headerTitle ?? ""}
               </Text>
-              {headerRight}
+              <Pressable 
+                onPress={headerRightOnPress} 
+                style={({ pressed }) => [
+                  styles.headerRightButtonContainer,
+                  { opacity: pressed ? 0.5 : 1 }
+                ]}
+              >
+                {Platform.OS === "ios"
+                  && headerRightSFSymbolName
+                  && headerRightOnPress
+                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor="black" />
+                }
+                {Platform.OS === "android"
+                  && headerRightMaterialSymbolName
+                  && headerRightOnPress
+                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color="black" />
+                }
+              </Pressable>
             </View>
           </Animated.View>
         </View>
@@ -346,10 +390,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 5,
   },
-  headerRight: {
-    alignItems: "center",
+  headerRightButtonContainer: {
+    marginRight: 3,
+  },
+  headerRightButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.6)",
     justifyContent: "center",
+    alignItems: "center",
   },
   returnPressable: {
     position: "absolute",

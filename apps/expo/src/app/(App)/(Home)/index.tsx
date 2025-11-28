@@ -31,26 +31,14 @@ export default function HomePage() {
     router.push("/event/create");
   };
 
-  const CreateButton = (
-    <Pressable onPress={handleCreateEvent}>
-      <GlassView style={isLiquidGlassAvailable() ? styles.createGlassButton : styles.createButton} isInteractive>
-        <View style={styles.buttonContainer}>
-          {Platform.OS == "ios" ? (
-            <SymbolView name="plus" size={22} tintColor="black" />
-          ) : (
-            <MaterialIcons name="add" size={28} color="black" />
-          )}
-        </View>
-      </GlassView>
-    </Pressable>
-  );
-
   if (isLoading) {
     return (
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
-        headerRight={CreateButton}
+        headerRightSFSymbolName="plus"
+        headerRightMaterialSymbolName="add"
+        headerRightOnPress={handleCreateEvent}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -68,7 +56,9 @@ export default function HomePage() {
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
-        headerRight={CreateButton}
+        headerRightSFSymbolName="plus"
+        headerRightMaterialSymbolName="add"
+        headerRightOnPress={handleCreateEvent}
         scrollEnabled={false}
       >
         <EmptySpace marginTop={30} />
@@ -85,7 +75,9 @@ export default function HomePage() {
     <AnimatedPageFrame
       baseColor={baseColor}
       headerTitle={header}
-      headerRight={CreateButton}
+      headerRightSFSymbolName="plus"
+      headerRightMaterialSymbolName="add"
+      headerRightOnPress={handleCreateEvent}
     >
       <EmptySpace marginTop={30} />
 
