@@ -233,7 +233,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
               { 
-                useNativeDriver: false,
+                useNativeDriver: true,
                 listener: handleScroll,
               },
             )}

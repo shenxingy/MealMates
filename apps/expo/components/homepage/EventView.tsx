@@ -84,15 +84,9 @@ const EventView = (props: EventViewProps) => {
                     </View>
                   )}
                   {mood && (
-                    <GlassView
-                      style={
-                        isLiquidGlassAvailable()
-                          ? styles.moodBadgeGlassContainer
-                          : [styles.moodBadgeNonGlassContainer, isDark && styles.moodBadgeNonGlassContainerDark]
-                      }
-                    >
+                    <View style={styles.moodBadgeContainer}>
                       <Text style={{ fontSize: 20 }}>{mood}</Text>
-                    </GlassView>
+                    </View>
                   )}
                 </>
               )}
@@ -229,6 +223,16 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     position: "relative",
+  },
+  moodBadgeContainer: {
+    position: "absolute",
+    bottom: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
   moodBadgeGlassContainer: {
     position: "absolute",
