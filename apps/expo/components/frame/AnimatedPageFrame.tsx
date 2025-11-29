@@ -281,7 +281,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 <Text style={{
                   fontSize: 20,
                   fontWeight: '600',
-                  color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                  color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.8)',
                 }}>
                   MealMate
                 </Text>
@@ -315,13 +315,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                       <SymbolView
                         name={headerRightSFSymbolName}
                         size={23}
-                        tintColor={isDark ? "white" : "black"}
+                        tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
                       />
                     ) : (
                       <MaterialIcons
                         name={headerRightMaterialSymbolName}
                         size={23}
-                        color={isDark ? "white" : "black"}
+                        color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
                       />
                     )}
                   </Pressable>}
@@ -384,7 +384,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             }}
           >
             <View style={styles.topHeaderRow}>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: isDark ? 'white' : 'black' }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: isDark ? 'rgba(255, 255, 255, 0.85)' : 'black' }}>
                 {headerTitle ?? ""}
               </Text>
               <Pressable 
@@ -398,12 +398,12 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 {Platform.OS === "ios"
                   && headerRightSFSymbolName
                   && headerRightOnPress
-                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor={isDark ? "white" : "black"} />
+                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"} />
                 }
                 {Platform.OS === "android"
                   && headerRightMaterialSymbolName
                   && headerRightOnPress
-                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color={isDark ? "white" : "black"} />
+                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"} />
                 }
               </Pressable>
             </View>
@@ -431,13 +431,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   <SymbolView
                     name="chevron.backward"
                     size={17}
-                    tintColor={isDark ? "white" : "black"}
+                    tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
                   />
                 ) : (
                   <MaterialIcons
                     name="arrow-back-ios"
                     size={17}
-                    color={isDark ? "white" : "black"}
+                    color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
                   />
                 )}
                 {returnButtonText && (
@@ -475,13 +475,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               <SymbolView
                 name="chevron.up"
                 size={27}
-                tintColor={isDark ? "white" : "black"}
+                tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
               />
             ) : (
               <MaterialIcons
                 name="keyboard-arrow-up"
                 size={24}
-                color={isDark ? "white" : "black"}
+                color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
               />
             )}
           </Pressable>
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   contentHeaderDark: {
-    color: "white",
+    color: "rgba(255, 255, 255, 0.85)",
   },
   headerRow: {
     flexDirection: "row",
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   returnButtonTextDark: {
-    color: "white",
+    color: "rgba(255, 255, 255, 0.85)",
   },
   scrollToTopButton: {
     position: "absolute",
