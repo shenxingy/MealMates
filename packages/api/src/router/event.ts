@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, desc, eq, schema } from "@mealmates/db";
+import { and, desc, eq, schema, sql } from "@mealmates/db";
 
 import { publicProcedure } from "../trpc";
 
@@ -43,13 +43,22 @@ export const eventRouter = {
   }),
 
   list: publicProcedure
-    .input(z.object({ page: z.number().min(1).default(1) }))
+    .input(
+      z.object({
+        page: z.number().min(1).default(1),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const pageSize = 20;
       const offset = (input.page - 1) * pageSize;
 
       const events = await ctx.db.query.event.findMany({
-        orderBy: desc(schema.event.createdAt),
+        orderBy: ctx.session && ctx.session.user?.id
+          ? [
+              sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
+              desc(schema.event.createdAt),
+            ]
+          : desc(schema.event.createdAt),
         limit: pageSize,
         offset: offset,
         with: {

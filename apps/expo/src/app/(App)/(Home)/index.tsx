@@ -129,6 +129,7 @@ export default function HomePage() {
       headerRightSFSymbolName="plus"
       headerRightMaterialSymbolName="add"
       headerRightOnPress={handleCreateEvent}
+      onRefresh={() => loadEvents(1)}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.5}
     >
