@@ -137,7 +137,13 @@ const EventView = (props: EventViewProps) => {
                 <Skeleton isLoading={isLoading} start={-360} end={180} />
               </View>
             ) : (
-              <Text style={styles.normalText}>{restaurantName}</Text>
+              <Text 
+                style={[styles.normalText, { flex: 1 }]} 
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {restaurantName}
+              </Text>
             )}
           </View>
         </View>
@@ -182,7 +188,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#2c2c2c",
-    textAlign: "center",
   },
   glassContainer: {
     borderRadius: 30,
@@ -292,6 +297,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+    flex: 1,
   },
   glassMessageContainer: {
     flexDirection: "row",

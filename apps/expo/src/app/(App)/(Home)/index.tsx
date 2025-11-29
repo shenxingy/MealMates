@@ -1,26 +1,77 @@
-import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useQuery } from "@tanstack/react-query";
 
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import EventView from "../../../../components/homepage/EventView";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+
+interface Event {
+  id: number;
+  userId: string;
+  restaurantName: string;
+  scheduleTime: string;
+  mood: string | null;
+  message: string | null;
+  username: string | null;
+  avatarUrl: string | null;
+  avatarColor: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  restaurantCoordinates: { latitude: number; longitude: number };
+  meetPointCoordinates: { latitude: number; longitude: number };
+}
 
 export default function HomePage() {
   const baseColor = "255,120,0";
   const header = "MealMate";
   const router = useRouter();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["event", "all"],
-    queryFn: () => {
-      return trpcClient.event.all.query();
-    },
-  });
+  const [page, setPage] = useState(1);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Initial load
+  useEffect(() => {
+    loadEvents(1);
+  }, []);
+
+  const loadEvents = async (pageNum: number) => {
+    try {
+      if (pageNum === 1) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      const data = await (trpcClient.event as any).list.query({ page: pageNum });
+      
+      if (pageNum === 1) {
+        setEvents(data);
+      } else {
+        setEvents(prev => [...prev, ...data]);
+      }
+
+      // If we got less than 20 items, there's no more data
+      setHasMore(data.length === 20);
+      setPage(pageNum);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      loadEvents(page + 1);
+    }
+  };
 
   const handleEventPress = (eventId: number) => {
     console.log("Event", eventId, "Pressed!");
@@ -78,10 +129,13 @@ export default function HomePage() {
       headerRightSFSymbolName="plus"
       headerRightMaterialSymbolName="add"
       headerRightOnPress={handleCreateEvent}
+      onRefresh={() => loadEvents(1)}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.5}
     >
       <EmptySpace marginTop={30} />
 
-      {data?.map((event, _) => (
+      {events.map((event) => (
         <View key={event.id} style={{ marginBottom: 20 }}>
           <Pressable
             onPress={() => {
@@ -90,17 +144,33 @@ export default function HomePage() {
           >
             <EventView
               scheduleTime={event.scheduleTime}
-              username={event.username}
+              username={event.username ?? "Anonymous"}
               avatarUrl={event.avatarUrl ?? undefined}
-              avatarColor={event.avatarColor}
+              avatarColor={event.avatarColor ?? undefined}
               mood={event.mood ?? undefined}
               restaurantName={event.restaurantName}
               message={event.message ?? undefined}
-              isLoading={isLoading}
+              isLoading={false}
             />
           </Pressable>
         </View>
       ))}
+
+      {/* Loading more indicator */}
+      {isLoadingMore && (
+        <View style={{ marginBottom: 20 }}>
+          <EventView isLoading={true} />
+        </View>
+      )}
+
+      {/* No more data indicator */}
+      {!hasMore && events.length > 0 && (
+        <View style={styles.endIndicator}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.endText}>No More Events</Text>
+          <View style={styles.dividerLine} />
+        </View>
+      )}
     </AnimatedPageFrame>
   );
 }
@@ -123,6 +193,22 @@ const styles = StyleSheet.create(
       height: "100%",
       justifyContent: "center",
       alignItems: "center",
-    }
+    },
+    endIndicator: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginVertical: 30,
+      marginBottom: 20,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: "rgba(0,0,0,0.1)",
+    },
+    endText: {
+      marginHorizontal: 15,
+      fontSize: 14,
+      color: "rgba(0,0,0,0.4)",
+    },
   }
 )

@@ -359,7 +359,7 @@ export default function CreateEventPage() {
     },
     onSuccess: () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      queryClient.invalidateQueries({ queryKey: ["event", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["event", "list"] });
 
       Alert.alert("Success", "Event created successfully!", [
         { text: "OK", onPress: () => router.back() },
