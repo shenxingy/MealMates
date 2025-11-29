@@ -442,7 +442,7 @@ export default function CreateEventPage() {
         onRequestClose={() => setShowMapPicker(false)}
       >
         <View style={{ flex: 1 }}>
-          <View style={styles.mapHeader}>
+          <View style={[styles.mapHeader, isDark && styles.mapHeaderDark]}>
             <Text style={styles.mapTitle}>Drag to Select Location</Text>
             <Pressable
               onPress={() => setShowMapPicker(false)}
@@ -517,7 +517,7 @@ export default function CreateEventPage() {
             </View>
 
             <Pressable
-              style={styles.confirmLocationButton}
+              style={[styles.confirmLocationButton, isDark && styles.confirmLocationButtonDark]}
               onPress={handleConfirmLocation}
             >
               <Text style={styles.confirmLocationText}>Confirm Location</Text>
@@ -537,14 +537,14 @@ export default function CreateEventPage() {
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
           onPress={() => setShowEmojiPicker(false)}
         >
-          <View style={styles.emojiPickerContainer}>
+          <View style={[styles.emojiPickerContainer, isDark && styles.emojiPickerContainerDark]}>
             <View style={styles.emojiPickerHeader}>
-              <Text style={styles.emojiPickerTitle}>Select Mood</Text>
+              <Text style={[styles.emojiPickerTitle, isDark && styles.emojiPickerTitleDark]}>Select Mood</Text>
               <Pressable
                 onPress={() => setShowEmojiPicker(false)}
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
               >
-                <Text style={{ color: "#6B7280", fontSize: 16 }}>Close</Text>
+                <Text style={{ color: isDark ? "#9CA3AF" : "#6B7280", fontSize: 16 }}>Close</Text>
               </Pressable>
             </View>
             <FlatList
@@ -577,7 +577,7 @@ export default function CreateEventPage() {
 
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Restaurant Name</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>Restaurant Name</Text>
             <View
               style={{
                 flexDirection: "row",
@@ -587,9 +587,9 @@ export default function CreateEventPage() {
               }}
             >
               <TextInput
-                style={[styles.input, { flex: 1 }]}
+                style={[styles.input, isDark && styles.inputDark, { flex: 1 }]}
                 placeholder="E.g. RING or search address..."
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
                 value={restaurantName}
                 onChangeText={handleRestaurantNameChange}
               />
@@ -599,20 +599,21 @@ export default function CreateEventPage() {
             {/* Search Results Dropdown */}
             {/* If we have results, show them */}
             {searchResults.length > 0 && (
-              <View style={styles.searchResultsContainer}>
+              <View style={[styles.searchResultsContainer, isDark && styles.searchResultsContainerDark]}>
                 {searchResults.map((result, index) => (
                   <Pressable
                     key={`${result.latitude}-${index}`}
                     style={({ pressed }) => [
                       styles.searchResultItem,
+                      isDark && styles.searchResultItemDark,
                       { opacity: pressed ? 0.5 : 1 },
                     ]}
                     onPress={() => handleSelectSearchResult(result)}
                   >
-                    <Text style={styles.searchResultText}>
+                    <Text style={[styles.searchResultText, isDark && styles.searchResultTextDark]}>
                       {result.formattedAddress ?? "Unknown Location"}
                     </Text>
-                    <Text style={{ fontSize: 10, color: "gray" }}>
+                    <Text style={{ fontSize: 10, color: isDark ? "#9CA3AF" : "gray" }}>
                       Tap to select and pin on map
                     </Text>
                   </Pressable>
@@ -624,18 +625,19 @@ export default function CreateEventPage() {
             {searchResults.length === 0 &&
               restaurantName.length > 2 &&
               !restaurantCoordinates && (
-                <View style={styles.searchResultsContainer}>
+                <View style={[styles.searchResultsContainer, isDark && styles.searchResultsContainerDark]}>
                   <Pressable
                     style={({ pressed }) => [
                       styles.searchResultItem,
+                      isDark && styles.searchResultItemDark,
                       { opacity: pressed ? 0.5 : 1 },
                     ]}
                     onPress={() => setShowMapPicker(true)}
                   >
-                    <Text style={styles.searchResultText}>
+                    <Text style={[styles.searchResultText, isDark && styles.searchResultTextDark]}>
                       🗺️ Pin "{restaurantName}" on Map
                     </Text>
-                    <Text style={{ fontSize: 10, color: "gray" }}>
+                    <Text style={{ fontSize: 10, color: isDark ? "#9CA3AF" : "gray" }}>
                       Cannot find address? Select manually.
                     </Text>
                   </Pressable>
@@ -646,7 +648,7 @@ export default function CreateEventPage() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: "#6B7280",
+                  color: isDark ? "#9CA3AF" : "#6B7280",
                   marginTop: 4,
                   marginLeft: 4,
                 }}
@@ -658,15 +660,15 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Schedule Time</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>Schedule Time</Text>
             {/* Replace TextInput with a Pressable that toggles the picker */}
             <Pressable
               onPress={() => setShowPicker(!showPicker)}
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
             >
               <Text
                 style={{
-                  color: scheduleTime ? "#1F2937" : "#9CA3AF",
+                  color: scheduleTime ? (isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937") : (isDark ? "#6B7280" : "#9CA3AF"),
                   fontSize: 16,
                 }}
               >
@@ -702,15 +704,15 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mood (Emoji)</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>Mood (Emoji)</Text>
             <Pressable
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
               onPress={() => setShowEmojiPicker(true)}
             >
               {/* Update fontSize logic here */}
               <Text
                 style={{
-                  color: mood ? "#1F2937" : "#9CA3AF",
+                  color: mood ? (isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937") : (isDark ? "#6B7280" : "#9CA3AF"),
                   fontSize: mood ? 24 : 16,
                 }}
               >
@@ -720,11 +722,11 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Message</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>Message</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, isDark && styles.inputDark]}
               placeholder="Say something to your mates..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
               value={message}
               onChangeText={setMessage}
               multiline
@@ -739,6 +741,7 @@ export default function CreateEventPage() {
             disabled={createEventMutation.isPending}
             style={({ pressed }) => [
               styles.submitButton,
+              isDark && styles.submitButtonDark,
               pressed && styles.submitButtonPressed,
               createEventMutation.isPending && { opacity: 0.7 },
             ]}
@@ -772,6 +775,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 4,
   },
+  labelDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   input: {
     backgroundColor: "rgba(255, 255, 255, 0.6)",
     borderColor: "rgba(255, 255, 255, 0.8)",
@@ -787,6 +793,11 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  inputDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+    borderColor: "rgba(75, 75, 75, 0.8)",
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   textArea: {
     minHeight: 100,
   },
@@ -801,6 +812,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
+  },
+  submitButtonDark: {
+    backgroundColor: "#1F2937",
   },
   submitButtonPressed: {
     opacity: 0.8,
@@ -839,16 +853,25 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 100, // Ensure it floats above other elements
   },
+  searchResultsContainerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
+  },
   searchResultItem: {
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
+  searchResultItemDark: {
+    borderBottomColor: "#374151",
+  },
   searchResultText: {
     fontSize: 14,
     color: "#374151",
     marginBottom: 2,
+  },
+  searchResultTextDark: {
+    color: "rgba(255, 255, 255, 0.85)",
   },
   mapHeader: {
     paddingTop: 60,
@@ -858,6 +881,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  mapHeaderDark: {
+    backgroundColor: "#1F2937",
   },
   mapTitle: {
     color: "white",
@@ -890,6 +916,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  confirmLocationButtonDark: {
+    backgroundColor: "#1F2937",
+  },
   confirmLocationText: {
     color: "white",
     fontSize: 16,
@@ -911,6 +940,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  emojiPickerContainerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
+  },
   emojiPickerHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -921,6 +953,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#1F2937",
+  },
+  emojiPickerTitleDark: {
+    color: "rgba(255, 255, 255, 0.85)",
   },
   emojiItem: {
     flex: 1,
