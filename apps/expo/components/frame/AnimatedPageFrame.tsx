@@ -1,8 +1,12 @@
-import React, { ComponentProps, useMemo, useRef, useState } from "react";
+import type { ComponentProps} from "react";
+import type React from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Animated,
+  Image,
   Platform,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -34,6 +38,8 @@ interface BasePageProps {
   enableReturnButton?: boolean;
   returnButtonText?: string;
   paddingHorizontal?: number;
+  onEndReached?: () => void;
+  onEndReachedThreshold?: number;
 }
 
 // Simple page - no scrollEnabled specified, no onRefresh
@@ -72,20 +78,27 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     enableReturnButton = false,
     returnButtonText,
     onRefresh,
+    onEndReached,
+    onEndReachedThreshold = 0.5,
   } = props;
 
   // Create a single Animated.Value instance
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
 
-  // Pull to refresh tracking
-  const [_isRefreshing, setIsRefreshing] = useState(false);
+  // Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  // iOS manual pull to refresh tracking
   const scrollYValue = useRef(0);
   const isPulling = useRef(false);
+  const hasCalledOnEndReached = useRef(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   // Update scroll Y value
   scrollY.addListener(({ value }) => {
     scrollYValue.current = value;
+    // Update scroll to top button visibility
+    setShowScrollToTop(value > 300);
   });
 
   // Gradient color
@@ -138,6 +151,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     extrapolate: "clamp",
   });
 
+  // Pull-down title opacity
+  const pullDownTitleOpacity = scrollY.interpolate({
+    inputRange: [-100, -50, 0],
+    outputRange: [1, 0.2, 0],
+    extrapolate: "clamp",
+  });
+
   const router = useRouter();
   const handleReturnButton = () => {
     router.back();
@@ -148,14 +168,28 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  // Handle scroll begin - user starts scrolling
-  const handleScrollBeginDrag = () => {
-    isPulling.current = true;
+  // Handle refresh using RefreshControl
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
   };
 
-  // Handle scroll end - user releases the scroll
+  // Handle scroll begin
+  const handleScrollBeginDrag = () => {
+    if (Platform.OS === 'ios') {
+      isPulling.current = true;
+    }
+  };
+
+  // Handle scroll end
   const handleScrollEndDrag = async () => {
-    if (isPulling.current && scrollYValue.current < -100 && onRefresh) {
+    if (Platform.OS === 'ios' && isPulling.current && scrollYValue.current < -100 && onRefresh) {
       setIsRefreshing(true);
       try {
         await onRefresh();
@@ -164,6 +198,20 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
       }
     }
     isPulling.current = false;
+  };
+
+  // Handle scroll to detect when reaching end
+  const handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromEnd = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    const threshold = layoutMeasurement.height * onEndReachedThreshold;
+
+    if (distanceFromEnd < threshold && !hasCalledOnEndReached.current) {
+      hasCalledOnEndReached.current = true;
+      onEndReached?.();
+    } else if (distanceFromEnd > threshold) {
+      hasCalledOnEndReached.current = false;
+    }
   };
 
   return (
@@ -181,13 +229,62 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             contentContainerStyle={styles.container}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false },
+              { 
+                useNativeDriver: false,
+                listener: handleScroll,
+              },
             )}
             scrollEventThrottle={16}
             scrollEnabled={scrollEnabled}
-            onScrollBeginDrag={handleScrollBeginDrag}
-            onScrollEndDrag={handleScrollEndDrag}
+            // Android uses RefreshControl
+            refreshControl={
+              Platform.OS === 'android' && onRefresh ? (
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={handleRefresh}
+                  colors={['rgba(0,0,0,0.5)']}
+                  progressViewOffset={insets.top}
+                />
+              ) : undefined
+            }
+            // iOS uses manual pull detection
+            onScrollBeginDrag={Platform.OS === 'ios' && onRefresh ? handleScrollBeginDrag : undefined}
+            onScrollEndDrag={Platform.OS === 'ios' && onRefresh ? handleScrollEndDrag : undefined}
           >
+            {/* Pull-down title at y = -50 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                top: -50,
+                left: 0,
+                right: 0,
+                alignItems: 'center',
+                opacity: pullDownTitleOpacity,
+              }}
+            >
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <Image
+                  source={require('../../assets/icon-light.png')}
+                  style={{
+                    width: 64,
+                    height: 64,
+                  }}
+                  resizeMode="contain"
+                />
+                <Text style={{
+                  fontSize: 20,
+                  fontWeight: '600',
+                  color: 'rgba(0, 0, 0, 0.8)',
+                }}>
+                  MealMate
+                </Text>
+              </View>
+            </Animated.View>
+            
             <View style={{ paddingTop: insets.top + 58 }}>
               <Animated.View
                 style={[
@@ -353,15 +450,11 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
         )}
         {/* Scroll to top button */}
         <Animated.View
-          pointerEvents={scrollY.interpolate({
-            inputRange: [250, 300],
-            outputRange: [0, 1],
-            extrapolate: "clamp",
-          }) as any}
+          pointerEvents={showScrollToTop ? "auto" : "none"}
           style={[
             styles.scrollToTopButton,
             {
-              bottom: insets.bottom + 80,
+              bottom: insets.bottom + 100,
               opacity: scrollToTopOpacity,
             },
           ]}
@@ -466,7 +559,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 8,
   },
   returnPressable: {
     position: "absolute",
@@ -513,6 +605,5 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 8,
   },
 });

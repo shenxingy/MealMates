@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, desc, eq, schema } from "@mealmates/db";
+import { and, desc, eq, schema, sql } from "@mealmates/db";
 
 import { publicProcedure } from "../trpc";
 
@@ -42,6 +42,41 @@ export const eventRouter = {
     });
   }),
 
+  list: publicProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).default(1),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const pageSize = 20;
+      const offset = (input.page - 1) * pageSize;
+
+      const events = await ctx.db.query.event.findMany({
+        orderBy: ctx.session && ctx.session.user?.id
+          ? [
+              sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
+              desc(schema.event.createdAt),
+            ]
+          : desc(schema.event.createdAt),
+        limit: pageSize,
+        offset: offset,
+        with: {
+          user: true,
+        },
+      });
+
+      return events.map((row) => {
+        const { user, ...eventData } = row;
+        return {
+          ...eventData,
+          username: user.name,
+          avatarUrl: user.image,
+          avatarColor: user.avatarColor,
+        };
+      });
+    }),
+
   create: publicProcedure
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }) => {
@@ -60,9 +95,7 @@ export const eventRouter = {
         .from(schema.eventParticipant)
         .where(
           and(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.eventId, input.eventId),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.userId, input.userId),
           ),
         )
@@ -79,9 +112,7 @@ export const eventRouter = {
         .from(schema.eventParticipant)
         .where(
           and(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.eventId, input.eventId),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eq(schema.eventParticipant.userId, input.userId),
           ),
         )
@@ -103,9 +134,7 @@ export const eventRouter = {
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(schema.eventParticipant).where(
         and(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           eq(schema.eventParticipant.eventId, input.eventId),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           eq(schema.eventParticipant.userId, input.userId),
         ),
       );
