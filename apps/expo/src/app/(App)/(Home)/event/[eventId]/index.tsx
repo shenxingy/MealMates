@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
@@ -24,7 +25,9 @@ import EmptySpace from "../../../../../../components/frame/EmptySpace";
 
 const EventDetailsPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
-  const baseColor = "255,140,0";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "255,140,0";
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -68,8 +71,8 @@ const EventDetailsPage = () => {
   const message = data?.message ?? "No message provided.";
 
   const cardStyle = isLiquidGlassAvailable()
-    ? styles.glassCard
-    : styles.nonGlassCard;
+    ? [styles.glassCard, isDark && styles.glassCardDark]
+    : [styles.nonGlassCard, isDark && styles.nonGlassCardDark];
 
   const shareLocationCallback = () => {
     console.log("Share location button pressed");
@@ -202,7 +205,7 @@ const EventDetailsPage = () => {
           returnButtonText="Home"
         >
           <EmptySpace marginTop={30} />
-          <Text style={{ fontSize: 18, textAlign: "center" }}>Loading...</Text>
+          <Text style={{ fontSize: 18, textAlign: "center", color: isDark ? 'rgba(255, 255, 255, 0.85)' : '#000' }}>Loading...</Text>
         </AnimatedPageFrame>
       </>
     );
@@ -235,18 +238,18 @@ const EventDetailsPage = () => {
                   },
                 ]}
               >
-                <Text style={{ fontSize: 20 }}>{getInitials(username)}</Text>
+                <Text style={{ fontSize: 20, color: isDark ? '#ffffff' : '#000000' }}>{getInitials(username)}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.userName}>{username}</Text>
-          <View style={styles.timeContainer}>
+          <Text style={[styles.userName, isDark && styles.userNameDark]}>{username}</Text>
+          <View style={[styles.timeContainer, isDark && styles.timeContainerDark]}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="clock.fill" size={16} tintColor="#3B82F6" />
+              <SymbolView name="clock.fill" size={16} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
             ) : (
-              <Ionicons name="time" size={16} color="#3B82F6" />
+              <Ionicons name="time" size={16} color={isDark ? "#60A5FA" : "#3B82F6"} />
             )}
-            <Text style={styles.timeText}>{scheduleTime}</Text>
+            <Text style={[styles.timeText, isDark && styles.timeTextDark]}>{scheduleTime}</Text>
           </View>
         </View>
       </GlassView>
@@ -260,13 +263,13 @@ const EventDetailsPage = () => {
         >
           <View style={styles.locationHeader}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="location.fill" size={18} tintColor="#3B82F6" />
+              <SymbolView name="location.fill" size={18} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
             ) : (
-              <Ionicons name="navigate" size={18} color="#3B82F6" />
+              <Ionicons name="navigate" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
             )}
-            <Text style={styles.locationLabel}>Meet At</Text>
+            <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>Meet At</Text>
           </View>
-          <Text style={styles.locationValue}>
+          <Text style={[styles.locationValue, isDark && styles.locationValueDark]}>
             {restaurantLatitude.toFixed(4)}, {restaurantLongitude.toFixed(4)}
           </Text>
         </GlassView>
@@ -281,16 +284,16 @@ const EventDetailsPage = () => {
               <SymbolView
                 name="cup.and.saucer.fill"
                 size={18}
-                tintColor="#F97316"
+                tintColor={isDark ? "#FB923C" : "#F97316"}
               />
             ) : (
-              <Ionicons name="restaurant" size={18} color="#F97316" />
+              <Ionicons name="restaurant" size={18} color={isDark ? "#FB923C" : "#F97316"} />
             )}
-            <Text style={[styles.locationLabel, { color: "#F97316" }]}>
+            <Text style={[styles.locationLabel, { color: isDark ? "#FB923C" : "#F97316" }]}>
               Restaurant
             </Text>
           </View>
-          <Text style={styles.locationValue}>{restaurantName}</Text>
+          <Text style={[styles.locationValue, isDark && styles.locationValueDark]}>{restaurantName}</Text>
         </GlassView>
       </View>
 
@@ -298,13 +301,13 @@ const EventDetailsPage = () => {
       <GlassView style={cardStyle} glassEffectStyle="regular">
         <View style={styles.messageHeader}>
           {Platform.OS === "ios" ? (
-            <SymbolView name="message.fill" size={18} tintColor="#3B82F6" />
+            <SymbolView name="message.fill" size={18} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
           ) : (
-            <Ionicons name="chatbubble" size={18} color="#3B82F6" />
+            <Ionicons name="chatbubble" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
           )}
-          <Text style={styles.locationLabel}>Message</Text>
+          <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>Message</Text>
         </View>
-        <Text style={styles.messageText}>{message}</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>{message}</Text>
       </GlassView>
 
       <EmptySpace marginTop={15} />
@@ -328,11 +331,11 @@ const EventDetailsPage = () => {
           {/* Show Join button if not creator and not joined */}
           {currentUserId !== creatorId && !hasJoined && (
             <Pressable
-              style={styles.joinButton}
+              style={[styles.joinButton, isDark && styles.joinButtonDark]}
               onPress={handleJoin}
               disabled={joinMutation.isPending}
             >
-              <Text style={styles.joinButtonText}>
+              <Text style={[styles.joinButtonText, isDark && styles.joinButtonTextDark]}>
                 {joinMutation.isPending ? "Joining..." : "Join"}
               </Text>
             </Pressable>
@@ -341,11 +344,11 @@ const EventDetailsPage = () => {
           {/* Show Leave button if already joined */}
           {currentUserId !== creatorId && hasJoined && (
             <Pressable
-              style={styles.leaveButton}
+              style={[styles.leaveButton, isDark && styles.leaveButtonDark]}
               onPress={handleLeave}
               disabled={leaveMutation.isPending}
             >
-              <Text style={styles.leaveButtonText}>
+              <Text style={[styles.leaveButtonText, isDark && styles.leaveButtonTextDark]}>
                 {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
               </Text>
             </Pressable>
@@ -354,7 +357,7 @@ const EventDetailsPage = () => {
           {/* Show Cancel button for event creator */}
           {currentUserId === creatorId && (
             <Pressable
-              style={styles.cancelButton}
+              style={[styles.cancelButton, isDark && styles.cancelButtonDark]}
               onPress={handleCancel}
               disabled={cancelMutation.isPending}
             >
@@ -379,6 +382,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: "hidden",
   },
+  glassCardDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.8)",
+  },
   nonGlassCard: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",
     borderRadius: 24,
@@ -389,6 +395,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  nonGlassCardDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
   },
   userCardContent: {
     flexDirection: "row",
@@ -411,6 +420,9 @@ const styles = StyleSheet.create({
     color: "#1F2937",
     flex: 1,
   },
+  userNameDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   timeContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -420,10 +432,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
+  timeContainerDark: {
+    backgroundColor: "rgba(96, 165, 250, 0.2)",
+  },
   timeText: {
     color: "#3B82F6",
     fontWeight: "600",
     fontSize: 14,
+  },
+  timeTextDark: {
+    color: "#60A5FA",
   },
   locationRow: {
     flexDirection: "row",
@@ -447,10 +465,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#3B82F6",
   },
+  locationLabelDark: {
+    color: "#60A5FA",
+  },
   locationValue: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#1F2937",
+  },
+  locationValueDark: {
+    color: "rgba(255, 255, 255, 0.85)",
   },
   messageHeader: {
     flexDirection: "row",
@@ -462,6 +486,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#4B5563",
     lineHeight: 24,
+  },
+  messageTextDark: {
+    color: "rgba(255, 255, 255, 0.7)",
   },
   joinButtonContainer: {
     position: "absolute",
@@ -491,6 +518,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  joinButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+  },
+  joinButtonTextDark: {
+    color: "#60A5FA",
+  },
   cancelButton: {
     backgroundColor: "#EF4444",
     paddingVertical: 16,
@@ -509,6 +542,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  cancelButtonDark: {
+    backgroundColor: "#DC2626",
   },
   leaveButton: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -530,5 +566,12 @@ const styles = StyleSheet.create({
     color: "#EF4444",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  leaveButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+    borderColor: "#F87171",
+  },
+  leaveButtonTextDark: {
+    color: "#F87171",
   },
 });

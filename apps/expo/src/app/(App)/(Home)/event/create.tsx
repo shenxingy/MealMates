@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import * as Location from "expo-location";
@@ -224,7 +225,9 @@ export default function CreateEventPage() {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const baseColor = "255,120,0";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "255,120,0";
 
   const EMOJI_LIST = [
     "😀",
