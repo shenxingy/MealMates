@@ -128,7 +128,7 @@ const EventView = (props: EventViewProps) => {
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="storefront" style={{ width: 24, height: 24 }} />
+              <SymbolView name="fork.knife" style={{ width: 24, height: 24 }} />
             ) : (
               <Ionicons name="restaurant" size={24} color="#ff7800" />
             )}
