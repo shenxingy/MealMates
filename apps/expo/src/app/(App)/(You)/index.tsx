@@ -361,7 +361,11 @@ export default function YouPage() {
 
   return (
     <>
-      <AnimatedPageFrame baseColor={baseColor} headerTitle={header} scrollEnabled={false}>
+      <AnimatedPageFrame
+        baseColor={baseColor}
+        headerTitle={header}
+        scrollEnabled={false}
+      >
         <ProfileSummarySection
           isFetchingProfile={isFetchingProfile}
           profileError={

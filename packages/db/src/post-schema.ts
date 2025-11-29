@@ -1,6 +1,11 @@
-import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import {
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+
 import { user } from "./auth-schema";
 
 // export const Post = pgTable("post", (t) => ({
@@ -13,11 +18,11 @@ import { user } from "./auth-schema";
 //     .$onUpdateFn(() => sql`now()`),
 // }));
 
-export const post = pgTable("post",{
+export const post = pgTable("post", {
   id: uuid("id").primaryKey().notNull(),
   userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   content: text("content"),
   image: text("image").notNull(),
@@ -27,17 +32,18 @@ export const post = pgTable("post",{
 export const comment = pgTable("comment", {
   id: uuid("id").primaryKey().notNull(),
   postId: uuid("post_id")
-      .notNull()
-      .references(() => post.id, { onDelete: "cascade" }),
+    .notNull()
+    .references(() => post.id, { onDelete: "cascade" }),
   userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   content: text("content"),
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const postLike = pgTable("post_like",
+export const postLike = pgTable(
+  "post_like",
   {
     postId: uuid("post_id")
       .notNull()
@@ -47,13 +53,12 @@ export const postLike = pgTable("post_like",
       .references(() => user.id, { onDelete: "cascade" }),
   },
   (table) => {
-    return [
-      primaryKey({columns: [table.userId, table.postId]}),
-    ];
+    return [primaryKey({ columns: [table.userId, table.postId] })];
   },
 );
 
-export const commentLike = pgTable("comment_like",
+export const commentLike = pgTable(
+  "comment_like",
   {
     commentId: uuid("comment_id")
       .notNull()
@@ -63,9 +68,7 @@ export const commentLike = pgTable("comment_like",
       .references(() => user.id, { onDelete: "cascade" }),
   },
   (table) => {
-    return [
-      primaryKey({columns: [table.userId, table.commentId]}),
-    ];
+    return [primaryKey({ columns: [table.userId, table.commentId] })];
   },
 );
 

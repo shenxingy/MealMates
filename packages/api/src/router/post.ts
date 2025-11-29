@@ -1,15 +1,21 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { desc, eq, and } from "@mealmates/db";
-import { post, comment, commentLike, postLike, user } from "@mealmates/db/schema";
+import { and, desc, eq } from "@mealmates/db";
+import {
+  comment,
+  commentLike,
+  post,
+  postLike,
+  user,
+} from "@mealmates/db/schema";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const CreatePostSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().optional(),
-  image: z.url().min(1)
+  image: z.url().min(1),
 });
 
 export const postRouter = {
@@ -28,7 +34,9 @@ export const postRouter = {
         content: post.content,
         image: post.image,
         createdAt: post.createdAt,
-        user: user.name
+        user: user.name,
+        userAvatar: user.image,
+        userColor: user.avatarColor,
       })
       .from(post)
       .leftJoin(user, eq(post.userId, user.id))
@@ -37,10 +45,23 @@ export const postRouter = {
 
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.post.findFirst({
-        where: eq(post.id, input.id),
-      });
+    .query(async ({ ctx, input }) => {
+      const rows = await ctx.db
+        .select({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          image: post.image,
+          createdAt: post.createdAt,
+          user: user.name,
+          userAvatar: user.image,
+          userColor: user.avatarColor,
+        })
+        .from(post)
+        .leftJoin(user, eq(post.userId, user.id))
+        .where(eq(post.id, input.id));
+
+      return rows[0] ?? null;
     }),
 
   create: protectedProcedure
@@ -54,7 +75,7 @@ export const postRouter = {
           title: input.title,
           content: input.content,
           image: input.image,
-          createdAt: new Date()
+          createdAt: new Date(),
         })
         .returning();
 
@@ -75,13 +96,32 @@ export const CreateCommentSchema = z.object({
 });
 
 export const commentRouter = {
+  // byPost: publicProcedure
+  //   .input(z.object({ postId: z.string() }))
+  //   .query(({ ctx, input }) => {
+  //     return ctx.db.query.comment.findMany({
+  //       where: eq(comment.postId, input.postId),
+  //       orderBy: desc(comment.createdAt),
+  //     });
+  //   }),
+
   byPost: publicProcedure
     .input(z.object({ postId: z.string() }))
     .query(({ ctx, input }) => {
-      return ctx.db.query.comment.findMany({
-        where: eq(comment.postId, input.postId),
-        orderBy: desc(comment.createdAt),
-      });
+      return ctx.db
+        .select({
+          id: comment.id,
+          postId: comment.postId,
+          content: comment.content,
+          image: comment.image,
+          user: user.name,
+          userAvatar: user.image,
+          userColor: user.avatarColor,
+        })
+        .from(comment)
+        .leftJoin(user, eq(comment.userId, user.id))
+        .where(eq(comment.postId, input.postId))
+        .orderBy(desc(comment.createdAt));
     }),
 
   create: protectedProcedure
@@ -95,7 +135,7 @@ export const commentRouter = {
           postId: input.postId,
           content: input.content,
           image: input.image,
-          createdAt: new Date()
+          createdAt: new Date(),
         })
         .returning();
 
@@ -116,15 +156,15 @@ export const postLikeRouter = {
       });
       return likes.length;
     }),
-  
+
   liked: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
       const like = await ctx.db.query.postLike.findMany({
         where: and(
           eq(postLike.postId, input.postId),
-          eq(postLike.userId, ctx.session.user.id)
-        )
+          eq(postLike.userId, ctx.session.user.id),
+        ),
       });
       return like.length > 0;
     }),
@@ -142,17 +182,19 @@ export const postLikeRouter = {
 
       return newPostLike[0];
     }),
-  
+
   delete: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db
+      await ctx.db
         .delete(postLike)
-        .where(and(
-          eq(postLike.postId, input.postId),
-          eq(postLike.userId, ctx.session.user.id)
-        ));
-        return { success: true };
+        .where(
+          and(
+            eq(postLike.postId, input.postId),
+            eq(postLike.userId, ctx.session.user.id),
+          ),
+        );
+      return { success: true };
     }),
 } satisfies TRPCRouterRecord;
 
@@ -169,15 +211,15 @@ export const commentLikeRouter = {
       });
       return likes.length;
     }),
-  
+
   liked: protectedProcedure
     .input(z.object({ commentId: z.string() }))
     .query(async ({ ctx, input }) => {
       const like = await ctx.db.query.commentLike.findMany({
         where: and(
           eq(commentLike.commentId, input.commentId),
-          eq(commentLike.userId, ctx.session.user.id)
-        )
+          eq(commentLike.userId, ctx.session.user.id),
+        ),
       });
       return like.length > 0;
     }),
@@ -199,12 +241,14 @@ export const commentLikeRouter = {
   delete: protectedProcedure
     .input(z.object({ commentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db
+      await ctx.db
         .delete(commentLike)
-        .where(and(
-          eq(commentLike.commentId, input.commentId),
-          eq(commentLike.userId, ctx.session.user.id)
-        ));
-        return { success: true };
+        .where(
+          and(
+            eq(commentLike.commentId, input.commentId),
+            eq(commentLike.userId, ctx.session.user.id),
+          ),
+        );
+      return { success: true };
     }),
 } satisfies TRPCRouterRecord;
