@@ -3,11 +3,12 @@ import type {
   TextInputFocusEventData,
 } from "react-native";
 import type { SearchBarProps } from "react-native-screens";
-import { Platform } from "react-native";
+import { Platform, useColorScheme } from "react-native";
 import { Stack, useRouter } from "expo-router";
 
 export default function SearchLayout() {
   const router = useRouter();
+  const colorScheme = useColorScheme();
 
   const handleSearchTextChange = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,
@@ -27,7 +28,7 @@ export default function SearchLayout() {
       : undefined;
 
   return (
-    <Stack>
+    <Stack screenOptions={{ contentStyle: { backgroundColor: colorScheme === "dark" ? "#000" : "#f3f3f3" } }}>
       <Stack.Screen
         name="index"
         options={{
