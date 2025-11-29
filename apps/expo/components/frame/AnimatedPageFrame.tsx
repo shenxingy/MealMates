@@ -9,6 +9,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -85,6 +86,8 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
   // Create a single Animated.Value instance
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   // Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -146,7 +149,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
 
   // Scroll to top button fade in
   const scrollToTopOpacity = scrollY.interpolate({
-    inputRange: [500, 600],
+    inputRange: [500, 800],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
@@ -242,7 +245,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 <RefreshControl
                   refreshing={isRefreshing}
                   onRefresh={handleRefresh}
-                  colors={['rgba(0,0,0,0.5)']}
+                  colors={[isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)']}
                   progressViewOffset={insets.top}
                 />
               ) : undefined
@@ -278,7 +281,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 <Text style={{
                   fontSize: 20,
                   fontWeight: '600',
-                  color: 'rgba(0, 0, 0, 0.8)',
+                  color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
                 }}>
                   MealMate
                 </Text>
@@ -295,7 +298,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   },
                 ]}
               >
-                <Text style={styles.contentHeader}>{headerTitle ?? ""}</Text>
+                <Text style={[styles.contentHeader, isDark && styles.contentHeaderDark]}>{headerTitle ?? ""}</Text>
                 {headerRightSFSymbolName
                   && headerRightMaterialSymbolName
                   && headerRightOnPress
@@ -304,6 +307,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                     style={({ pressed }) => [
                       styles.headerRightButtonContainer,
                       styles.headerRightButton,
+                      isDark && styles.headerRightButtonDark,
                       { opacity: pressed ? 0.5 : 1 }
                     ]}
                   >
@@ -311,13 +315,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                       <SymbolView
                         name={headerRightSFSymbolName}
                         size={23}
-                        tintColor="black"
+                        tintColor={isDark ? "white" : "black"}
                       />
                     ) : (
                       <MaterialIcons
                         name={headerRightMaterialSymbolName}
                         size={23}
-                        color="black"
+                        color={isDark ? "white" : "black"}
                       />
                     )}
                   </Pressable>}
@@ -380,7 +384,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             }}
           >
             <View style={styles.topHeaderRow}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: isDark ? 'white' : 'black' }}>
                 {headerTitle ?? ""}
               </Text>
               <Pressable 
@@ -394,12 +398,12 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 {Platform.OS === "ios"
                   && headerRightSFSymbolName
                   && headerRightOnPress
-                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor="black" />
+                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor={isDark ? "white" : "black"} />
                 }
                 {Platform.OS === "android"
                   && headerRightMaterialSymbolName
                   && headerRightOnPress
-                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color="black" />
+                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color={isDark ? "white" : "black"} />
                 }
               </Pressable>
             </View>
@@ -418,7 +422,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               style={
                 isLiquidGlassAvailable()
                   ? styles.returnGlassButton
-                  : styles.returnButton
+                  : [styles.returnButton, isDark && styles.returnButtonDark]
               }
               isInteractive
             >
@@ -427,22 +431,22 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   <SymbolView
                     name="chevron.backward"
                     size={17}
-                    tintColor="black"
+                    tintColor={isDark ? "white" : "black"}
                   />
                 ) : (
                   <MaterialIcons
                     name="arrow-back-ios"
                     size={17}
-                    color="black"
+                    color={isDark ? "white" : "black"}
                   />
                 )}
                 {returnButtonText && (
-                  <Text style={styles.returnButtonText}>
+                  <Text style={[styles.returnButtonText, isDark && styles.returnButtonTextDark]}>
                     {returnButtonText}
                   </Text>
                 )}
                 {!returnButtonText && Platform.OS == "android" && (
-                  <Text style={styles.returnButtonText}>Back</Text>
+                  <Text style={[styles.returnButtonText, isDark && styles.returnButtonTextDark]}>Back</Text>
                 )}
               </View>
             </GlassView>
@@ -463,6 +467,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             onPress={handleScrollToTop}
             style={({ pressed }) => [
               styles.scrollToTopButtonContainer,
+              isDark && styles.scrollToTopButtonContainerDark,
               { opacity: pressed ? 0.5 : 1 }
             ]}
           >
@@ -470,13 +475,13 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
               <SymbolView
                 name="chevron.up"
                 size={27}
-                tintColor="black"
+                tintColor={isDark ? "white" : "black"}
               />
             ) : (
               <MaterialIcons
                 name="keyboard-arrow-up"
                 size={24}
-                color="black"
+                color={isDark ? "white" : "black"}
               />
             )}
           </Pressable>
@@ -495,7 +500,11 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
           pointerEvents="none"
         >
           <LinearGradient
-            colors={[
+            colors={isDark ? [
+              "rgba(0, 0, 0, 0)",
+              "rgba(0, 0, 0, 0.2)",
+              "rgba(0, 0, 0, 1)",
+            ] : [
               "rgba(255, 255, 255, 0)",
               "rgba(255, 255, 255, 0.7)",
               "rgba(255, 255, 255, 1)",
@@ -521,6 +530,9 @@ const styles = StyleSheet.create({
   contentHeader: {
     fontSize: 32,
     fontWeight: "bold",
+  },
+  contentHeaderDark: {
+    color: "white",
   },
   headerRow: {
     flexDirection: "row",
@@ -560,6 +572,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
   },
+  headerRightButtonDark: {
+    backgroundColor: "rgba(45,45,45,0.8)",
+    borderColor: "rgba(255,255,255,0.1)",
+  },
   returnPressable: {
     position: "absolute",
     left: 20,
@@ -575,6 +591,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: "rgba(255,255,255,0.6)",
   },
+  returnButtonDark: {
+    backgroundColor: "rgba(45,45,45,0.8)",
+  },
   returnButtonContainer: {
     height: "100%",
     flexDirection: "row",
@@ -584,6 +603,9 @@ const styles = StyleSheet.create({
   },
   returnButtonText: {
     fontSize: 17,
+  },
+  returnButtonTextDark: {
+    color: "white",
   },
   scrollToTopButton: {
     position: "absolute",
@@ -605,5 +627,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 10,
+  },
+  scrollToTopButtonContainerDark: {
+    backgroundColor: "rgba(45,45,45,0.8)",
+    borderColor: "rgba(255,255,255,0.1)",
   },
 });
