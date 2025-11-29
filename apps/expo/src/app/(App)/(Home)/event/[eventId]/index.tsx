@@ -238,7 +238,7 @@ const EventDetailsPage = () => {
                   },
                 ]}
               >
-                <Text style={{ fontSize: 20, color: isDark ? '#ffffff' : '#000000' }}>{getInitials(username)}</Text>
+                <Text style={{ fontSize: 20, color: '#202020' }}>{getInitials(username)}</Text>
               </View>
             )}
           </View>

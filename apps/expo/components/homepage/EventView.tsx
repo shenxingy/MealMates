@@ -78,7 +78,7 @@ const EventView = (props: EventViewProps) => {
                         },
                       ]}
                     >
-                      <Text style={{ fontSize: 24, color: isDark ? '#ffffff' : '#000000' }}>
+                      <Text style={{ fontSize: 24, color: '#000000' }}>
                         {avatarUrl ?? getInitials(username ?? "?")}
                       </Text>
                     </View>
