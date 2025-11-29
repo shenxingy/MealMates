@@ -5,10 +5,12 @@ import type {
 import type { SearchBarProps } from "react-native-screens";
 import { Platform, useColorScheme } from "react-native";
 import { Stack, useRouter } from "expo-router";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 
 export default function SearchLayout() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  
 
   const handleSearchTextChange = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,
@@ -19,7 +21,7 @@ export default function SearchLayout() {
   };
 
   const headerSearchBarOptions: SearchBarProps | undefined =
-    Platform.OS === "ios"
+    Platform.OS === "ios" && isLiquidGlassAvailable()
       ? {
           placement: "automatic",
           placeholder: "Search",
@@ -36,7 +38,7 @@ export default function SearchLayout() {
           headerStyle: {
             backgroundColor: "rgba(0,0,0,0)",
           },
-          headerShown: Platform.OS !== "android",
+          headerShown: Platform.OS === "ios" && isLiquidGlassAvailable(),
           headerSearchBarOptions,
         }}
       />
