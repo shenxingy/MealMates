@@ -1,21 +1,15 @@
 import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
-
-
-
-import type { Post } from "~/definition";
-import { likePost, trpcClient } from "~/utils/api";
-import Like from "./Like";
-import { getStoredUserId } from "~/utils/user-storage";
 import { useQuery } from "@tanstack/react-query";
 
+import type { Post } from "~/definition";
+import { trpcClient } from "~/utils/api";
+import { getStoredUserId } from "~/utils/user-storage";
+import Avatar from "./Avatar";
+import Like from "./Like";
 
-export default function PostDetail({
-  props,
-}: {
-  props: Post;
-}) {
+export default function PostDetail({ props }: { props: Post }) {
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const [liked, setLiked] = useState(false);
@@ -26,24 +20,14 @@ export default function PostDetail({
     getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
 
-  const {
-    data: likesData,
-    isLoading: likesLoading,
-    error: likesError,
-    refetch: likesRefetch
-  } = useQuery({
+  const { data: likesData, refetch: likesRefetch } = useQuery({
     queryKey: ["postLike", "count", props.id],
     queryFn: () => {
       return trpcClient.postLike.count.query({ postId: props.id });
     },
   });
 
-  const {
-    data: likedData,
-    isLoading: likedLoading,
-    error: likedError,
-    refetch: likedRefetch
-  } = useQuery({
+  const { data: likedData, refetch: likedRefetch } = useQuery({
     queryKey: ["postLike", "liked", props.id],
     queryFn: () => {
       return trpcClient.postLike.liked.query({ postId: props.id });
@@ -85,7 +69,7 @@ export default function PostDetail({
     try {
       console.log("likedData: " + likedData);
       console.log("liked: " + liked);
-      if (likedData === true) {
+      if (likedData === true && liked === true) {
         console.log("unliking");
         const result = await trpcClient.postLike.delete.mutate({
           postId: props.id,
@@ -94,8 +78,7 @@ export default function PostDetail({
           setLiked(false);
           setThumbsup(thumbsup - 1);
         }
-      }
-      else if (likedData === false) {
+      } else if (likedData === false && liked === false) {
         console.log("liking");
         const result = await trpcClient.postLike.create.mutate({
           postId: props.id,
@@ -104,33 +87,23 @@ export default function PostDetail({
           setLiked(false);
           setThumbsup(thumbsup + 1);
         }
+      } else {
+        console.log("inconsistent state");
       }
-      likedRefetch();
-      likesRefetch();
+      void likedRefetch();
+      void likesRefetch();
     } catch (error: unknown) {
       console.error("[POST LIKE] Failed:", error);
       const message = error instanceof Error ? error.message : "Failed to like";
       Alert.alert("Like failed", message);
     }
-    // try {
-    //   const res = await likePost(props.id, !liked);
-    //   console.log(res);
-    //   setLiked(!liked);
-    //   if (liked) {
-    //     setThumbsup(thumbsup - 1);
-    //   } else {
-    //     setThumbsup(thumbsup + 1);
-    //   }
-    // } catch (error) {
-    //   console.error("Error liking the post:", error);
-    // }
   };
   useEffect(() => {
     const func = async () => {
       await getSize();
     };
     void func();
-  }, []);
+  }, [getSize]);
   return (
     <View style={[styles.container]}>
       <Image
@@ -140,10 +113,17 @@ export default function PostDetail({
       <View style={[styles.content]}>
         <Text style={[styles.title, styles.bond]}>{props.title}</Text>
         <Text style={styles.contentText}>{props.content}</Text>
-        <View style={[styles.bottom]}>
-          <View>
-            <Text style={[styles.grayText, styles.bond]}>{props.user}</Text>
-            <Text style={styles.grayText}>{timePassed()}</Text>
+        <View style={[styles.bottom, styles.margin10]}>
+          <View style={[styles.bottom]}>
+            <Avatar
+              name={props.user}
+              image={props.userAvatar}
+              color={props.userColor}
+            />
+            <View>
+              <Text style={[styles.grayText, styles.bond]}>{props.user}</Text>
+              <Text style={styles.grayText}>{timePassed()}</Text>
+            </View>
           </View>
           <Pressable onPress={like}>
             <Like likes={thumbsup} liked={liked} border={true} />
@@ -183,10 +163,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   bottom: {
-    margin: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  margin10: {
+    margin: 10,
   },
   bg: {
     backgroundColor: "#f00",

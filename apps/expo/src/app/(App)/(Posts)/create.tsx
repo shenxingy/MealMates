@@ -1,14 +1,20 @@
 import type { ImageSize } from "react-native";
 import { useEffect, useState } from "react";
-import { Alert, Button, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { getStoredUserId } from "~/utils/user-storage";
-import { getBaseUrl } from "~/utils/base-url";
-import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import Back from "../../../../components/postpage/Back";
+
 import { trpcClient } from "~/utils/api";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { getBaseUrl } from "~/utils/base-url";
+import { getStoredUserId } from "~/utils/user-storage";
+import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 
 export default function Create() {
   const header = "New Post";
@@ -18,7 +24,7 @@ export default function Create() {
   const [image, setImage] = useState<string>("");
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
-  // const [alert, setAlert] = useState<string | undefined>(undefined);
+  const [posting, setPosting] = useState<boolean>(false);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
   const router = useRouter();
   useEffect(() => {
@@ -67,6 +73,7 @@ export default function Create() {
       Alert.alert("Please upload an image");
       return;
     }
+    setPosting(true);
     console.log(storedUserId);
     const formData = new FormData();
     const uriParts = image.split(".");
@@ -89,7 +96,7 @@ export default function Create() {
       headers: { "Content-Type": "multipart/form-data" },
       body: formData,
     });
-    const data = (await res.json()) as { data: string, message: string };
+    const data = (await res.json()) as { data: string; message: string };
     if (data.message === "Success") {
       // const url: string = data.data;
       // const input = {
@@ -106,21 +113,22 @@ export default function Create() {
       //   userId: storedUserId,
       // });
       try {
-        const res = await trpcClient.post.create.mutate({
-          // userId: storedUserId,
+        await trpcClient.post.create.mutate({
           title: title,
           content: content,
-          image: data.data
+          image: data.data,
         });
         router.back();
       } catch (error: unknown) {
         console.error("[POST CREATE] Failed:", error);
-        const message = error instanceof Error ? error.message : "Failed to create post";
+        const message =
+          error instanceof Error ? error.message : "Failed to create post";
         Alert.alert("Create failed", message);
       }
     } else {
       Alert.alert("post failed");
     }
+    setPosting(false);
   };
 
   return (
@@ -155,13 +163,29 @@ export default function Create() {
             style={[styles.image, { aspectRatio: width / height }]}
           />
         )}
-        <Pressable onPress={pick} style={styles.button}>
+        <Pressable
+          onPress={pick}
+          style={[
+            styles.button,
+            { backgroundColor: posting ? "#777" : "#ffb200" },
+          ]}
+          disabled={posting}
+        >
           <Text style={[styles.text20, styles.textCenter]}>
-            { image.length === 0 ? "Choose An Image" : "Choose Another Image"}
+            {image.length === 0 ? "Choose An Image" : "Choose Another Image"}
           </Text>
         </Pressable>
-        <Pressable onPress={post} style={styles.button}>
-          <Text style={[styles.text20, styles.textCenter]}>Post</Text>
+        <Pressable
+          onPress={post}
+          style={[
+            styles.button,
+            { backgroundColor: posting ? "#777" : "#ffb200" },
+          ]}
+          disabled={posting}
+        >
+          <Text style={[styles.text20, styles.textCenter]}>
+            {posting ? "Posting" : "Post"}
+          </Text>
         </Pressable>
       </AnimatedPageFrame>
     </>
@@ -176,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1,
     borderRadius: 10,
-    margin: 10
+    margin: 10,
   },
   content: {
     backgroundColor: "#fff",
@@ -186,22 +210,15 @@ const styles = StyleSheet.create({
     height: 200,
     textAlignVertical: "top",
   },
-  // buttons: {
-  //   flexDirection: 'row',
-  //   width: "100%",
-  //   justifyContent: 'center',
-  //   borderWidth: 1
-  // },
   button: {
-    backgroundColor: "#ffb200",
     borderRadius: 10,
     padding: 10,
-    margin: 10
+    margin: 10,
   },
   text20: {
-    fontSize: 20
+    fontSize: 20,
   },
   textCenter: {
-    textAlign: 'center'
-  }
+    textAlign: "center",
+  },
 });

@@ -110,6 +110,8 @@ export interface Post {
   content: string;
   image: string;
   user: string;
+  userAvatar: string | null;
+  userColor: string;
   time: string;
   likes: number;
   liked: boolean;
@@ -121,6 +123,8 @@ export interface PostComment {
   content: string;
   image: string | undefined;
   user: string;
+  userAvatar: string | null;
+  userColor: string;
   likes: number;
   liked: boolean;
 }

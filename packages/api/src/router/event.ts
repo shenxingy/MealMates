@@ -36,11 +36,11 @@ export const eventRouter = {
       const { user, ...eventData } = row;
       return {
         ...eventData,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         username: user.name,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         avatarUrl: user.image,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         avatarColor: user.avatarColor,
       };
     });

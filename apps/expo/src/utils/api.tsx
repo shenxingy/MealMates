@@ -110,7 +110,10 @@ export const trpcClient = createTRPCClient<AppRouter>({
             headers.set("x-duke-user-id", dukeUserId);
           }
         } catch (error) {
-          console.warn("[tRPC] Failed to read Duke user id from storage", error);
+          console.warn(
+            "[tRPC] Failed to read Duke user id from storage",
+            error,
+          );
         }
         return Object.fromEntries(headers);
       },

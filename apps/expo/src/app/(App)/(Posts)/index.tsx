@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query"; 
+import { useQuery } from "@tanstack/react-query";
+
 import type { Post } from "~/definition";
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
@@ -13,11 +14,10 @@ export default function PostPage() {
   const header = "Posts";
   const baseColor = "255,178,0";
   const [posts, setPosts] = useState<Post[]>([]);
-  const [load, setLoad] = useState<Boolean>(true);
+  const [load, setLoad] = useState<boolean>(true);
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["post", "all"],
     queryFn: () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return trpcClient.post.all.query();
     },
   });
@@ -31,18 +31,20 @@ export default function PostPage() {
       const newPost: Post = {
         id: post.id,
         title: post.title,
-        content: post.content ? post.content : "",
+        content: post.content ?? "",
         image: post.image,
-        user: post.user ? post.user : "unknown",
+        user: post.user ?? "unknown user",
+        userAvatar: post.userAvatar,
+        userColor: post.userColor ?? "#F5F7FB",
         time: post.createdAt.toString(),
         likes: 0,
-        liked: false
+        liked: false,
       };
       newPosts.push(newPost);
     });
     setPosts(newPosts);
-  }
-  
+  };
+
   const router = useRouter();
   const create = () => {
     router.push({ pathname: "/(App)/(Posts)/create" });
@@ -51,7 +53,7 @@ export default function PostPage() {
   useFocusEffect(
     useCallback(() => {
       onRefresh();
-    }, [refetch])
+    }, [refetch]),
   );
 
   useEffect(() => {
@@ -68,11 +70,11 @@ export default function PostPage() {
         paddingHorizontal={0}
       >
         <EmptySpace marginTop={30} />
-        { load ? (
+        {load ? (
           <Text>Loading...</Text>
         ) : (
           <PostList data={posts} numColumns={2} />
-        ) }
+        )}
       </AnimatedPageFrame>
       <SymbolButton
         onPress={create}
