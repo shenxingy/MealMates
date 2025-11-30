@@ -82,7 +82,9 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
     }
     return (
       <View style={styles.messageContainer}>
-        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>No results for "{trimmedQuery}"</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>No common results for "{trimmedQuery}"</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>Try</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>↓</Text>
       </View>
     );
   }

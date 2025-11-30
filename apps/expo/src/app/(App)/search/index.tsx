@@ -37,9 +37,9 @@ export default function SearchPage() {
 
   // AI Search state
   const [shouldTriggerAI, setShouldTriggerAI] = useState(false);
-  const [canTriggerAI, setCanTriggerAI] = useState(true);
   const [isAIResultsVisible, setIsAIResultsVisible] = useState(false);
-  const lastAITriggerTime = useRef<number>(0);
+  const [isAIPending, setIsAIPending] = useState(false);
+  const lastAIQuery = useRef<string>("");
   
   // User info for AI search
   const [userId, setUserId] = useState<string>("");
@@ -103,28 +103,21 @@ export default function SearchPage() {
   );
 
   const handleAskAI = () => {
-    const now = Date.now();
-    const timeSinceLastTrigger = now - lastAITriggerTime.current;
-    
-    // Check if 10 seconds have passed since last trigger
-    if (timeSinceLastTrigger >= 10000) {
-      setShouldTriggerAI(true);
-      lastAITriggerTime.current = now;
-      setCanTriggerAI(false);
-      
-      // Re-enable after 10 seconds
-      setTimeout(() => {
-        setCanTriggerAI(true);
-      }, 10000);
-    }
+    Keyboard.dismiss();
+    setShouldTriggerAI(true);
+    setIsAIPending(true);
+    lastAIQuery.current = localQuery.trim();
   };
 
   const handleAITriggerComplete = () => {
     setShouldTriggerAI(false);
     setIsAIResultsVisible(true);
+    setIsAIPending(false);
   };
 
-  const isAskAIDisabled = localQuery.trim().length < 3 || !canTriggerAI;
+  const trimmedQuery = localQuery.trim();
+  const isQueryChanged = trimmedQuery !== lastAIQuery.current;
+  const isAskAIDisabled = trimmedQuery.length < 3 || isAIPending || !isQueryChanged;
 
   return (
     <>
@@ -186,7 +179,7 @@ export default function SearchPage() {
             query={resolvedQuery}
             debouncedQuery={debouncedQuery}
             type={selectedType}
-            hideNoResults={isAIResultsVisible}
+            hideNoResults={isAIResultsVisible || isAIPending}
           />
         </View>
       </AnimatedPageFrame>
