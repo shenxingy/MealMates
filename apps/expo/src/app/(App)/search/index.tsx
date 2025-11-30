@@ -8,9 +8,11 @@ import type { SearchType } from "./SearchResultsList";
 import useDebounce from "~/hooks/useDebounce";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import SearchResultsList from "./SearchResultsList";
+import AISearchResultsList from "./AISearchResultsList";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { getStoredUserId, getStoredUsername } from "~/utils/user-storage";
 
 export default function SearchPage() {
   const colorScheme = useColorScheme();
@@ -33,9 +35,29 @@ export default function SearchPage() {
   // Ask AI button position
   const buttonBottom = useRef(new Animated.Value(Platform.OS === "ios" ? 100 : 150)).current;
 
+  // AI Search state
+  const [shouldTriggerAI, setShouldTriggerAI] = useState(false);
+  const [canTriggerAI, setCanTriggerAI] = useState(true);
+  const lastAITriggerTime = useRef<number>(0);
+  
+  // User info for AI search
+  const [userId, setUserId] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+
   useEffect(() => {
     setLocalQuery(searchQuery);
   }, [searchQuery]);
+
+  // Load user information
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      const storedUserId = await getStoredUserId();
+      const storedUsername = await getStoredUsername();
+      setUserId(storedUserId ?? "");
+      setUsername(storedUsername ?? "");
+    };
+    void loadUserInfo();
+  }, []);
 
   // Listen to keyboard events
   useEffect(() => {
@@ -79,8 +101,27 @@ export default function SearchPage() {
   );
 
   const handleAskAI = () => {
-    console.log("Ask AI");
+    const now = Date.now();
+    const timeSinceLastTrigger = now - lastAITriggerTime.current;
+    
+    // Check if 10 seconds have passed since last trigger
+    if (timeSinceLastTrigger >= 10000) {
+      setShouldTriggerAI(true);
+      lastAITriggerTime.current = now;
+      setCanTriggerAI(false);
+      
+      // Re-enable after 10 seconds
+      setTimeout(() => {
+        setCanTriggerAI(true);
+      }, 10000);
+    }
   };
+
+  const handleAITriggerComplete = () => {
+    setShouldTriggerAI(false);
+  };
+
+  const isAskAIDisabled = localQuery.trim().length < 3 || !canTriggerAI;
 
   return (
     <>
@@ -131,6 +172,13 @@ export default function SearchPage() {
             }}
             style={styles.segmentedControl}
           />
+          <AISearchResultsList
+            query={localQuery}
+            shouldTrigger={shouldTriggerAI}
+            onTriggerComplete={handleAITriggerComplete}
+            userId={userId}
+            username={username}
+          />
           <SearchResultsList
             query={resolvedQuery}
             debouncedQuery={debouncedQuery}
@@ -139,15 +187,36 @@ export default function SearchPage() {
         </View>
       </AnimatedPageFrame>
       <Animated.View style={[styles.askAIButtonContainer, { bottom: buttonBottom }]}>
-        <Pressable onPress={handleAskAI}>
+        <Pressable onPress={handleAskAI} disabled={isAskAIDisabled}>
           <GlassView 
-            style={isLiquidGlassAvailable() ? styles.askAIGlassButton : [styles.askAINonGlassButton, isDark && styles.askAIButtonDark]}
+            style={[
+              isLiquidGlassAvailable() ? styles.askAIGlassButton : [styles.askAINonGlassButton, isDark && styles.askAIButtonDark],
+              isAskAIDisabled && styles.askAIButtonDisabled
+            ]}
             isInteractive
           >
             <View style={styles.askAIButtonContent}>
-              {Platform.OS === "ios" && <SymbolView name="sparkles" size={24} tintColor={isDark ? "rgba(255, 255, 255, 0.95)" : "black"} />}
-              {Platform.OS === "android" && <MaterialCommunityIcons name="star-four-points" size={24} color={isDark ? "rgba(255, 255, 255, 0.95)" : "black"} />}
-              <Text style={[styles.askAIText, isDark && styles.askAITextDark]}>Ask AI</Text>
+              {Platform.OS === "ios" && (
+                <SymbolView 
+                  name="sparkles" 
+                  size={24} 
+                  tintColor={isAskAIDisabled ? "rgba(150, 150, 150, 0.5)" : (isDark ? "rgba(255, 255, 255, 0.95)" : "black")} 
+                />
+              )}
+              {Platform.OS === "android" && (
+                <MaterialCommunityIcons 
+                  name="star-four-points" 
+                  size={24} 
+                  color={isAskAIDisabled ? "rgba(150, 150, 150, 0.5)" : (isDark ? "rgba(255, 255, 255, 0.95)" : "black")} 
+                />
+              )}
+              <Text style={[
+                styles.askAIText, 
+                isDark && styles.askAITextDark,
+                isAskAIDisabled && styles.askAITextDisabled
+              ]}>
+                Ask AI
+              </Text>
             </View>
           </GlassView>
         </Pressable>
@@ -214,6 +283,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.1)",
   },
+  askAIButtonDisabled: {
+    backgroundColor: "rgba(180, 180, 180, 0.3)",
+    opacity: 0.5,
+  },
   askAIButtonContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -229,5 +302,8 @@ const styles = StyleSheet.create({
   },
   askAITextDark: {
     color: "rgba(255, 255, 255, 0.95)",
+  },
+  askAITextDisabled: {
+    color: "rgba(150, 150, 150, 0.5)",
   },
 });
