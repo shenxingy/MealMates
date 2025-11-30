@@ -38,6 +38,7 @@ export default function SearchPage() {
   // AI Search state
   const [shouldTriggerAI, setShouldTriggerAI] = useState(false);
   const [canTriggerAI, setCanTriggerAI] = useState(true);
+  const [isAIResultsVisible, setIsAIResultsVisible] = useState(false);
   const lastAITriggerTime = useRef<number>(0);
   
   // User info for AI search
@@ -46,6 +47,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     setLocalQuery(searchQuery);
+    setIsAIResultsVisible(false);
   }, [searchQuery]);
 
   // Load user information
@@ -119,6 +121,7 @@ export default function SearchPage() {
 
   const handleAITriggerComplete = () => {
     setShouldTriggerAI(false);
+    setIsAIResultsVisible(true);
   };
 
   const isAskAIDisabled = localQuery.trim().length < 3 || !canTriggerAI;
@@ -183,6 +186,7 @@ export default function SearchPage() {
             query={resolvedQuery}
             debouncedQuery={debouncedQuery}
             type={selectedType}
+            hideNoResults={isAIResultsVisible}
           />
         </View>
       </AnimatedPageFrame>

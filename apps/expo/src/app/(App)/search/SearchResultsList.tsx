@@ -22,12 +22,14 @@ interface SearchResultsListProps {
   query: string;
   debouncedQuery: string;
   type: SearchType;
+  hideNoResults?: boolean;
 }
 
 const SearchResultsList: ElementType<SearchResultsListProps> = ({
   query,
   debouncedQuery,
   type,
+  hideNoResults = false,
 }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -75,6 +77,9 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
   const results = data ?? [];
 
   if (results.length === 0) {
+    if (hideNoResults) {
+      return null;
+    }
     return (
       <View style={styles.messageContainer}>
         <Text style={[styles.messageText, isDark && styles.messageTextDark]}>No results for "{trimmedQuery}"</Text>
