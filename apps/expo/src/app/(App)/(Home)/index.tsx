@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { trpcClient } from "~/utils/api";
@@ -24,9 +24,11 @@ interface Event {
 }
 
 export default function HomePage() {
-  const baseColor = "255,120,0";
   const header = "MealMate";
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "255,120,0";
 
   const [page, setPage] = useState(1);
   const [events, setEvents] = useState<Event[]>([]);
@@ -166,9 +168,9 @@ export default function HomePage() {
       {/* No more data indicator */}
       {!hasMore && events.length > 0 && (
         <View style={styles.endIndicator}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.endText}>No More Events</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
+          <Text style={[styles.endText, isDark && styles.endTextDark]}>No More Events</Text>
+          <View style={[styles.dividerLine, isDark && styles.dividerLineDark]} />
         </View>
       )}
     </AnimatedPageFrame>
@@ -205,10 +207,16 @@ const styles = StyleSheet.create(
       height: 1,
       backgroundColor: "rgba(0,0,0,0.1)",
     },
+    dividerLineDark: {
+      backgroundColor: "rgba(255,255,255,0.2)",
+    },
     endText: {
       marginHorizontal: 15,
       fontSize: 14,
       color: "rgba(0,0,0,0.4)",
+    },
+    endTextDark: {
+      color: "rgba(255,255,255,0.5)",
     },
   }
 )

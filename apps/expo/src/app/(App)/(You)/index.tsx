@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, useColorScheme } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -332,7 +332,9 @@ export default function YouPage() {
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
   const profileAvatar = userProfile?.image ?? null;
   const header = "Profile";
-  const baseColor = "195,227,255";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "195,227,255";
   const isLogoutDisabled = isAuthMutating || isFetchingProfile;
   const showLogoutSpinner = isAuthMutating;
   const disableSaveButton =

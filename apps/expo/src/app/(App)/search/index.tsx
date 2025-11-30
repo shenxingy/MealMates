@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, TextInput, useColorScheme, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
@@ -8,9 +8,12 @@ import type { SearchType } from "./SearchResultsList";
 import useDebounce from "~/hooks/useDebounce";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import SearchResultsList from "./SearchResultsList";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 
 export default function SearchPage() {
-  const baseColor = "255,120,0";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "255,120,0";
   const header = "Search";
   const router = useRouter();
   const { query } = useLocalSearchParams();
@@ -46,7 +49,7 @@ export default function SearchPage() {
       headerTitle={header}
     >
       <View style={styles.container}>
-        {Platform.OS === "android" && (
+        {!isLiquidGlassAvailable() && (
           <View style={styles.searchInputContainer}>
             <TextInput
               value={localQuery}
@@ -55,11 +58,11 @@ export default function SearchPage() {
                 router.setParams({ query: text });
               }}
               placeholder="Search"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="search"
-              style={styles.searchInput}
+              style={[styles.searchInput, isDark && styles.searchInputDark]}
             />
             {localQuery.length > 0 && (
               <Pressable
@@ -70,7 +73,7 @@ export default function SearchPage() {
                 }}
                 style={styles.clearButton}
               >
-                <MaterialIcons name="close" size={18} color="#6B7280" />
+                <MaterialIcons name="close" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
               </Pressable>
             )}
           </View>
@@ -115,6 +118,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#0F172A",
     backgroundColor: "#FFFFFF",
+  },
+  searchInputDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+    borderColor: "rgba(75, 75, 75, 0.8)",
+    color: "rgba(255, 255, 255, 0.85)",
   },
   clearButton: {
     position: "absolute",
