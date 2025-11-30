@@ -1,7 +1,9 @@
-import * as dotenv from 'dotenv';
+import * as http from "http";
+import * as dotenv from "dotenv";
+
+import { initWebSocketServer } from "./src/socket-manager";
+
 dotenv.config();
-import * as http from 'http';
-import { initWebSocketServer } from './src/socket-manager';
 
 const PORT = process.env.WS_PORT || 3001;
 

@@ -25,24 +25,15 @@ import { getStoredUserId } from "~/utils/user-storage";
 import { excludingPointsOfInterest } from "../../../../../../components/eventpage/MiniMap";
 import SymbolButton from "../../../../../../components/frame/SymbolButton";
 
+const LOCATION_UPDATE_INTERVAL =
+  process.env.EXPO_PUBLIC_LOCATION_UPDATE_INTERVAL;
+
 export default function MapModalPage() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const LOCATION_UPDATE_INTERVAL =
-    process.env.EXPO_PUBLIC_LOCATION_UPDATE_INTERVAL;
   const [userId, setUserId] = useState<string>("");
   const eventId = params.eventId as string;
   const shared = params.shared === "true";
-  const meetPoint = params.meetPoint as string;
-  const meetPointLatitude = parseFloat(params.meetPointLatitude as string);
-  const meetPointLongitude = parseFloat(params.meetPointLongitude as string);
-  const meetPointCoord: Coordinates = useMemo(
-    () => ({
-      latitude: meetPointLatitude,
-      longitude: meetPointLongitude,
-    }),
-    [meetPointLatitude, meetPointLongitude],
-  );
 
   const restaurantName = params.restaurantName as string;
   const restaurantLatitude = params.restaurantLatitude
@@ -119,17 +110,12 @@ export default function MapModalPage() {
   // compute marker lists
   const appleMarkerList = useMemo(() => {
     const markers: AppleMapsMarker[] = [];
-    markers.push({
-      coordinates: meetPointCoord,
-      title: meetPoint,
-      systemImage: "flag.fill",
-      id: "meet-point",
-    });
+
     if (restaurantCoord) {
       markers.push({
         coordinates: restaurantCoord,
         title: restaurantName,
-        systemImage: "fork.knife",
+        systemImage: "flag.fill",
         id: "restaurant",
       });
     }
@@ -148,22 +134,10 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [
-    meetPoint,
-    meetPointCoord,
-    restaurantCoord,
-    restaurantName,
-    userLocations,
-  ]);
+  }, [restaurantCoord, restaurantName, userLocations]);
 
   const googleMarkerList = useMemo(() => {
     const markers: GoogleMapsMarker[] = [];
-
-    // Add meet point marker
-    markers.push({
-      coordinates: meetPointCoord,
-      title: meetPoint,
-    });
 
     // Add restaurant marker if available
     if (restaurantCoord) {
@@ -185,18 +159,11 @@ export default function MapModalPage() {
     });
 
     return markers;
-  }, [
-    meetPoint,
-    meetPointCoord,
-    restaurantCoord,
-    restaurantName,
-    userLocations,
-  ]);
+  }, [restaurantCoord, restaurantName, userLocations]);
 
   const [locationPerm, setLocationPerm] = useState(false);
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
-  const [meetPointView, setMeetPointView] = useState(0);
   const [restaurantView, setRestaurantView] = useState(0);
 
   // console.log("Map Modal Params:", params);
@@ -270,6 +237,10 @@ export default function MapModalPage() {
     void requestPermission();
   }, [shared]);
 
+  const locationUpdateIntervalMs = LOCATION_UPDATE_INTERVAL
+    ? Number(LOCATION_UPDATE_INTERVAL)
+    : 30000; // 30 seconds
+
   // Update location every 30 seconds when permission is granted
   // If sharing is enabled and connected, also share the location
   useEffect(() => {
@@ -305,20 +276,24 @@ export default function MapModalPage() {
     void updateLocation();
 
     // Set up interval to update location every 30 seconds
-    const interval = LOCATION_UPDATE_INTERVAL
-      ? Number(LOCATION_UPDATE_INTERVAL)
-      : 30000; // 30 seconds
     const locationInterval = setInterval(() => {
       void updateLocation();
-    }, interval);
+    }, locationUpdateIntervalMs);
 
     return () => {
       clearInterval(locationInterval);
     };
-  }, [locationPerm, shared, isConnected, shareLocation]);
+  }, [
+    locationPerm,
+    shared,
+    isConnected,
+    shareLocation,
+    locationUpdateIntervalMs,
+  ]);
 
   const appleMap = useRef<AppleMapsViewType>(null);
   const googleMap = useRef<GoogleMapsViewType>(null);
+
   const handleCameraToMyLocation = () => {
     console.log(
       "locationPerm & currentLocation:",
@@ -342,65 +317,9 @@ export default function MapModalPage() {
           zoom: calculateZoomLevel([currentCoord]),
         });
       }
-      setMeetPointView(0);
       setRestaurantView(0);
     } else if (!locationPerm) {
       alartLocationPerm();
-    }
-  };
-
-  const handleCameraToMeetPoint = () => {
-    if (locationPerm && currentLocation) {
-      const currentCoord = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      };
-      const centerCoord = calculateCenterCoordinates([
-        currentCoord,
-        meetPointCoord,
-      ]);
-      if (meetPointView) {
-        if (centerCoord && Platform.OS === "ios") {
-          appleMap.current?.setCameraPosition({
-            coordinates: centerCoord,
-            zoom: calculateZoomLevel([currentCoord, meetPointCoord]),
-          });
-        }
-        if (centerCoord && Platform.OS === "android") {
-          googleMap.current?.setCameraPosition({
-            coordinates: centerCoord,
-            zoom: calculateZoomLevel([currentCoord, meetPointCoord]),
-          });
-        }
-      } else {
-        if (Platform.OS === "ios") {
-          appleMap.current?.setCameraPosition({
-            coordinates: meetPointCoord,
-            zoom: calculateZoomLevel([meetPointCoord]),
-          });
-        }
-        if (Platform.OS === "android") {
-          googleMap.current?.setCameraPosition({
-            coordinates: meetPointCoord,
-            zoom: calculateZoomLevel([meetPointCoord]),
-          });
-        }
-      }
-      setMeetPointView(1 - meetPointView);
-      setRestaurantView(0);
-    } else {
-      if (Platform.OS === "ios") {
-        appleMap.current?.setCameraPosition({
-          coordinates: meetPointCoord,
-          zoom: calculateZoomLevel([meetPointCoord]),
-        });
-      }
-      if (Platform.OS === "android") {
-        googleMap.current?.setCameraPosition({
-          coordinates: meetPointCoord,
-          zoom: calculateZoomLevel([meetPointCoord]),
-        });
-      }
     }
   };
 
@@ -420,72 +339,61 @@ export default function MapModalPage() {
           });
         }
         setRestaurantView(1);
-        setMeetPointView(0);
-      } else if (restaurantView === 1) {
-        const centerCoord = calculateCenterCoordinates([
-          meetPointCoord,
-          restaurantCoord,
-        ]);
-        if (centerCoord && Platform.OS === "ios") {
-          appleMap.current?.setCameraPosition({
-            coordinates: centerCoord,
-            zoom: calculateZoomLevel([meetPointCoord, restaurantCoord]),
-          });
-        }
-        if (centerCoord && Platform.OS === "android") {
-          googleMap.current?.setCameraPosition({
-            coordinates: centerCoord,
-            zoom: calculateZoomLevel([meetPointCoord, restaurantCoord]),
-          });
-        }
-        if (locationPerm && currentLocation) {
-          setRestaurantView(2);
-        } else {
-          setRestaurantView(0);
-        }
-        setMeetPointView(0);
-      } else if (restaurantView === 2 && locationPerm && currentLocation) {
+      } else if (restaurantView === 1 && locationPerm && currentLocation) {
         const currentCoord = {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
         };
         const centerCoord = calculateCenterCoordinates([
-          meetPointCoord,
           restaurantCoord,
           currentCoord,
         ]);
         if (centerCoord && Platform.OS === "ios") {
           appleMap.current?.setCameraPosition({
             coordinates: centerCoord,
-            zoom: calculateZoomLevel([
-              meetPointCoord,
-              restaurantCoord,
-              currentCoord,
-            ]),
+            zoom: calculateZoomLevel([restaurantCoord, currentCoord]),
           });
         }
         if (centerCoord && Platform.OS === "android") {
           googleMap.current?.setCameraPosition({
             coordinates: centerCoord,
-            zoom: calculateZoomLevel([
-              meetPointCoord,
-              restaurantCoord,
-              currentCoord,
-            ]),
+            zoom: calculateZoomLevel([restaurantCoord, currentCoord]),
           });
         }
         setRestaurantView(0);
-        setMeetPointView(0);
+      } else {
+        // Toggle back to restaurant only if no location or already viewing both
+        if (Platform.OS === "ios") {
+          appleMap.current?.setCameraPosition({
+            coordinates: restaurantCoord,
+            zoom: calculateZoomLevel([restaurantCoord]),
+          });
+        }
+        if (Platform.OS === "android") {
+          googleMap.current?.setCameraPosition({
+            coordinates: restaurantCoord,
+            zoom: calculateZoomLevel([restaurantCoord]),
+          });
+        }
+        setRestaurantView(1);
       }
     }
   };
+
+  // Initial camera position: Restaurant if available, else default
+  const initialCameraPosition = restaurantCoord
+    ? {
+        coordinates: restaurantCoord,
+        zoom: calculateZoomLevel([restaurantCoord]),
+      }
+    : undefined;
 
   return (
     <>
       <SymbolButton
         onPress={handleDismiss}
         pressableStyle={styles.dismissButtonContainer}
-        androidStyle={styles.dismissButtonAndroidContainer}
+        nonGlassStyle={styles.dismissButtonAndroidContainer}
         glassViewStyle={styles.dismissButtonGlassView}
         SFSymbolName="xmark"
         MaterialSymbolName="close"
@@ -493,24 +401,17 @@ export default function MapModalPage() {
       <SymbolButton
         onPress={handleCameraToMyLocation}
         pressableStyle={styles.myLocationContainer}
-        androidStyle={styles.myLocationAndroidContainer}
+        nonGlassStyle={styles.myLocationAndroidContainer}
         glassViewStyle={styles.myLocationGlassView}
         SFSymbolName="location"
         MaterialSymbolName="my-location"
       />
-      <SymbolButton
-        onPress={handleCameraToMeetPoint}
-        pressableStyle={styles.meetPointButtonContainer}
-        androidStyle={styles.meetPointAndroidContainer}
-        glassViewStyle={styles.meetPointGlassView}
-        SFSymbolName="flag"
-        MaterialSymbolName="flag"
-      />
+      {/* Removed Meet Point Button */}
       {restaurantCoord && (
         <SymbolButton
           onPress={handleCameraToRestaurant}
           pressableStyle={styles.restaurantButtonContainer}
-          androidStyle={styles.restaurantAndroidContainer}
+          nonGlassStyle={styles.restaurantAndroidContainer}
           glassViewStyle={styles.restaurantGlassView}
           SFSymbolName="fork.knife"
           MaterialSymbolName="restaurant"
@@ -519,10 +420,7 @@ export default function MapModalPage() {
       {Platform.OS === "ios" ? (
         <AppleMaps.View
           style={{ flex: 1 }}
-          cameraPosition={{
-            coordinates: meetPointCoord,
-            zoom: calculateZoomLevel([meetPointCoord]),
-          }}
+          cameraPosition={initialCameraPosition}
           markers={appleMarkerList}
           uiSettings={{
             myLocationButtonEnabled: false,
@@ -540,10 +438,7 @@ export default function MapModalPage() {
       ) : (
         <GoogleMaps.View
           style={{ flex: 1 }}
-          cameraPosition={{
-            coordinates: meetPointCoord,
-            zoom: calculateZoomLevel([meetPointCoord]),
-          }}
+          cameraPosition={initialCameraPosition}
           markers={googleMarkerList}
           uiSettings={{
             myLocationButtonEnabled: false,
@@ -613,41 +508,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  meetPointButtonContainer: {
-    position: "absolute",
-    top: 75,
-    right: 15,
-    zIndex: 1,
-  },
-  meetPointAndroidContainer: {
-    position: "absolute",
-    top: 135,
-    right: 15,
-    zIndex: 1,
-    width: 45,
-    height: 45,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    elevation: 5,
-  },
-  meetPointGlassView: {
-    width: 45,
-    height: 45,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // Removed Meet Point styles
   restaurantButtonContainer: {
     position: "absolute",
-    top: 135,
+    top: 75, // Moved up since meet point button is gone
     right: 15,
     zIndex: 1,
   },
   restaurantAndroidContainer: {
     position: "absolute",
-    top: 195,
+    top: 135, // Adjusted for Android status bar
     right: 15,
     zIndex: 1,
     width: 45,

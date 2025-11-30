@@ -14,7 +14,7 @@ interface GlassSymbolButtonProps {
 
 interface AndroidSymbolButtonProps {
   onPress: () => void;
-  androidStyle: StyleProp<ViewStyle>;
+  nonGlassStyle: StyleProp<ViewStyle>;
   MaterialSymbolName: ComponentProps<typeof MaterialIcons>["name"];
 }
 
@@ -24,7 +24,7 @@ export default function SymbolButton(props: SymbolButtonProps) {
   const {
     onPress,
     pressableStyle,
-    androidStyle,
+    nonGlassStyle: androidStyle,
     glassViewStyle,
     SFSymbolName,
     MaterialSymbolName,

@@ -6,6 +6,7 @@ export interface ApiResponse<T> {
 export interface SimpleEventDTO {
   id: number;
   avatarUrl?: string;
+  avatarColor?: string;
   username: string;
   scheduleTime: string;
   mood?: string;
@@ -15,6 +16,7 @@ export interface SimpleEventDTO {
 }
 
 export interface DetailedEventDTO extends SimpleEventDTO {
+  userId: string;
   meetPointCoordinates: {
     latitude: number;
     longitude: number;
@@ -59,7 +61,7 @@ export interface MessageHandlers {
 export interface UseApiSocketOptions {
   userId: string;
   eventId: string;
-  enabled: boolean; // 控制是否启用 WebSocket
+  enabled: boolean;
   handlers?: MessageHandlers;
 }
 

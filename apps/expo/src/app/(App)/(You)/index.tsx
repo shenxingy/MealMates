@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { Alert, useColorScheme } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { ProfileStat } from "../../../../components/profile";
@@ -105,7 +105,6 @@ const normalizeHexColor = (value: string) => {
 const isValidHexColor = (value: string) => HEX_COLOR_REGEX.test(value);
 
 export default function YouPage() {
-  const router = useRouter();
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
   const [isLoadingUserId, setIsLoadingUserId] = useState(true);
   const [isEditVisible, setIsEditVisible] = useState(false);
@@ -315,12 +314,9 @@ export default function YouPage() {
       await logout();
       setStoredUserIdState(null);
       handleCloseEditModal();
-      await loadUserId();
     } catch (error) {
       console.error("[YOU PAGE] Failed to logout:", error);
       Alert.alert("Logout failed", "Please try again.");
-    } finally {
-      router.replace("/");
     }
   };
 
@@ -336,7 +332,9 @@ export default function YouPage() {
   const profileEmail = userProfile?.email ?? "Sign in to view your email";
   const profileAvatar = userProfile?.image ?? null;
   const header = "Profile";
-  const baseColor = "195,227,255";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "195,227,255";
   const isLogoutDisabled = isAuthMutating || isFetchingProfile;
   const showLogoutSpinner = isAuthMutating;
   const disableSaveButton =

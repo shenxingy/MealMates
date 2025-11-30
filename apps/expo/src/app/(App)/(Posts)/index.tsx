@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { Post } from "~/definition";
 import { trpcClient } from "~/utils/api";
+import { useColorScheme } from "react-native";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import SymbolButton from "../../../../components/frame/SymbolButton";
@@ -12,7 +13,6 @@ import PostList from "../../../../components/postpage/PostList";
 
 export default function PostPage() {
   const header = "Posts";
-  const baseColor = "255,178,0";
   const [posts, setPosts] = useState<Post[]>([]);
   const [load, setLoad] = useState<boolean>(true);
   const { data, isLoading, error, refetch } = useQuery({
@@ -61,6 +61,9 @@ export default function PostPage() {
     showData();
   }, [data, isLoading, error]);
 
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const baseColor = isDark ? "70,70,70" : "255,178,0";
   return (
     <>
       <AnimatedPageFrame
