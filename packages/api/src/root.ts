@@ -6,6 +6,7 @@ import {
   postLikeRouter,
   postRouter,
 } from "./router/post";
+import { searchRouter } from "./router/search";
 import { userRouter } from "./router/user";
 import { createTRPCRouter } from "./trpc";
 
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   postLike: postLikeRouter,
   comment: commentRouter,
   commentLike: commentLikeRouter,
+  search: searchRouter,
   user: userRouter,
   event: eventRouter,
 });

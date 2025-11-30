@@ -1,14 +1,5 @@
 import type { ImageSourcePropType } from "react-native";
-import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { ActivityIndicator, Image, StyleSheet, Text, useColorScheme, View } from "react-native";
 
 import mealmatesHeroAsset from "../../assets/mealmates.png";
 import { DukeRegisterButton } from "../../components/auth";
@@ -18,35 +9,11 @@ import { useDukeAuth } from "../hooks/useDukeAuth";
 const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 
 export default function Index() {
-  const router = useRouter();
-
-  const { isLoading, isAuthenticated, userInfo, error, login } = useDukeAuth();
+  const { isLoading, login } = useDukeAuth();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const header = "MealMates";
-  const baseColor = "195,227,255";
-
-  // Navigate to home when authenticated
-  useEffect(() => {
-    if (isAuthenticated && userInfo) {
-      console.log("User authenticated:", userInfo);
-      Alert.alert(
-        "Welcome!",
-        `Successfully logged in as ${userInfo.name} (${userInfo.email})`,
-        [
-          {
-            text: "Continue",
-            onPress: () => router.replace("/(App)/(Home)"),
-          },
-        ],
-      );
-    }
-  }, [isAuthenticated, userInfo, router]);
-
-  // Show error alerts
-  useEffect(() => {
-    if (error) {
-      Alert.alert("Authentication Error", error);
-    }
-  }, [error]);
+  const baseColor = isDark ? "70,70,70" : "195,227,255";
 
   const handleDukeAuth = async () => {
     try {
@@ -63,7 +30,7 @@ export default function Index() {
       scrollEnabled={false}
     >
       <View style={styles.content}>
-        <Text style={styles.tagline}>
+        <Text style={[styles.tagline, isDark && styles.taglineDark]}>
           Plan the perfect bite with friends, classmates, or new faces around
           Duke.
         </Text>
@@ -79,8 +46,8 @@ export default function Index() {
         <View style={styles.actionSection}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0F172A" />
-              <Text style={styles.loadingText}>
+              <ActivityIndicator size="large" color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"} />
+              <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
                 Authenticating with Duke...
               </Text>
             </View>
@@ -108,6 +75,9 @@ const styles = StyleSheet.create({
     color: "#475569",
     lineHeight: 22,
   },
+  taglineDark: {
+    color: "rgba(255, 255, 255, 0.7)",
+  },
   heroCard: {
     marginTop: 28,
     borderRadius: 32,
@@ -134,5 +104,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#64748B",
     fontWeight: "500",
+  },
+  loadingTextDark: {
+    color: "rgba(255, 255, 255, 0.7)",
   },
 });

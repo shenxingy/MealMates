@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { ElementType } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -31,7 +31,7 @@ interface ProfileEditModalProps {
   defaultAvatarLabel: string;
 }
 
-const ProfileEditModal: FC<ProfileEditModalProps> = ({
+const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
   visible,
   nameValue,
   onNameChange,
