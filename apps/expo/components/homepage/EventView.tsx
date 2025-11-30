@@ -1,4 +1,4 @@
-import { Image, Platform, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
@@ -45,12 +45,15 @@ const EventView = (props: EventViewProps) => {
     isLoading = false,
   } = props;
 
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <GlassView
       style={
         isLiquidGlassAvailable()
           ? styles.glassContainer
-          : styles.nonGlassContainer
+          : [styles.nonGlassContainer, isDark && styles.nonGlassContainerDark]
       }
       isInteractive={!isLoading}
     >
@@ -75,21 +78,15 @@ const EventView = (props: EventViewProps) => {
                         },
                       ]}
                     >
-                      <Text style={{ fontSize: 24 }}>
+                      <Text style={{ fontSize: 24, color: '#000000' }}>
                         {avatarUrl ?? getInitials(username ?? "?")}
                       </Text>
                     </View>
                   )}
                   {mood && (
-                    <GlassView
-                      style={
-                        isLiquidGlassAvailable()
-                          ? styles.moodBadgeGlassContainer
-                          : styles.moodBadgeNonGlassContainer
-                      }
-                    >
+                    <View style={styles.moodBadgeContainer}>
                       <Text style={{ fontSize: 20 }}>{mood}</Text>
-                    </GlassView>
+                    </View>
                   )}
                 </>
               )}
@@ -104,21 +101,21 @@ const EventView = (props: EventViewProps) => {
                 />
               </View>
             ) : (
-              <Text style={styles.userNameText}>{username}</Text>
+              <Text style={[styles.userNameText, isDark && styles.userNameTextDark]}>{username}</Text>
             )}
           </View>
           <View style={styles.scheduleTimeContainer}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="clock" style={{ width: 24, height: 24 }} />
+              <SymbolView name="clock" style={{ width: 24, height: 24 }} tintColor={isDark ? '#ffffff' : undefined} />
             ) : (
-              <Ionicons name="time" size={24} color="#ff7800" />
+              <Ionicons name="time" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
             )}
             {isLoading ? (
               <View style={{ width: 50, height: 24 }}>
                 <Skeleton isLoading={isLoading} start={-100} end={50} />
               </View>
             ) : (
-              <Text style={styles.normalText}>{scheduleTime}</Text>
+              <Text style={[styles.normalText, isDark && styles.normalTextDark]}>{scheduleTime}</Text>
             )}
           </View>
         </View>
@@ -128,9 +125,9 @@ const EventView = (props: EventViewProps) => {
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="fork.knife" style={{ width: 24, height: 24 }} />
+              <SymbolView name="fork.knife" style={{ width: 24, height: 24 }} tintColor={isDark ? '#ffffff' : undefined} />
             ) : (
-              <Ionicons name="restaurant" size={24} color="#ff7800" />
+              <Ionicons name="restaurant" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
             )}
             {isLoading ? (
               <View style={{ width: 180, height: 30 }}>
@@ -138,7 +135,7 @@ const EventView = (props: EventViewProps) => {
               </View>
             ) : (
               <Text 
-                style={[styles.normalText, { flex: 1 }]} 
+                style={[styles.normalText, { flex: 1 }, isDark && styles.normalTextDark]} 
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
@@ -158,18 +155,19 @@ const EventView = (props: EventViewProps) => {
                 style={
                   isLiquidGlassAvailable()
                     ? styles.glassMessageContainer
-                    : styles.nonGlassMessageContainer
+                    : [styles.nonGlassMessageContainer, isDark && styles.nonGlassMessageContainerDark]
                 }
               >
                 {Platform.OS === "ios" ? (
                   <SymbolView
                     name="message.badge"
                     style={{ width: 24, height: 24 }}
+                    tintColor={isDark ? '#ffffff' : undefined}
                   />
                 ) : (
-                  <Ionicons name="chatbubbles" size={24} color="#ff7800" />
+                  <Ionicons name="chatbubbles" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
                 )}
-                <Text style={{ flex: 1, fontSize: 16, fontWeight: "normal" }}>
+                <Text style={{ flex: 1, fontSize: 16, fontWeight: "normal", color: isDark ? '#ffffff' : '#000000' }}>
                   {message}
                 </Text>
               </GlassView>
@@ -189,12 +187,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#2c2c2c",
   },
+  normalTextDark: {
+    color: "#ffffff",
+  },
   glassContainer: {
     borderRadius: 30,
   },
   nonGlassContainer: {
     borderRadius: 30,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  nonGlassContainerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
   },
   contentContainer: {
     overflow: "hidden",
@@ -220,6 +224,16 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     position: "relative",
   },
+  moodBadgeContainer: {
+    position: "absolute",
+    bottom: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   moodBadgeGlassContainer: {
     position: "absolute",
     bottom: -6,
@@ -242,6 +256,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+  },
+  moodBadgeNonGlassContainerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
   },
   avatar: {
     width: "100%",
@@ -280,6 +297,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#636363",
   },
+  userNameTextDark: {
+    color: "#ffffffaa",
+  },
   scheduleTimeContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -315,5 +335,8 @@ const styles = StyleSheet.create({
     gap: 5,
     padding: 15,
     backgroundColor: "rgba(205,205,205,0.5)",
+  },
+  nonGlassMessageContainerDark: {
+    backgroundColor: "rgba(60, 60, 60, 0.7)",
   },
 });

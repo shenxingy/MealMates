@@ -1,5 +1,5 @@
 import type { ElementType } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 
@@ -13,21 +13,24 @@ interface SearchEventCardProps {
 }
 
 const SearchEventCard: ElementType<SearchEventCardProps> = ({ event }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.title} numberOfLines={1}>
+    <View style={[styles.card, isDark && styles.cardDark]}>
+      <Text style={[styles.title, isDark && styles.titleDark]} numberOfLines={1}>
         🍽 {event.restaurantName}
       </Text>
       {event.message ? (
-        <Text style={styles.subtitle} numberOfLines={2}>
+        <Text style={[styles.subtitle, isDark && styles.subtitleDark]} numberOfLines={2}>
           {event.message}
         </Text>
       ) : null}
       <View style={styles.metaRow}>
-        <Text style={styles.meta} numberOfLines={1}>
-          📍 {event.meetPoint}
+        <Text style={[styles.meta, isDark && styles.metaDark]} numberOfLines={1}>
+          📍 {event.meetPointCoordinates.latitude.toFixed(2)}, {event.meetPointCoordinates.longitude.toFixed(2)}
         </Text>
-        <Text style={styles.meta} numberOfLines={1}>
+        <Text style={[styles.meta, isDark && styles.metaDark]} numberOfLines={1}>
           🕒 {event.scheduleTime}
         </Text>
       </View>
@@ -50,14 +53,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
+  cardDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
+  },
   title: {
     fontSize: 16,
     fontWeight: "700",
     color: "#0F172A",
   },
+  titleDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   subtitle: {
     fontSize: 14,
     color: "#1F2937",
+  },
+  subtitleDark: {
+    color: "rgba(255, 255, 255, 0.7)",
   },
   metaRow: {
     flexDirection: "row",
@@ -68,5 +80,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     color: "#4B5563",
+  },
+  metaDark: {
+    color: "#9CA3AF",
   },
 });
