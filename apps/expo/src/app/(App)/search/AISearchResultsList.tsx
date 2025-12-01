@@ -9,6 +9,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 
 import { trpcClient } from "~/utils/api";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 
 interface AIRestaurantRecommendation {
   restaurant_name: string;
@@ -124,7 +125,7 @@ const AISearchResultsList: ElementType<AISearchResultsListProps> = ({
       </View>
       <View style={styles.listContent}>
         {recommendations.map((item, index) => (
-          <View key={index} style={[styles.card, isDark && styles.cardDark]}>
+          <GlassView key={index} style={isLiquidGlassAvailable() ? styles.glassCard : [styles.card, isDark && styles.cardDark]}>
             <View style={styles.cardHeader}>
               <Text style={[styles.restaurantName, isDark && styles.restaurantNameDark]}>
                 {item.restaurant_name}
@@ -141,7 +142,7 @@ const AISearchResultsList: ElementType<AISearchResultsListProps> = ({
             <Text style={[styles.reason, isDark && styles.reasonDark]}>
               {item.short_reason}
             </Text>
-          </View>
+          </GlassView>
         ))}
       </View>
     </View>
@@ -175,6 +176,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: 12,
+  },
+  glassCard: {
+    borderRadius: 16,
+    padding: 16,
   },
   card: {
     backgroundColor: "#FFFFFF",
