@@ -3,9 +3,6 @@ import { NextResponse } from "next/server";
 // import { supabase } from "@mealmates/db/supabase-client";
 import { supabase } from "@mealmates/db/client";
 
-import type { Post } from "~/app/definition";
-import { PostData } from "~/app/mock/PostData";
-
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("image") as File | null;
@@ -27,27 +24,27 @@ export async function POST(req: Request) {
     });
   }
   const { data } = supabase.storage.from("Post").getPublicUrl(fileName);
-  const newPost: Post = {
-    id: 0,
-    title: formData.get("title") as string,
-    content: formData.get("content") as string,
-    image: data.publicUrl,
-    user: formData.get("user") as string,
-    time: new Date(formData.get("user") as string),
-    likes: Number(formData.get("likes") as string),
-    liked: (formData.get("liked") as string) === "true",
-  };
-  const res = PostData.addPost(newPost);
+  //   const newPost: Post = {
+  //     id: 0,
+  //     title: formData.get("title") as string,
+  //     content: formData.get("content") as string,
+  //     image: data.publicUrl,
+  //     user: formData.get("user") as string,
+  //     time: new Date(formData.get("user") as string),
+  //     likes: Number(formData.get("likes") as string),
+  //     liked: (formData.get("liked") as string) === "true",
+  //   };
+  //   const res = PostData.addPost(newPost);
   return NextResponse.json({
     data: data.publicUrl,
-    message: res ? "Success" : "Failure",
-  });
-}
-
-export function GET() {
-  const data = PostData.getPosts();
-  return NextResponse.json({
-    data: data,
     message: "Success",
   });
 }
+
+// export function GET() {
+//   const data = PostData.getPosts();
+//   return NextResponse.json({
+//     data: data,
+//     message: "Success",
+//   });
+// }

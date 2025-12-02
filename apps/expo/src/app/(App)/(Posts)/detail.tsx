@@ -13,7 +13,7 @@ import PostDetail from "../../../../components/postpage/Post";
 export default function PostDetails() {
   const header = "Post Details";
   const baseColor = "255,178,0";
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams() as { id: string };
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [comments, setComments] = useState<PostComment[] | undefined>(
     undefined,

@@ -2,20 +2,17 @@ import { NextResponse } from "next/server";
 
 import { supabase } from "@mealmates/db/client";
 
-import type { PostComment } from "~/app/definition";
-import { PostData } from "~/app/mock/PostData";
-
-export async function GET(
-  req: Request,
-  { params }: { params: { postId: number } | Promise<{ postId: number }> },
-) {
-  const { postId } = await params;
-  const data: PostComment[] | undefined = PostData.getComments(postId);
-  return NextResponse.json({
-    data: data,
-    message: data ? "Success" : "Failure",
-  });
-}
+// export async function GET(
+//   req: Request,
+//   { params }: { params: Promise<{ postId: number }> },
+// ) {
+//   const { postId } = await params;
+//   const data: PostComment[] | undefined = PostData.getComments(postId);
+//   return NextResponse.json({
+//     data: data,
+//     message: data ? "Success" : "Failure",
+//   });
+// }
 
 export async function POST(req: Request) {
   const formData = await req.formData();
@@ -38,15 +35,15 @@ export async function POST(req: Request) {
     imgUrl = data.publicUrl;
   }
 
-  const newComment: PostComment = {
-    id: 0,
-    content: formData.get("content") as string,
-    image: imgUrl,
-    user: formData.get("user") as string,
-    likes: Number(formData.get("likes") as string),
-    liked: (formData.get("liked") as string) === "true",
-  };
-  PostData.addComment(Number(formData.get("post") as string), newComment);
+  //   const newComment: PostComment = {
+  //     id: 0,
+  //     content: formData.get("content") as string,
+  //     image: imgUrl,
+  //     user: formData.get("user") as string,
+  //     likes: Number(formData.get("likes") as string),
+  //     liked: (formData.get("liked") as string) === "true",
+  //   };
+  //   PostData.addComment(Number(formData.get("post") as string), newComment);
   return NextResponse.json({
     data: imgUrl,
     message: "Success",
