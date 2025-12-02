@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, TextInput, useColorScheme, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  useColorScheme,
+  View,
+} from "react-native";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
@@ -8,11 +16,10 @@ import type { SearchType } from "./SearchResultsList";
 import useDebounce from "~/hooks/useDebounce";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import SearchResultsList from "./SearchResultsList";
-import { isLiquidGlassAvailable } from "expo-glass-effect";
 
 export default function SearchPage() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const baseColor = isDark ? "70,70,70" : "255,120,0";
   const header = "Search";
   const router = useRouter();
@@ -44,10 +51,7 @@ export default function SearchPage() {
   );
 
   return (
-    <AnimatedPageFrame
-      baseColor={baseColor}
-      headerTitle={header}
-    >
+    <AnimatedPageFrame baseColor={baseColor} headerTitle={header}>
       <View style={styles.container}>
         {!isLiquidGlassAvailable() && (
           <View style={styles.searchInputContainer}>
@@ -73,7 +77,11 @@ export default function SearchPage() {
                 }}
                 style={styles.clearButton}
               >
-                <MaterialIcons name="close" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
+                <MaterialIcons
+                  name="close"
+                  size={18}
+                  color={isDark ? "#9CA3AF" : "#6B7280"}
+                />
               </Pressable>
             )}
           </View>

@@ -1,4 +1,11 @@
-import { Image, Platform, StyleSheet, Text, useColorScheme, View } from "react-native";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,7 +53,7 @@ const EventView = (props: EventViewProps) => {
   } = props;
 
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   return (
     <GlassView
@@ -78,7 +85,7 @@ const EventView = (props: EventViewProps) => {
                         },
                       ]}
                     >
-                      <Text style={{ fontSize: 24, color: '#000000' }}>
+                      <Text style={{ fontSize: 24, color: "#000000" }}>
                         {avatarUrl ?? getInitials(username ?? "?")}
                       </Text>
                     </View>
@@ -101,21 +108,37 @@ const EventView = (props: EventViewProps) => {
                 />
               </View>
             ) : (
-              <Text style={[styles.userNameText, isDark && styles.userNameTextDark]}>{username}</Text>
+              <Text
+                style={[styles.userNameText, isDark && styles.userNameTextDark]}
+              >
+                {username}
+              </Text>
             )}
           </View>
           <View style={styles.scheduleTimeContainer}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="clock" style={{ width: 24, height: 24 }} tintColor={isDark ? '#ffffff' : undefined} />
+              <SymbolView
+                name="clock"
+                style={{ width: 24, height: 24 }}
+                tintColor={isDark ? "#ffffff" : undefined}
+              />
             ) : (
-              <Ionicons name="time" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
+              <Ionicons
+                name="time"
+                size={24}
+                color={isDark ? "#ffffff" : "#ff7800"}
+              />
             )}
             {isLoading ? (
               <View style={{ width: 50, height: 24 }}>
                 <Skeleton isLoading={isLoading} start={-100} end={50} />
               </View>
             ) : (
-              <Text style={[styles.normalText, isDark && styles.normalTextDark]}>{scheduleTime}</Text>
+              <Text
+                style={[styles.normalText, isDark && styles.normalTextDark]}
+              >
+                {scheduleTime}
+              </Text>
             )}
           </View>
         </View>
@@ -125,17 +148,29 @@ const EventView = (props: EventViewProps) => {
         <View style={[styles.detailedInfoContainer, { marginTop: 5 }]}>
           <View style={styles.detailedInfo}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="fork.knife" style={{ width: 24, height: 24 }} tintColor={isDark ? '#ffffff' : undefined} />
+              <SymbolView
+                name="fork.knife"
+                style={{ width: 24, height: 24 }}
+                tintColor={isDark ? "#ffffff" : undefined}
+              />
             ) : (
-              <Ionicons name="restaurant" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
+              <Ionicons
+                name="restaurant"
+                size={24}
+                color={isDark ? "#ffffff" : "#ff7800"}
+              />
             )}
             {isLoading ? (
               <View style={{ width: 180, height: 30 }}>
                 <Skeleton isLoading={isLoading} start={-360} end={180} />
               </View>
             ) : (
-              <Text 
-                style={[styles.normalText, { flex: 1 }, isDark && styles.normalTextDark]} 
+              <Text
+                style={[
+                  styles.normalText,
+                  { flex: 1 },
+                  isDark && styles.normalTextDark,
+                ]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
@@ -155,19 +190,33 @@ const EventView = (props: EventViewProps) => {
                 style={
                   isLiquidGlassAvailable()
                     ? styles.glassMessageContainer
-                    : [styles.nonGlassMessageContainer, isDark && styles.nonGlassMessageContainerDark]
+                    : [
+                        styles.nonGlassMessageContainer,
+                        isDark && styles.nonGlassMessageContainerDark,
+                      ]
                 }
               >
                 {Platform.OS === "ios" ? (
                   <SymbolView
                     name="message.badge"
                     style={{ width: 24, height: 24 }}
-                    tintColor={isDark ? '#ffffff' : undefined}
+                    tintColor={isDark ? "#ffffff" : undefined}
                   />
                 ) : (
-                  <Ionicons name="chatbubbles" size={24} color={isDark ? '#ffffff' : '#ff7800'} />
+                  <Ionicons
+                    name="chatbubbles"
+                    size={24}
+                    color={isDark ? "#ffffff" : "#ff7800"}
+                  />
                 )}
-                <Text style={{ flex: 1, fontSize: 16, fontWeight: "normal", color: isDark ? '#ffffff' : '#000000' }}>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    fontWeight: "normal",
+                    color: isDark ? "#ffffff" : "#000000",
+                  }}
+                >
                   {message}
                 </Text>
               </GlassView>

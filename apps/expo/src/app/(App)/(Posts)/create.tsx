@@ -17,7 +17,7 @@ import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 
 export default function Create() {
-  const header = "New Post";
+  // const header = "New Post";
   const baseColor = "255,178,0";
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -27,14 +27,17 @@ export default function Create() {
   const [posting, setPosting] = useState<boolean>(false);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
   const router = useRouter();
+
   useEffect(() => {
     getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
+
   const getSize = async (image: string) => {
     const size: ImageSize = await Image.getSize(image);
     setWidth(size.width);
     setHeight(size.height);
   };
+
   const pick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -45,20 +48,6 @@ export default function Create() {
       void getSize(result.assets[0].uri);
     }
   };
-  // const createPost = useMutation({
-  //   mutationFn: (input: {
-  //     title: string;
-  //     content: string;
-  //     image: string;
-  //     userId: string;
-  //   }) => {
-  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  //     return trpcClient.post.create.mutate(input);
-  //   },
-  //   onError: (error) => {
-  //     console.error("Failed to create post:", error);
-  //   },
-  // });
 
   const post = async () => {
     if (!storedUserId) {
@@ -98,20 +87,6 @@ export default function Create() {
     });
     const data = (await res.json()) as { data: string; message: string };
     if (data.message === "Success") {
-      // const url: string = data.data;
-      // const input = {
-      //   title: title,
-      //   content: content,
-      //   image: data.data,
-      //   createAt: new Date(),
-      //   userId: "mock_user_id"
-      // }
-      // createPost.mutate({
-      //   title: title,
-      //   content: content,
-      //   image: url,
-      //   userId: storedUserId,
-      // });
       try {
         await trpcClient.post.create.mutate({
           title: title,

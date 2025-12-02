@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { Post, PostComment } from "~/definition";
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
-import SymbolButton from "../../../../components/frame/SymbolButton";
 import Comment from "../../../../components/postpage/Comment";
 import PostDetail from "../../../../components/postpage/Post";
 
@@ -77,6 +76,8 @@ export default function PostDetails() {
   const router = useRouter();
   useFocusEffect(
     useCallback(() => {
+      setPost(undefined);
+      setComments(undefined);
       onRefresh();
     }, [postData.refetch, commentsData.refetch]),
   );
@@ -94,28 +95,17 @@ export default function PostDetails() {
         baseColor={baseColor}
         headerTitle={header}
         enableReturnButton={true}
+        headerRightOnPress={comment}
+        headerRightSFSymbolName="plus"
+        headerRightMaterialSymbolName="comment"
       >
-        {/* <Pressable onPress={onRefresh}>
-          <Text>refresh</Text>
-        </Pressable> */}
-        {/* <Pressable onPress={comment} style={styles.comment}>
-          <Text style={styles.text20}>comment</Text>
-        </Pressable> */}
         {post ? <PostDetail props={post} /> : <Text>Loading...</Text>}
-        <View style={styles.line}></View>
+        {post && <View style={styles.line}></View>}
         {post &&
           comments?.map((comment, idx) => (
             <Comment key={idx} props={comment} />
           ))}
       </AnimatedPageFrame>
-      <SymbolButton
-        onPress={comment}
-        pressableStyle={styles.pressableStyle}
-        glassViewStyle={styles.glassViewStyle}
-        SFSymbolName="plus"
-        androidStyle={styles.androidStyle}
-        MaterialSymbolName="comment"
-      />
     </>
   );
 }

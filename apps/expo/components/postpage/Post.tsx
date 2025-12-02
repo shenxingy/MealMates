@@ -15,6 +15,7 @@ export default function PostDetail({ props }: { props: Post }) {
   const [liked, setLiked] = useState(false);
   const [thumbsup, setThumbsup] = useState(0);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     getStoredUserId().then(setStoredUserId).catch(console.error);
@@ -35,9 +36,12 @@ export default function PostDetail({ props }: { props: Post }) {
   });
 
   useEffect(() => {
-    if (likedData !== undefined) setLiked(likedData);
     if (likesData !== undefined) setThumbsup(likesData);
-  }, [likesData, likedData]);
+  }, [likesData]);
+
+  useEffect(() => {
+    if (likedData !== undefined) setLiked(likedData);
+  }, [likedData]);
 
   const getSize = async (): Promise<void> => {
     const size: ImageSize = await Image.getSize(props.image);
@@ -67,10 +71,11 @@ export default function PostDetail({ props }: { props: Post }) {
       return;
     }
     try {
-      console.log("likedData: " + likedData);
-      console.log("liked: " + liked);
+      setLoading(true);
+      // console.log("likedData: " + likedData);
+      // console.log("liked: " + liked);
       if (likedData === true && liked === true) {
-        console.log("unliking");
+        // console.log("unliking");
         const result = await trpcClient.postLike.delete.mutate({
           postId: props.id,
         });
@@ -79,23 +84,25 @@ export default function PostDetail({ props }: { props: Post }) {
           setThumbsup(thumbsup - 1);
         }
       } else if (likedData === false && liked === false) {
-        console.log("liking");
+        // console.log("liking");
         const result = await trpcClient.postLike.create.mutate({
           postId: props.id,
         });
         if (result) {
-          setLiked(false);
+          setLiked(true);
           setThumbsup(thumbsup + 1);
         }
       } else {
         console.log("inconsistent state");
       }
-      void likedRefetch();
-      void likesRefetch();
+      await likedRefetch();
+      await likesRefetch();
     } catch (error: unknown) {
       console.error("[POST LIKE] Failed:", error);
       const message = error instanceof Error ? error.message : "Failed to like";
       Alert.alert("Like failed", message);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -125,7 +132,7 @@ export default function PostDetail({ props }: { props: Post }) {
               <Text style={styles.grayText}>{timePassed()}</Text>
             </View>
           </View>
-          <Pressable onPress={like}>
+          <Pressable onPress={like} disabled={loading}>
             <Like likes={thumbsup} liked={liked} border={true} />
           </Pressable>
         </View>
