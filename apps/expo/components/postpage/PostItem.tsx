@@ -16,6 +16,8 @@ export default function PostItem({ props }: { props: Post }) {
   const [liked, setLiked] = useState(false);
   const [thumbsup, setThumbsup] = useState(0);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
     getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
@@ -31,23 +33,21 @@ export default function PostItem({ props }: { props: Post }) {
       return trpcClient.postLike.liked.query({ postId: props.id });
     },
   });
-  const onRefresh = () => {
-    void likedRefetch();
-    void likesRefetch();
+  const onRefresh = async () => {
+    await likedRefetch();
+    await likesRefetch();
   };
   useFocusEffect(
     useCallback(() => {
-      onRefresh();
+      void onRefresh();
     }, [likesRefetch, likesRefetch]),
   );
   useEffect(() => {
-    if (likedData !== undefined) {
-      setLiked(likedData);
-    }
-    if (likesData !== undefined) {
-      setThumbsup(likesData);
-    }
-  }, [likesData, likedData]);
+    if (likedData !== undefined) setLiked(likedData);
+  }, [likedData]);
+  useEffect(() => {
+    if (likesData !== undefined) setThumbsup(likesData);
+  }, [likesData]);
   const getSize = async () => {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
@@ -66,12 +66,14 @@ export default function PostItem({ props }: { props: Post }) {
       return;
     }
     try {
+      setLoading(true);
       if (likedData === true && liked === true) {
         const result = await trpcClient.postLike.delete.mutate({
           postId: props.id,
         });
         if (result.success) {
           setLiked(false);
+          console.log("setting: " + (thumbsup - 1));
           setThumbsup(thumbsup - 1);
         }
       } else if (likedData === false && liked === false) {
@@ -80,23 +82,30 @@ export default function PostItem({ props }: { props: Post }) {
         });
         if (result) {
           setLiked(true);
+          console.log("setting: " + (thumbsup + 1));
           setThumbsup(thumbsup + 1);
         }
       } else {
         console.log("inconsistent state");
       }
-      onRefresh();
+      await onRefresh();
     } catch (error: unknown) {
       console.error("[POST LIKE] Failed:", error);
       const message = error instanceof Error ? error.message : "Failed to like";
       Alert.alert("Like failed", message);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     void getSize();
   }, []);
   return (
-    <Pressable style={[styles.container]} onPress={seeDetails}>
+    <Pressable
+      style={[styles.container]}
+      onPress={seeDetails}
+      disabled={loading}
+    >
       <Image
         style={[styles.image, { aspectRatio: width / height }]}
         source={{ uri: props.image }}
@@ -111,7 +120,7 @@ export default function PostItem({ props }: { props: Post }) {
           />
           <Text style={styles.grayText}>{props.user}</Text>
         </View>
-        <Pressable onPress={like}>
+        <Pressable onPress={like} disabled={loading}>
           <Like likes={thumbsup} liked={liked} border={true} />
         </Pressable>
       </View>

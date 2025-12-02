@@ -15,41 +15,51 @@ export default function Comment({ props }: { props: PostComment }) {
   const [liked, setLiked] = useState(false);
   const [thumbsup, setThumbsup] = useState(0);
   const [storedUserId, setStoredUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
     getStoredUserId().then(setStoredUserId).catch(console.error);
   }, []);
   const likesData = useQuery({
-    queryKey: ["commentLike", "count"],
+    queryKey: ["commentLike", "count", props.id],
     queryFn: () => {
       return trpcClient.commentLike.count.query({ commentId: props.id });
     },
   });
+
   const likedData = useQuery({
-    queryKey: ["commentLike", "liked"],
+    queryKey: ["commentLike", "liked", props.id],
     queryFn: () => {
       return trpcClient.commentLike.liked.query({ commentId: props.id });
     },
   });
-  const onRefresh = () => {
-    void likesData.refetch();
-    void likedData.refetch();
+  const onRefresh = async () => {
+    await likesData.refetch();
+    await likedData.refetch();
   };
+
+  useEffect(() => {
+    if (likesData.data !== undefined) setThumbsup(likesData.data);
+  }, [likesData.data]);
+
   useEffect(() => {
     if (likedData.data !== undefined) setLiked(likedData.data);
-    if (likesData.data !== undefined) setThumbsup(likesData.data);
-  }, [likesData.data, likedData.data]);
+  }, [likedData.data]);
+
   const getSize = async () => {
     if (!props.image) return;
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
   };
+
   const like = async () => {
     if (!storedUserId) {
       Alert.alert("please login");
       return;
     }
     try {
+      setLoading(true);
       if (likedData.data === true && liked === true) {
         const result = await trpcClient.commentLike.delete.mutate({
           commentId: props.id,
@@ -69,11 +79,13 @@ export default function Comment({ props }: { props: PostComment }) {
       } else {
         console.log("inconsistent state");
       }
-      onRefresh();
+      await onRefresh();
     } catch (error: unknown) {
       console.error("[COMMENT LIKE] Failed:", error);
       const message = error instanceof Error ? error.message : "Failed to like";
       Alert.alert("Like failed", message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,13 +97,13 @@ export default function Comment({ props }: { props: PostComment }) {
   }, [getSize]);
   return (
     <View style={[styles.container]}>
-      <View style={styles.content}>
+      <View style={[styles.content]}>
         <Avatar
           name={props.user}
           image={props.userAvatar}
           color={props.userColor}
         />
-        <View>
+        <View style={[styles.text]}>
           <Text style={styles.username}>{props.user}</Text>
           <Text style={styles.text15}>{props.content}</Text>
           {props.image && (
@@ -102,7 +114,7 @@ export default function Comment({ props }: { props: PostComment }) {
           )}
         </View>
       </View>
-      <Pressable onPress={like}>
+      <Pressable onPress={like} disabled={loading}>
         <Like likes={thumbsup} liked={liked} border={false} />
       </Pressable>
     </View>
@@ -118,6 +130,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: "row",
+    justifyContent: "flex-start",
+    width: "85%",
+  },
+  text: {
+    width: "85%",
   },
   username: {
     color: "#777",
@@ -131,7 +148,8 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 30,
   },
-  bg: {
-    backgroundColor: "#0ff",
+  test: {
+    // backgroundColor: "#0ff",
+    borderWidth: 2,
   },
 });
