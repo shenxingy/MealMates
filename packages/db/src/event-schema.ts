@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { integer, json, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  json,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
 
@@ -25,6 +32,12 @@ export const event = pgTable("event", {
   status: text("status")
     .notNull()
     .default(EVENT_STATUS.WAITING),
+  hostSuccessConfirmed: boolean("host_success_confirmed")
+    .notNull()
+    .default(false),
+  participantSuccessConfirmed: boolean("participant_success_confirmed")
+    .notNull()
+    .default(false),
 
   restaurantCoordinates: json("restaurant_coordinates")
     .$type<{ latitude: number; longitude: number }>()

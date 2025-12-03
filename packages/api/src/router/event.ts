@@ -127,9 +127,70 @@ export const eventRouter = {
           ...input,
           emoji: selectedEmoji,
           status: EVENT_STATUS.WAITING,
+          hostSuccessConfirmed: false,
+          participantSuccessConfirmed: false,
         })
         .returning();
       return newEvent;
+    }),
+
+  confirmSuccess: publicProcedure
+    .input(z.object({ eventId: z.number(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const targetEvent = await ctx.db.query.event.findFirst({
+        where: eq(schema.event.id, input.eventId),
+      });
+
+      if (!targetEvent) {
+        throw new Error("Event not found");
+      }
+
+      const isHost = targetEvent.userId === input.userId;
+
+      // If participant, ensure they actually joined
+      if (!isHost) {
+        const participant = await ctx.db.query.eventParticipant.findFirst({
+          where: and(
+            eq(schema.eventParticipant.eventId, input.eventId),
+            eq(schema.eventParticipant.userId, input.userId),
+          ),
+        });
+        if (!participant) {
+          throw new Error("You must join the event before confirming success.");
+        }
+      }
+
+      const nextHostConfirmed =
+        targetEvent.hostSuccessConfirmed || isHost ? true : false;
+      const nextParticipantConfirmed =
+        targetEvent.participantSuccessConfirmed || !isHost ? true : false;
+
+      const shouldMarkSuccess =
+        nextHostConfirmed &&
+        nextParticipantConfirmed &&
+        targetEvent.status !== EVENT_STATUS.DELETED;
+
+      const [updated] = await ctx.db
+        .update(schema.event)
+        .set({
+          hostSuccessConfirmed: nextHostConfirmed,
+          participantSuccessConfirmed: nextParticipantConfirmed,
+          status: shouldMarkSuccess ? EVENT_STATUS.SUCCESS : targetEvent.status,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.event.id, input.eventId))
+        .returning();
+
+      if (!updated) {
+        throw new Error("Failed to update event status");
+      }
+
+      return {
+        success: true,
+        status: updated.status,
+        hostSuccessConfirmed: updated.hostSuccessConfirmed,
+        participantSuccessConfirmed: updated.participantSuccessConfirmed,
+      };
     }),
 
   checkJoined: publicProcedure

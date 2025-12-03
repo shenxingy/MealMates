@@ -12,6 +12,8 @@ export interface SimpleEventDTO {
   mood?: string;
   emoji?: string;
   status?: "waiting_for_participant" | "participant_joined" | "success" | "deleted";
+  hostSuccessConfirmed?: boolean;
+  participantSuccessConfirmed?: boolean;
   meetPoint: string;
   restaurantName: string;
   message?: string;

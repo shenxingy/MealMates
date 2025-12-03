@@ -294,6 +294,11 @@ const EventDetailsPage = () => {
     await Promise.all(tasks);
   };
 
+  const handleOpenEmoji = () => {
+    if (!eventId) return;
+    router.push(`/(App)/(Home)/event/${eventId}/emoji`);
+  };
+
   const renderActionButtons = () => {
     if (!currentUserId || !creatorId) {
       return null;
@@ -313,7 +318,7 @@ const EventDetailsPage = () => {
                   styles.emojiButton,
                   isDark && styles.emojiButtonDark,
                 ]}
-                onPress={() => console.log("Show Emoji TODO")}
+                onPress={handleOpenEmoji}
               >
                 <Ionicons
                   name="happy-outline"
@@ -400,7 +405,7 @@ const EventDetailsPage = () => {
               styles.emojiButton,
               isDark && styles.emojiButtonDark,
             ]}
-            onPress={() => console.log("Show Emoji TODO")}
+            onPress={handleOpenEmoji}
           >
             <Ionicons
               name="happy-outline"
