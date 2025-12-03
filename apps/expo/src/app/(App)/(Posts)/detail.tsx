@@ -76,7 +76,11 @@ export default function PostDetails() {
         headerRightSFSymbolName="plus"
         headerRightMaterialSymbolName="comment"
       >
-        {post ? <PostDetail props={post} /> : <Text style={styles.text20}>Loading...</Text>}
+        {post ? (
+          <PostDetail props={post} />
+        ) : (
+          <Text style={styles.text20}>Loading...</Text>
+        )}
         {post && <View style={styles.line}></View>}
         {post &&
           comments?.map((comment, idx) => (
