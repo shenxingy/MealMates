@@ -198,12 +198,14 @@ export const eventRouter = {
   leave: publicProcedure
     .input(z.object({ eventId: z.number(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(schema.eventParticipant).where(
-        and(
-          eq(schema.eventParticipant.eventId, input.eventId),
-          eq(schema.eventParticipant.userId, input.userId),
-        ),
-      );
+      await ctx.db
+        .delete(schema.eventParticipant)
+        .where(
+          and(
+            eq(schema.eventParticipant.eventId, input.eventId),
+            eq(schema.eventParticipant.userId, input.userId),
+          ),
+        );
 
       return { success: true };
     }),

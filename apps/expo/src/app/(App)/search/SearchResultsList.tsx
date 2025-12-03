@@ -31,7 +31,7 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
 }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const trimmedQuery = query.trim();
   const trimmedDebounced = debouncedQuery.trim();
 
@@ -48,7 +48,11 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
   if (trimmedQuery.length === 0) {
     return (
       <View style={styles.messageContainer}>
-        <Text style={[styles.placeholderText, isDark && styles.placeholderTextDark]}>Type to search...</Text>
+        <Text
+          style={[styles.placeholderText, isDark && styles.placeholderTextDark]}
+        >
+          Type to search...
+        </Text>
       </View>
     );
   }
@@ -56,8 +60,13 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
   if (isFetching) {
     return (
       <View style={styles.messageContainer}>
-        <ActivityIndicator size="small" color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"} />
-        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>Searching "{trimmedQuery}"...</Text>
+        <ActivityIndicator
+          size="small"
+          color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"}
+        />
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>
+          Searching "{trimmedQuery}"...
+        </Text>
       </View>
     );
   }
@@ -77,7 +86,9 @@ const SearchResultsList: ElementType<SearchResultsListProps> = ({
   if (results.length === 0) {
     return (
       <View style={styles.messageContainer}>
-        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>No results for "{trimmedQuery}"</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>
+          No results for "{trimmedQuery}"
+        </Text>
       </View>
     );
   }

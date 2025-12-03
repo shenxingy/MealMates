@@ -17,7 +17,7 @@ const Skeleton = (props: {
 }) => {
   const { isLoading, start, end, duration = 1000 } = props;
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   // Shimmer animation
   const shimmerPosition = useSharedValue(-1);
@@ -47,7 +47,11 @@ const Skeleton = (props: {
     <View style={styles.shimmerContainer}>
       <Animated.View style={[styles.shimmerGradient, animatedGradientStyle]}>
         <LinearGradient
-          colors={isDark ? ["#2a2a2a", "#3a3a3a", "#2a2a2a"] : ["#E6E6E6", "#F2F2F2", "#E6E6E6"]}
+          colors={
+            isDark
+              ? ["#2a2a2a", "#3a3a3a", "#2a2a2a"]
+              : ["#E6E6E6", "#F2F2F2", "#E6E6E6"]
+          }
           style={styles.shimmerOverlay}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}

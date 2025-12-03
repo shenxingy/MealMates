@@ -1,5 +1,12 @@
 import type { ImageSourcePropType } from "react-native";
-import { ActivityIndicator, Image, StyleSheet, Text, useColorScheme, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 
 import mealmatesHeroAsset from "../../assets/mealmates.png";
 import { DukeRegisterButton } from "../../components/auth";
@@ -11,7 +18,7 @@ const mealmatesHero: ImageSourcePropType = mealmatesHeroAsset;
 export default function Index() {
   const { isLoading, login } = useDukeAuth();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const header = "MealMates";
   const baseColor = isDark ? "70,70,70" : "195,227,255";
 
@@ -46,8 +53,13 @@ export default function Index() {
         <View style={styles.actionSection}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"} />
-              <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
+              <ActivityIndicator
+                size="large"
+                color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"}
+              />
+              <Text
+                style={[styles.loadingText, isDark && styles.loadingTextDark]}
+              >
                 Authenticating with Duke...
               </Text>
             </View>

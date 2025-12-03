@@ -226,7 +226,7 @@ export default function CreateEventPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const baseColor = isDark ? "70,70,70" : "255,120,0";
 
   const EMOJI_LIST = [
@@ -517,7 +517,10 @@ export default function CreateEventPage() {
             </View>
 
             <Pressable
-              style={[styles.confirmLocationButton, isDark && styles.confirmLocationButtonDark]}
+              style={[
+                styles.confirmLocationButton,
+                isDark && styles.confirmLocationButtonDark,
+              ]}
               onPress={handleConfirmLocation}
             >
               <Text style={styles.confirmLocationText}>Confirm Location</Text>
@@ -537,14 +540,33 @@ export default function CreateEventPage() {
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
           onPress={() => setShowEmojiPicker(false)}
         >
-          <View style={[styles.emojiPickerContainer, isDark && styles.emojiPickerContainerDark]}>
+          <View
+            style={[
+              styles.emojiPickerContainer,
+              isDark && styles.emojiPickerContainerDark,
+            ]}
+          >
             <View style={styles.emojiPickerHeader}>
-              <Text style={[styles.emojiPickerTitle, isDark && styles.emojiPickerTitleDark]}>Select Mood</Text>
+              <Text
+                style={[
+                  styles.emojiPickerTitle,
+                  isDark && styles.emojiPickerTitleDark,
+                ]}
+              >
+                Select Mood
+              </Text>
               <Pressable
                 onPress={() => setShowEmojiPicker(false)}
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
               >
-                <Text style={{ color: isDark ? "#9CA3AF" : "#6B7280", fontSize: 16 }}>Close</Text>
+                <Text
+                  style={{
+                    color: isDark ? "#9CA3AF" : "#6B7280",
+                    fontSize: 16,
+                  }}
+                >
+                  Close
+                </Text>
               </Pressable>
             </View>
             <FlatList
@@ -577,7 +599,9 @@ export default function CreateEventPage() {
 
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.labelDark]}>Restaurant Name</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>
+              Restaurant Name
+            </Text>
             <View
               style={{
                 flexDirection: "row",
@@ -599,7 +623,12 @@ export default function CreateEventPage() {
             {/* Search Results Dropdown */}
             {/* If we have results, show them */}
             {searchResults.length > 0 && (
-              <View style={[styles.searchResultsContainer, isDark && styles.searchResultsContainerDark]}>
+              <View
+                style={[
+                  styles.searchResultsContainer,
+                  isDark && styles.searchResultsContainerDark,
+                ]}
+              >
                 {searchResults.map((result, index) => (
                   <Pressable
                     key={`${result.latitude}-${index}`}
@@ -610,10 +639,20 @@ export default function CreateEventPage() {
                     ]}
                     onPress={() => handleSelectSearchResult(result)}
                   >
-                    <Text style={[styles.searchResultText, isDark && styles.searchResultTextDark]}>
+                    <Text
+                      style={[
+                        styles.searchResultText,
+                        isDark && styles.searchResultTextDark,
+                      ]}
+                    >
                       {result.formattedAddress ?? "Unknown Location"}
                     </Text>
-                    <Text style={{ fontSize: 10, color: isDark ? "#9CA3AF" : "gray" }}>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: isDark ? "#9CA3AF" : "gray",
+                      }}
+                    >
                       Tap to select and pin on map
                     </Text>
                   </Pressable>
@@ -625,7 +664,12 @@ export default function CreateEventPage() {
             {searchResults.length === 0 &&
               restaurantName.length > 2 &&
               !restaurantCoordinates && (
-                <View style={[styles.searchResultsContainer, isDark && styles.searchResultsContainerDark]}>
+                <View
+                  style={[
+                    styles.searchResultsContainer,
+                    isDark && styles.searchResultsContainerDark,
+                  ]}
+                >
                   <Pressable
                     style={({ pressed }) => [
                       styles.searchResultItem,
@@ -634,10 +678,20 @@ export default function CreateEventPage() {
                     ]}
                     onPress={() => setShowMapPicker(true)}
                   >
-                    <Text style={[styles.searchResultText, isDark && styles.searchResultTextDark]}>
+                    <Text
+                      style={[
+                        styles.searchResultText,
+                        isDark && styles.searchResultTextDark,
+                      ]}
+                    >
                       🗺️ Pin "{restaurantName}" on Map
                     </Text>
-                    <Text style={{ fontSize: 10, color: isDark ? "#9CA3AF" : "gray" }}>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: isDark ? "#9CA3AF" : "gray",
+                      }}
+                    >
                       Cannot find address? Select manually.
                     </Text>
                   </Pressable>
@@ -660,7 +714,9 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.labelDark]}>Schedule Time</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>
+              Schedule Time
+            </Text>
             {/* Replace TextInput with a Pressable that toggles the picker */}
             <Pressable
               onPress={() => setShowPicker(!showPicker)}
@@ -668,7 +724,13 @@ export default function CreateEventPage() {
             >
               <Text
                 style={{
-                  color: scheduleTime ? (isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937") : (isDark ? "#6B7280" : "#9CA3AF"),
+                  color: scheduleTime
+                    ? isDark
+                      ? "rgba(255, 255, 255, 0.85)"
+                      : "#1F2937"
+                    : isDark
+                      ? "#6B7280"
+                      : "#9CA3AF",
                   fontSize: 16,
                 }}
               >
@@ -704,7 +766,9 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.labelDark]}>Mood (Emoji)</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>
+              Mood (Emoji)
+            </Text>
             <Pressable
               style={[styles.input, isDark && styles.inputDark]}
               onPress={() => setShowEmojiPicker(true)}
@@ -712,7 +776,13 @@ export default function CreateEventPage() {
               {/* Update fontSize logic here */}
               <Text
                 style={{
-                  color: mood ? (isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937") : (isDark ? "#6B7280" : "#9CA3AF"),
+                  color: mood
+                    ? isDark
+                      ? "rgba(255, 255, 255, 0.85)"
+                      : "#1F2937"
+                    : isDark
+                      ? "#6B7280"
+                      : "#9CA3AF",
                   fontSize: mood ? 24 : 16,
                 }}
               >
@@ -722,9 +792,15 @@ export default function CreateEventPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, isDark && styles.labelDark]}>Message</Text>
+            <Text style={[styles.label, isDark && styles.labelDark]}>
+              Message
+            </Text>
             <TextInput
-              style={[styles.input, styles.textArea, isDark && styles.inputDark]}
+              style={[
+                styles.input,
+                styles.textArea,
+                isDark && styles.inputDark,
+              ]}
               placeholder="Say something to your mates..."
               placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
               value={message}
