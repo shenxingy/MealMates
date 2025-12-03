@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -137,6 +137,7 @@ const EmojiConfirmPage = () => {
   // --- Fireworks Rain Animation Logic ---
   const [showFireworks, setShowFireworks] = useState(false);
   const [fireworksRain, setFireworksRain] = useState<FireworkParticle[]>([]);
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     setFireworksRain(createParticles(eventEmoji));
@@ -156,11 +157,12 @@ const EmojiConfirmPage = () => {
     });
 
     Animated.parallel(animations).start(() => {
-      // Navigate away after animation completes
-      setTimeout(() => {
-        setShowFireworks(false);
-        router.replace("/(App)/(Home)");
-      }, 500);
+      if (hasNavigated.current) {
+        return;
+      }
+      hasNavigated.current = true;
+      setShowFireworks(false);
+      router.replace("/(App)/(Home)");
     });
   }, [fireworksRain, router]);
 
