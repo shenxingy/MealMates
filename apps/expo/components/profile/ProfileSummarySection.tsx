@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 
@@ -49,23 +50,25 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
   isLogoutDisabled,
   showLogoutSpinner,
 }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const renderPrimaryContent = () => {
     if (isFetchingProfile) {
       return (
-        <View style={styles.messageCard}>
-          <ActivityIndicator size="large" color="#0F172A" />
-          <Text style={styles.loadingLabel}>Loading your profile...</Text>
+        <View style={[styles.messageCard, isDark && styles.messageCardDark]}>
+          <ActivityIndicator size="large" color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"} />
+          <Text style={[styles.loadingLabel, isDark && styles.loadingLabelDark]}>Loading your profile...</Text>
         </View>
       );
     }
 
     if (profileError) {
       return (
-        <View style={styles.messageCard}>
-          <Text style={styles.errorText}>
+        <View style={[styles.messageCard, isDark && styles.messageCardDark]}>
+          <Text style={[styles.errorText, isDark && styles.errorTextDark]}>
             We could not load your profile. Pull to refresh or try again later.
           </Text>
-          <Pressable style={styles.retryButton} onPress={onRetry}>
+          <Pressable style={[styles.retryButton, isDark && styles.retryButtonDark]} onPress={onRetry}>
             <Text style={styles.retryLabel}>Try Again</Text>
           </Pressable>
         </View>
@@ -74,8 +77,8 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
 
     if (shouldPromptSignIn) {
       return (
-        <View style={styles.messageCard}>
-          <Text style={styles.errorText}>
+        <View style={[styles.messageCard, isDark && styles.messageCardDark]}>
+          <Text style={[styles.errorText, isDark && styles.errorTextDark]}>
             Sign in with your Duke account to view your profile.
           </Text>
         </View>
@@ -84,12 +87,12 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
 
     if (profileMissing) {
       return (
-        <View style={styles.messageCard}>
-          <Text style={styles.errorText}>
+        <View style={[styles.messageCard, isDark && styles.messageCardDark]}>
+          <Text style={[styles.errorText, isDark && styles.errorTextDark]}>
             We couldn&apos;t find your profile record. Please sign out and sign
             back in.
           </Text>
-          <Pressable style={styles.retryButton} onPress={onLogout}>
+          <Pressable style={[styles.retryButton, isDark && styles.retryButtonDark]} onPress={onLogout}>
             <Text style={styles.retryLabel}>Sign Out</Text>
           </Pressable>
         </View>
@@ -102,6 +105,7 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
           greetingName={greetingName}
           onEditPress={onEditPress}
           onSettingsPress={onSettingsPress}
+          isDark={isDark}
         />
 
         <ProfileInfoCard
@@ -110,6 +114,7 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
           avatarEmoji={profileAvatar}
           avatarColor={avatarColor}
           fallbackLabel={fallbackLabel}
+          isDark={isDark}
         />
       </>
     );
@@ -119,7 +124,7 @@ const ProfileSummarySection: ElementType<ProfileSummarySectionProps> = ({
     <View style={styles.container}>
       {renderPrimaryContent()}
 
-      <ProfileStatsRow stats={stats} />
+      <ProfileStatsRow stats={stats} isDark={isDark} />
 
       <Pressable
         style={[styles.logoutButton, isLogoutDisabled && styles.disabledButton]}
@@ -152,16 +157,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  messageCardDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+  },
   loadingLabel: {
     fontSize: 16,
     color: "#1F2937",
     fontWeight: "500",
     textAlign: "center",
   },
+  loadingLabelDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   errorText: {
     fontSize: 16,
     color: "#B91C1C",
     textAlign: "center",
+  },
+  errorTextDark: {
+    color: "#FCA5A5",
   },
   retryButton: {
     marginTop: 8,
@@ -169,6 +183,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: "#1F2937",
+  },
+  retryButtonDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
   },
   retryLabel: {
     color: "#FFFFFF",

@@ -6,16 +6,17 @@ export interface ProfileStat {
   label: string;
   value: number | string;
   icon: keyof typeof Ionicons.glyphMap;
+  isDark?: boolean;
 }
 
-const ProfileStatCard: ElementType<ProfileStat> = ({ label, value, icon }) => {
+const ProfileStatCard: ElementType<ProfileStat> = ({ label, value, icon, isDark = false }) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrapper}>
-        <Ionicons name={icon} size={24} color="#0F172A" />
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={[styles.iconWrapper, isDark && styles.iconWrapperDark]}>
+        <Ionicons name={icon} size={24} color={isDark ? "rgba(255, 255, 255, 0.85)" : "#0F172A"} />
       </View>
-      <Text style={styles.labelText}>{label}</Text>
-      <Text style={styles.valueText}>{value}</Text>
+      <Text style={[styles.labelText, isDark && styles.labelTextDark]}>{label}</Text>
+      <Text style={[styles.valueText, isDark && styles.valueTextDark]}>{value}</Text>
     </View>
   );
 };
@@ -37,6 +38,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
   },
+  containerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+  },
   iconWrapper: {
     width: 48,
     height: 48,
@@ -46,15 +50,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F5FB",
     marginBottom: 12,
   },
+  iconWrapperDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
   labelText: {
     fontSize: 16,
     fontWeight: "600",
     color: "#111827",
     marginBottom: 6,
   },
+  labelTextDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
   valueText: {
     fontSize: 18,
     fontWeight: "700",
     color: "#0F172A",
+  },
+  valueTextDark: {
+    color: "rgba(255, 255, 255, 0.95)",
   },
 });

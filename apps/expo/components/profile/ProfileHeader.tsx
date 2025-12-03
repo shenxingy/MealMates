@@ -6,21 +6,23 @@ interface ProfileHeaderProps {
   greetingName: string;
   onEditPress?: () => void;
   onSettingsPress?: () => void;
+  isDark?: boolean;
 }
 
 const ProfileHeader: ElementType<ProfileHeaderProps> = ({
   onEditPress,
   onSettingsPress,
+  isDark = false,
 }) => {
   return (
     <View style={styles.container}>
       <View style={styles.actions}>
-        <Pressable onPress={onEditPress} style={styles.editButton}>
-          <Ionicons name="create-outline" size={20} color="#1F2937" />
-          <Text style={styles.editLabel}>Edit</Text>
+        <Pressable onPress={onEditPress} style={[styles.editButton, isDark && styles.editButtonDark]}>
+          <Ionicons name="create-outline" size={20} color={isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937"} />
+          <Text style={[styles.editLabel, isDark && styles.editLabelDark]}>Edit</Text>
         </Pressable>
-        <Pressable onPress={onSettingsPress} style={styles.settingsButton}>
-          <Ionicons name="settings-outline" size={24} color="#1F2937" />
+        <Pressable onPress={onSettingsPress} style={[styles.settingsButton, isDark && styles.settingsButtonDark]}>
+          <Ionicons name="settings-outline" size={24} color={isDark ? "rgba(255, 255, 255, 0.85)" : "#1F2937"} />
         </Pressable>
       </View>
     </View>
@@ -60,11 +62,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
+  editButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+  },
   editLabel: {
     marginLeft: 8,
     fontSize: 18,
     fontWeight: "600",
     color: "#1F2937",
+  },
+  editLabelDark: {
+    color: "rgba(255, 255, 255, 0.85)",
   },
   settingsButton: {
     width: 48,
@@ -78,5 +86,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
+  },
+  settingsButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
   },
 });

@@ -6,9 +6,10 @@ import ProfileStatCard from "./ProfileStatCard";
 
 interface ProfileStatsRowProps {
   stats: ProfileStat[];
+  isDark?: boolean;
 }
 
-const ProfileStatsRow: ElementType<ProfileStatsRowProps> = ({ stats }) => {
+const ProfileStatsRow: ElementType<ProfileStatsRowProps> = ({ stats, isDark = false }) => {
   return (
     <View style={styles.container}>
       {stats.map((stat) => (
@@ -17,6 +18,7 @@ const ProfileStatsRow: ElementType<ProfileStatsRowProps> = ({ stats }) => {
           label={stat.label}
           value={stat.value}
           icon={stat.icon}
+          isDark={isDark}
         />
       ))}
     </View>
