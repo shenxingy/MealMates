@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +16,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchDetailedEvent, trpcClient } from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const EmojiConfirmPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -36,10 +39,9 @@ const EmojiConfirmPage = () => {
     enabled: !!eventId,
   });
 
-  const emoji = data?.emoji ?? "🍽️";
+  const eventEmoji = data?.emoji ?? "🍽️";
   const status = data?.status;
   const isStatusSuccess = status === "success";
-  const isHost = userId && data?.userId === userId;
   const hasConfirmed = useMemo(() => {
     if (!data || !userId) return false;
     if (data.status === "success") return true;
@@ -49,33 +51,64 @@ const EmojiConfirmPage = () => {
     return Boolean(data.participantSuccessConfirmed);
   }, [data, userId]);
 
-  const fireworksScale = useRef(new Animated.Value(0)).current;
+  // --- Fireworks Rain Animation Logic ---
   const [showFireworks, setShowFireworks] = useState(false);
+  const PARTICLE_COUNT = 80; // Increased count for a better rain effect
+
+  const fireworksRain = useMemo(() => {
+    const emojis = ["🎉", "✨", "🎊", eventEmoji]; // Mix in the event emoji
+    return Array.from({ length: PARTICLE_COUNT }).map((_, idx) => {
+      const startX = Math.random() * SCREEN_WIDTH;
+      // Randomize start height above the screen
+      const startY = -Math.random() * (SCREEN_HEIGHT * 0.5) - 50;
+      // Add slight horizontal drift
+      const endXDelta = (Math.random() - 0.5) * 100; 
+      
+      return {
+        id: idx,
+        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        anim: new Animated.Value(0),
+        delay: Math.random() * 1500, // Spread out the start times
+        duration: 2500 + Math.random() * 1500, // Vary falling speed
+        startX,
+        startY,
+        endXDelta,
+        // Random initial rotation and direction
+        rotateStart: `${Math.random() * 360}deg`,
+        rotateEnd: `${Math.random() * 360 + 360 * (Math.random() > 0.5 ? 1 : -1)}deg`,
+        scale: 0.8 + Math.random() * 0.7, // Vary size
+      };
+    });
+  }, [eventEmoji]);
 
   const triggerFireworks = () => {
     setShowFireworks(true);
-    Animated.sequence([
-      Animated.timing(fireworksScale, {
+    
+    const animations = fireworksRain.map((item) => {
+      item.anim.setValue(0);
+      return Animated.timing(item.anim, {
         toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fireworksScale, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    setTimeout(() => {
-      router.replace("/(App)/(Home)");
-    }, 900);
+        duration: item.duration,
+        delay: item.delay,
+        useNativeDriver: true, // Important for performance
+      });
+    });
+
+    Animated.parallel(animations).start(() => {
+      // Navigate away after animation completes
+      setTimeout(() => {
+        setShowFireworks(false);
+        router.replace("/(App)/(Home)");
+      }, 500);
+    });
   };
 
   useEffect(() => {
+    // Trigger automatically if status is already success on load
     if (data?.status === "success" && !showFireworks) {
       triggerFireworks();
     }
-  }, [data?.status, showFireworks]);
+  }, [data?.status]);
 
   const confirmSuccessMutation = useMutation({
     mutationFn: async () => {
@@ -92,6 +125,7 @@ const EmojiConfirmPage = () => {
         queryKey: ["eventDetails", eventId],
       });
       await refetchDetails();
+      // Trigger animation if this action completed the success state
       if (result.status === "success") {
         triggerFireworks();
       } else {
@@ -134,36 +168,72 @@ const EmojiConfirmPage = () => {
       enableReturnButton
       returnButtonText="Back"
     >
-      <View style={styles.fullHeightCenter}>
-        <Text style={styles.bigEmoji}>{emoji}</Text>
-        {showFireworks && (
-          <Animated.View
-            style={[
-              styles.fireworks,
-              { transform: [{ scale: fireworksScale }] },
-            ]}
-          >
-            <Text style={styles.fireworksText}>🎆🎇🎆</Text>
-          </Animated.View>
-        )}
-      </View>
+      <View style={styles.container}>
+        <View style={styles.centerContent}>
+          <Text style={styles.bigEmoji}>{eventEmoji}</Text>
+        </View>
 
-      <Pressable
-        style={[
-          styles.confirmButton,
-          disableButton && styles.confirmButtonDisabled,
-        ]}
-        onPress={handleConfirm}
-        disabled={disableButton}
-      >
-        {confirmSuccessMutation.isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text style={styles.confirmText}>
-            {hasConfirmed || isStatusSuccess ? "Waiting..." : "Success"}
-          </Text>
+        {showFireworks && (
+          // Full screen overlay that ignores pointer events
+          <View style={styles.fireworksOverlay} pointerEvents="none">
+            {fireworksRain.map((item) => {
+              const translateY = item.anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [item.startY, SCREEN_HEIGHT + 100], // Fall past screen bottom
+              });
+              const translateX = item.anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [item.startX, item.startX + item.endXDelta],
+              });
+              const rotate = item.anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [item.rotateStart, item.rotateEnd],
+              });
+              const opacity = item.anim.interpolate({
+                inputRange: [0, 0.8, 1], // Fade out near the end
+                outputRange: [1, 1, 0],
+              });
+
+              return (
+                <Animated.Text
+                  key={item.id}
+                  style={[
+                    styles.fireworkParticle,
+                    {
+                      transform: [
+                        { translateX },
+                        { translateY },
+                        { rotate },
+                        { scale: item.scale },
+                      ],
+                      opacity,
+                    },
+                  ]}
+                >
+                  {item.emoji}
+                </Animated.Text>
+              );
+            })}
+          </View>
         )}
-      </Pressable>
+
+        <Pressable
+          style={[
+            styles.confirmButton,
+            disableButton && styles.confirmButtonDisabled,
+          ]}
+          onPress={handleConfirm}
+          disabled={disableButton}
+        >
+          {confirmSuccessMutation.isPending ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.confirmText}>
+              {hasConfirmed || isStatusSuccess ? "Waiting..." : "Success"}
+            </Text>
+          )}
+        </Pressable>
+      </View>
     </AnimatedPageFrame>
   );
 };
@@ -171,7 +241,12 @@ const EmojiConfirmPage = () => {
 export default EmojiConfirmPage;
 
 const styles = StyleSheet.create({
-  fullHeightCenter: {
+  container: {
+    flex: 1,
+    // Ensure button is at bottom
+    justifyContent: 'space-between'
+  },
+  centerContent: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -179,14 +254,20 @@ const styles = StyleSheet.create({
   bigEmoji: {
     fontSize: 120,
   },
-  fireworks: {
-    position: "absolute",
+  // New styles for the rain animation
+  fireworksOverlay: {
+    ...StyleSheet.absoluteFillObject, // Covers entire screen
+    zIndex: 10, // Ensure it's on top
+    elevation: 10,
   },
-  fireworksText: {
-    fontSize: 48,
+  fireworkParticle: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    fontSize: 28, // Good size for particles
   },
   confirmButton: {
-    marginTop: 24,
+    marginBottom: 34, // Space from bottom safe area
     marginHorizontal: 16,
     backgroundColor: "#2563EB",
     paddingVertical: 16,
