@@ -95,7 +95,7 @@ const EventDetailsPage = () => {
 
   useApiSocket({
     userId: currentUserId ?? "",
-    eventId: eventId ?? "",
+    eventId,
     enabled: socketEnabled,
     handlers: {
       onParticipantJoined: (payload) => {

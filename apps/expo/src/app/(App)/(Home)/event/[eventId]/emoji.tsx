@@ -251,7 +251,9 @@ const EmojiConfirmPage = () => {
     >
       <View style={styles.container}>
         <View style={styles.centerContent}>
-          <Text style={styles.bigEmoji}>{eventEmoji}</Text>
+          <View style={styles.emojiWrapper}>
+            <Text style={styles.bigEmoji}>{eventEmoji}</Text>
+          </View>
         </View>
 
         {showFireworks && (
@@ -301,6 +303,7 @@ const EmojiConfirmPage = () => {
         <Pressable
           style={[
             styles.confirmButton,
+            participantConfirm.hasConfirmed && styles.confirmButtonAlt,
             disableButton && styles.confirmButtonDisabled,
           ]}
           onPress={handleConfirm}
@@ -330,14 +333,25 @@ const styles = StyleSheet.create({
     flex: 1,
     // Ensure button is at bottom
     justifyContent: "space-between",
+    paddingTop: 48,
+    paddingBottom: 48,
   },
   centerContent: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
+  emojiWrapper: {
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    marginBottom: 48,
+  },
   bigEmoji: {
-    fontSize: 120,
+    fontSize: 150,
   },
   // New styles for the rain animation
   fireworksOverlay: {
@@ -353,11 +367,14 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginBottom: 34, // Space from bottom safe area
-    marginHorizontal: 16,
+    marginHorizontal: 48,
     backgroundColor: "#2563EB",
     paddingVertical: 16,
     borderRadius: 28,
     alignItems: "center",
+  },
+  confirmButtonAlt: {
+    backgroundColor: "#F59E0B",
   },
   confirmButtonDisabled: {
     opacity: 0.6,
