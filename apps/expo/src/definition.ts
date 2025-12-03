@@ -34,6 +34,7 @@ export interface DetailedEventDTO extends SimpleEventDTO {
     latitude: number;
     longitude: number;
   };
+  participants?: EventParticipantDTO[];
 }
 
 export interface JoinSuccessPayload {
@@ -54,6 +55,7 @@ export interface EventParticipantDTO {
   avatarUrl: string | null;
   avatarColor: string | null;
   joinedAt: string | null;
+  successConfirmed?: boolean;
 }
 
 export interface LocationUpdatePayload {

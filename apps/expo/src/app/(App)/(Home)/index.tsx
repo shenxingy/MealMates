@@ -40,11 +40,6 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Initial load
-  useEffect(() => {
-    void loadEvents(1);
-  }, [loadEvents]);
-
   const loadEvents = useCallback(async (pageNum: number) => {
     try {
       if (pageNum === 1) {
@@ -74,6 +69,11 @@ export default function HomePage() {
       setIsLoadingMore(false);
     }
   }, []);
+
+  // Initial load
+  useEffect(() => {
+    void loadEvents(1);
+  }, [loadEvents]);
 
   const handleLoadMore = useCallback(() => {
     if (!isLoadingMore && hasMore) {
