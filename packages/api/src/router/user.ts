@@ -1,8 +1,15 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { eq } from "@mealmates/db";
-import { account, user } from "@mealmates/db/schema";
+import { and, eq, sql } from "@mealmates/db";
+import {
+  account,
+  event,
+  eventParticipant,
+  post,
+  user,
+  EVENT_STATUS,
+} from "@mealmates/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -210,6 +217,42 @@ export const userRouter = {
       return ctx.db.query.user.findFirst({
         where: eq(user.id, input.id),
       });
+    }),
+
+  profileStats: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [{ count: invitationsRaw }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(event)
+        .where(
+          and(
+            eq(event.userId, input.userId),
+            eq(event.status, EVENT_STATUS.SUCCESS),
+          ),
+        );
+
+      const [{ count: acceptancesRaw }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(eventParticipant)
+        .innerJoin(event, eq(eventParticipant.eventId, event.id))
+        .where(
+          and(
+            eq(eventParticipant.userId, input.userId),
+            eq(event.status, EVENT_STATUS.SUCCESS),
+          ),
+        );
+
+      const [{ count: postsRaw }] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(post)
+        .where(eq(post.userId, input.userId));
+
+      return {
+        invitations: Number(invitationsRaw) || 0,
+        acceptances: Number(acceptancesRaw) || 0,
+        posts: Number(postsRaw) || 0,
+      };
     }),
 
   // Update user profile
