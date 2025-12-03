@@ -222,7 +222,7 @@ export const userRouter = {
   profileStats: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const [{ count: invitationsRaw }] = await ctx.db
+      const invitationsResult = await ctx.db
         .select({ count: sql<number>`count(*)` })
         .from(event)
         .where(
@@ -232,7 +232,7 @@ export const userRouter = {
           ),
         );
 
-      const [{ count: acceptancesRaw }] = await ctx.db
+      const acceptancesResult = await ctx.db
         .select({ count: sql<number>`count(*)` })
         .from(eventParticipant)
         .innerJoin(event, eq(eventParticipant.eventId, event.id))
@@ -243,15 +243,15 @@ export const userRouter = {
           ),
         );
 
-      const [{ count: postsRaw }] = await ctx.db
+      const postsResult = await ctx.db
         .select({ count: sql<number>`count(*)` })
         .from(post)
         .where(eq(post.userId, input.userId));
 
       return {
-        invitations: Number(invitationsRaw) || 0,
-        acceptances: Number(acceptancesRaw) || 0,
-        posts: Number(postsRaw) || 0,
+        invitations: Number(invitationsResult[0]?.count ?? 0),
+        acceptances: Number(acceptancesResult[0]?.count ?? 0),
+        posts: Number(postsResult[0]?.count ?? 0),
       };
     }),
 
