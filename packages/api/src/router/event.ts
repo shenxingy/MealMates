@@ -53,12 +53,13 @@ export const eventRouter = {
       const offset = (input.page - 1) * pageSize;
 
       const events = await ctx.db.query.event.findMany({
-        orderBy: ctx.session && ctx.session.user?.id
-          ? [
-              sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
-              desc(schema.event.createdAt),
-            ]
-          : desc(schema.event.createdAt),
+        orderBy:
+          ctx.session && ctx.session.user?.id
+            ? [
+                sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
+                desc(schema.event.createdAt),
+              ]
+            : desc(schema.event.createdAt),
         limit: pageSize,
         offset: offset,
         with: {
@@ -132,12 +133,14 @@ export const eventRouter = {
   leave: publicProcedure
     .input(z.object({ eventId: z.number(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(schema.eventParticipant).where(
-        and(
-          eq(schema.eventParticipant.eventId, input.eventId),
-          eq(schema.eventParticipant.userId, input.userId),
-        ),
-      );
+      await ctx.db
+        .delete(schema.eventParticipant)
+        .where(
+          and(
+            eq(schema.eventParticipant.eventId, input.eventId),
+            eq(schema.eventParticipant.userId, input.userId),
+          ),
+        );
 
       return { success: true };
     }),

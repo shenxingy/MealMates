@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
 import { desc, ilike, or } from "@mealmates/db";
-import { event, Post } from "@mealmates/db/schema";
+import { event, post } from "@mealmates/db/schema";
 
 import { publicProcedure } from "../trpc";
 
@@ -27,7 +27,7 @@ export const searchRouter = {
 
       const results: (
         | ({ type: "event" } & typeof event.$inferSelect)
-        | ({ type: "post" } & typeof Post.$inferSelect)
+        | ({ type: "post" } & typeof post.$inferSelect)
       )[] = [];
 
       if (shouldSearchEvents) {
@@ -57,9 +57,9 @@ export const searchRouter = {
       if (shouldSearchPosts) {
         const posts = await ctx.db
           .select()
-          .from(Post)
-          .where(or(ilike(Post.title, pattern), ilike(Post.content, pattern)))
-          .orderBy(desc(Post.createdAt))
+          .from(post)
+          .where(or(ilike(post.title, pattern), ilike(post.content, pattern)))
+          .orderBy(desc(post.createdAt))
           .limit(30);
 
         results.push(
