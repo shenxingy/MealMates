@@ -1,7 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, asc, desc, eq, schema, sql } from "@mealmates/db";
+import { and, asc, desc, eq, or, schema, sql } from "@mealmates/db";
+import { EVENT_STATUS } from "@mealmates/db/schema";
 
 import { publicProcedure } from "../trpc";
 
@@ -25,6 +26,8 @@ const EVENT_EMOJI_CHOICES = [
   "🍹",
 ];
 
+const OPEN_EVENT_STATUSES = [EVENT_STATUS.WAITING, EVENT_STATUS.JOINED] as const;
+
 const CreateEventSchema = z.object({
   userId: z.string(),
   restaurantName: z.string(),
@@ -44,6 +47,11 @@ const CreateEventSchema = z.object({
 export const eventRouter = {
   all: publicProcedure.query(async ({ ctx }) => {
     const events = await ctx.db.query.event.findMany({
+      where: or(
+        ...OPEN_EVENT_STATUSES.map((status) =>
+          eq(schema.event.status, status),
+        ),
+      ),
       orderBy: desc(schema.event.createdAt),
       limit: 20,
       with: {
@@ -55,6 +63,7 @@ export const eventRouter = {
       const { user, ...eventData } = row;
       return {
         ...eventData,
+        status: eventData.status ?? EVENT_STATUS.WAITING,
         emoji: eventData.emoji ?? "🍽️",
         username: user.name,
         avatarUrl: user.image,
@@ -74,6 +83,11 @@ export const eventRouter = {
       const offset = (input.page - 1) * pageSize;
 
       const events = await ctx.db.query.event.findMany({
+        where: or(
+          ...OPEN_EVENT_STATUSES.map((status) =>
+            eq(schema.event.status, status),
+          ),
+        ),
         orderBy: ctx.session && ctx.session.user?.id
           ? [
               sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
@@ -91,6 +105,7 @@ export const eventRouter = {
         const { user, ...eventData } = row;
         return {
           ...eventData,
+          status: eventData.status ?? EVENT_STATUS.WAITING,
           emoji: eventData.emoji ?? "🍽️",
           username: user.name,
           avatarUrl: user.image,
@@ -111,6 +126,7 @@ export const eventRouter = {
         .values({
           ...input,
           emoji: selectedEmoji,
+          status: EVENT_STATUS.WAITING,
         })
         .returning();
       return newEvent;
