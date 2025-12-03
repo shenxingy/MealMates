@@ -260,7 +260,7 @@ export default function YouPage() {
   };
 
   const handleOpenSettings = () => {
-    // TODO: Navigate to settings page
+    Alert.alert("Settings", "No settings are available yet.");
   };
 
   const handleSelectColor = (color: string) => {
