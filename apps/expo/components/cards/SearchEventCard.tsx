@@ -14,23 +14,36 @@ interface SearchEventCardProps {
 
 const SearchEventCard: ElementType<SearchEventCardProps> = ({ event }) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   return (
     <View style={[styles.card, isDark && styles.cardDark]}>
-      <Text style={[styles.title, isDark && styles.titleDark]} numberOfLines={1}>
+      <Text
+        style={[styles.title, isDark && styles.titleDark]}
+        numberOfLines={1}
+      >
         🍽 {event.restaurantName}
       </Text>
       {event.message ? (
-        <Text style={[styles.subtitle, isDark && styles.subtitleDark]} numberOfLines={2}>
+        <Text
+          style={[styles.subtitle, isDark && styles.subtitleDark]}
+          numberOfLines={2}
+        >
           {event.message}
         </Text>
       ) : null}
       <View style={styles.metaRow}>
-        <Text style={[styles.meta, isDark && styles.metaDark]} numberOfLines={1}>
-          📍 {event.meetPointCoordinates.latitude.toFixed(2)}, {event.meetPointCoordinates.longitude.toFixed(2)}
+        <Text
+          style={[styles.meta, isDark && styles.metaDark]}
+          numberOfLines={1}
+        >
+          📍 {event.meetPointCoordinates.latitude.toFixed(2)},{" "}
+          {event.meetPointCoordinates.longitude.toFixed(2)}
         </Text>
-        <Text style={[styles.meta, isDark && styles.metaDark]} numberOfLines={1}>
+        <Text
+          style={[styles.meta, isDark && styles.metaDark]}
+          numberOfLines={1}
+        >
           🕒 {event.scheduleTime}
         </Text>
       </View>

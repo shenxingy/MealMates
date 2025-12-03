@@ -32,7 +32,7 @@ const DEFAULT_AVATAR_COLOR = "#F5F7FB";
 const EventDetailsPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const baseColor = isDark ? "70,70,70" : "255,140,0";
   const numericEventId = eventId ? Number(eventId) : null;
   const router = useRouter();
@@ -448,10 +448,17 @@ const EventDetailsPage = () => {
           headerTitle="Meet with"
           scrollEnabled={false}
           enableReturnButton={true}
-          returnButtonText="Home"
         >
           <EmptySpace marginTop={30} />
-          <Text style={{ fontSize: 18, textAlign: "center", color: isDark ? 'rgba(255, 255, 255, 0.85)' : '#000' }}>Loading...</Text>
+          <Text
+            style={{
+              fontSize: 18,
+              textAlign: "center",
+              color: isDark ? "rgba(255, 255, 255, 0.85)" : "#000",
+            }}
+          >
+            Loading...
+          </Text>
         </AnimatedPageFrame>
       </>
     );
@@ -464,7 +471,6 @@ const EventDetailsPage = () => {
       scrollEnabled={true}
       onRefresh={handleRefreshPage}
       enableReturnButton={true}
-      returnButtonText="Home"
     >
       <EmptySpace marginTop={20} />
 
@@ -496,14 +502,28 @@ const EventDetailsPage = () => {
               </View>
             )}
           </View>
-          <Text style={[styles.userName, isDark && styles.userNameDark]}>{username}</Text>
-          <View style={[styles.timeContainer, isDark && styles.timeContainerDark]}>
+          <Text style={[styles.userName, isDark && styles.userNameDark]}>
+            {username}
+          </Text>
+          <View
+            style={[styles.timeContainer, isDark && styles.timeContainerDark]}
+          >
             {Platform.OS === "ios" ? (
-              <SymbolView name="clock.fill" size={16} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
+              <SymbolView
+                name="clock.fill"
+                size={16}
+                tintColor={isDark ? "#60A5FA" : "#3B82F6"}
+              />
             ) : (
-              <Ionicons name="time" size={16} color={isDark ? "#60A5FA" : "#3B82F6"} />
+              <Ionicons
+                name="time"
+                size={16}
+                color={isDark ? "#60A5FA" : "#3B82F6"}
+              />
             )}
-            <Text style={[styles.timeText, isDark && styles.timeTextDark]}>{scheduleTime}</Text>
+            <Text style={[styles.timeText, isDark && styles.timeTextDark]}>
+              {scheduleTime}
+            </Text>
           </View>
         </View>
       </GlassView>
@@ -517,13 +537,27 @@ const EventDetailsPage = () => {
         >
           <View style={styles.locationHeader}>
             {Platform.OS === "ios" ? (
-              <SymbolView name="location.fill" size={18} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
+              <SymbolView
+                name="location.fill"
+                size={18}
+                tintColor={isDark ? "#60A5FA" : "#3B82F6"}
+              />
             ) : (
-              <Ionicons name="navigate" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
+              <Ionicons
+                name="navigate"
+                size={18}
+                color={isDark ? "#60A5FA" : "#3B82F6"}
+              />
             )}
-            <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>Meet At</Text>
+            <Text
+              style={[styles.locationLabel, isDark && styles.locationLabelDark]}
+            >
+              Meet At
+            </Text>
           </View>
-          <Text style={[styles.locationValue, isDark && styles.locationValueDark]}>
+          <Text
+            style={[styles.locationValue, isDark && styles.locationValueDark]}
+          >
             {restaurantLatitude.toFixed(4)}, {restaurantLongitude.toFixed(4)}
           </Text>
         </GlassView>
@@ -541,13 +575,26 @@ const EventDetailsPage = () => {
                 tintColor={isDark ? "#FB923C" : "#F97316"}
               />
             ) : (
-              <Ionicons name="restaurant" size={18} color={isDark ? "#FB923C" : "#F97316"} />
+              <Ionicons
+                name="restaurant"
+                size={18}
+                color={isDark ? "#FB923C" : "#F97316"}
+              />
             )}
-            <Text style={[styles.locationLabel, { color: isDark ? "#FB923C" : "#F97316" }]}>
+            <Text
+              style={[
+                styles.locationLabel,
+                { color: isDark ? "#FB923C" : "#F97316" },
+              ]}
+            >
               Restaurant
             </Text>
           </View>
-          <Text style={[styles.locationValue, isDark && styles.locationValueDark]}>{restaurantName}</Text>
+          <Text
+            style={[styles.locationValue, isDark && styles.locationValueDark]}
+          >
+            {restaurantName}
+          </Text>
         </GlassView>
       </View>
 
@@ -555,9 +602,17 @@ const EventDetailsPage = () => {
       <GlassView style={cardStyle} glassEffectStyle="regular">
         <View style={styles.messageHeader}>
           {Platform.OS === "ios" ? (
-            <SymbolView name="message.fill" size={18} tintColor={isDark ? "#60A5FA" : "#3B82F6"} />
+            <SymbolView
+              name="message.fill"
+              size={18}
+              tintColor={isDark ? "#60A5FA" : "#3B82F6"}
+            />
           ) : (
-            <Ionicons name="chatbubble" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
+            <Ionicons
+              name="chatbubble"
+              size={18}
+              color={isDark ? "#60A5FA" : "#3B82F6"}
+            />
           )}
           <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>Message</Text>
         </View>

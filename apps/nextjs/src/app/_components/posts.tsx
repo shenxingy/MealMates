@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "@mealmates/api";
-import { CreatePostSchema } from "@mealmates/db/schema";
+// import { CreatePostSchema } from "@mealmates/db/";
 import { cn } from "@mealmates/ui";
 import { Button } from "@mealmates/ui/button";
 import {
@@ -48,10 +48,10 @@ export function CreatePostForm() {
       content: "",
       title: "",
     },
-    validators: {
-      onSubmit: CreatePostSchema,
-    },
-    onSubmit: (data) => createPost.mutate(data.value),
+    // validators: {
+    //   onSubmit: CreatePostSchema,
+    // },
+    // onSubmit: (data) => createPost.mutate(data.value),
   });
 
   return (
@@ -149,20 +149,20 @@ export function PostCard(props: {
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const deletePost = useMutation(
-    trpc.post.delete.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(trpc.post.pathFilter());
-      },
-      onError: (err) => {
-        toast.error(
-          err.data?.code === "UNAUTHORIZED"
-            ? "You must be logged in to delete a post"
-            : "Failed to delete post",
-        );
-      },
-    }),
-  );
+  // const deletePost = useMutation(
+  //   trpc.post.delete.mutationOptions({
+  //     onSuccess: async () => {
+  //       await queryClient.invalidateQueries(trpc.post.pathFilter());
+  //     },
+  //     onError: (err) => {
+  //       toast.error(
+  //         err.data?.code === "UNAUTHORIZED"
+  //           ? "You must be logged in to delete a post"
+  //           : "Failed to delete post",
+  //       );
+  //     },
+  //   }),
+  // );
 
   return (
     <div className="bg-muted flex flex-row rounded-lg p-4">
@@ -174,7 +174,7 @@ export function PostCard(props: {
         <Button
           variant="ghost"
           className="text-primary cursor-pointer text-sm font-bold uppercase hover:bg-transparent hover:text-white"
-          onClick={() => deletePost.mutate(props.post.id)}
+          // onClick={() => deletePost.mutate(props.post.id)}
         >
           Delete
         </Button>
