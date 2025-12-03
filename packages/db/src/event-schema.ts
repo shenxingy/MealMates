@@ -3,6 +3,13 @@ import { integer, json, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
 
+export const EVENT_STATUS = {
+  WAITING: "waiting_for_participant",
+  JOINED: "participant_joined",
+  SUCCESS: "success",
+  DELETED: "deleted",
+} as const;
+
 export const event = pgTable("event", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
 
@@ -15,6 +22,9 @@ export const event = pgTable("event", {
   mood: text("mood"),
   emoji: text("emoji").notNull().default("🙂"),
   message: text("message"),
+  status: text("status")
+    .notNull()
+    .default(EVENT_STATUS.WAITING),
 
   restaurantCoordinates: json("restaurant_coordinates")
     .$type<{ latitude: number; longitude: number }>()
