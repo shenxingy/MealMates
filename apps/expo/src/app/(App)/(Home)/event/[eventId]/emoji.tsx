@@ -99,9 +99,9 @@ const EmojiConfirmPage = () => {
   } = useQuery<EventDetails | null>({
     queryKey: ["eventDetails", eventId],
     queryFn: async () => {
-        if (!eventId) {
-          throw new Error("Missing event id");
-        }
+      if (!eventId) {
+        throw new Error("Missing event id");
+      }
       const response = await fetchDetailedEvent(eventId);
       return {
         ...response,
