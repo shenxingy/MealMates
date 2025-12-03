@@ -26,7 +26,10 @@ const EVENT_EMOJI_CHOICES = [
   "🍹",
 ];
 
-const OPEN_EVENT_STATUSES = [EVENT_STATUS.WAITING, EVENT_STATUS.JOINED] as const;
+const OPEN_EVENT_STATUSES = [
+  EVENT_STATUS.WAITING,
+  EVENT_STATUS.JOINED,
+] as const;
 
 const CreateEventSchema = z.object({
   userId: z.string(),
@@ -48,9 +51,7 @@ export const eventRouter = {
   all: publicProcedure.query(async ({ ctx }) => {
     const events = await ctx.db.query.event.findMany({
       where: or(
-        ...OPEN_EVENT_STATUSES.map((status) =>
-          eq(schema.event.status, status),
-        ),
+        ...OPEN_EVENT_STATUSES.map((status) => eq(schema.event.status, status)),
       ),
       orderBy: desc(schema.event.createdAt),
       limit: 20,
@@ -88,12 +89,13 @@ export const eventRouter = {
             eq(schema.event.status, status),
           ),
         ),
-        orderBy: ctx.session && ctx.session.user?.id
-          ? [
-              sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
-              desc(schema.event.createdAt),
-            ]
-          : desc(schema.event.createdAt),
+        orderBy:
+          ctx.session && ctx.session.user?.id
+            ? [
+                sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
+                desc(schema.event.createdAt),
+              ]
+            : desc(schema.event.createdAt),
         limit: pageSize,
         offset: offset,
         with: {
@@ -118,8 +120,7 @@ export const eventRouter = {
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }) => {
       const emojiIndex = Math.floor(Math.random() * EVENT_EMOJI_CHOICES.length);
-      const selectedEmoji =
-        EVENT_EMOJI_CHOICES[emojiIndex] ?? "🍽️";
+      const selectedEmoji = EVENT_EMOJI_CHOICES[emojiIndex] ?? "🍽️";
 
       const [newEvent] = await ctx.db
         .insert(schema.event)

@@ -46,7 +46,8 @@ export async function GET(
       status: eventData.status ?? "waiting_for_participant",
       emoji: eventData.emoji ?? "🍽️",
       hostSuccessConfirmed: eventData.hostSuccessConfirmed ?? false,
-      participantSuccessConfirmed: eventData.participantSuccessConfirmed ?? false,
+      participantSuccessConfirmed:
+        eventData.participantSuccessConfirmed ?? false,
       restaurantCoordinates,
       username: user.name as unknown as string | null,
       avatarUrl: user.image as unknown as string | null,

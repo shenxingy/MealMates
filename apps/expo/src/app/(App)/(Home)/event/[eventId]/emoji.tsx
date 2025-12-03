@@ -33,7 +33,11 @@ const EmojiConfirmPage = () => {
     void getStoredUserId().then(setUserId).catch(console.error);
   }, []);
 
-  const { data, isLoading, refetch: refetchDetails } = useQuery({
+  const {
+    data,
+    isLoading,
+    refetch: refetchDetails,
+  } = useQuery({
     queryKey: ["eventDetails", eventId],
     queryFn: () => fetchDetailedEvent(eventId),
     enabled: !!eventId,
@@ -62,8 +66,8 @@ const EmojiConfirmPage = () => {
       // Randomize start height above the screen
       const startY = -Math.random() * (SCREEN_HEIGHT * 0.5) - 50;
       // Add slight horizontal drift
-      const endXDelta = (Math.random() - 0.5) * 100; 
-      
+      const endXDelta = (Math.random() - 0.5) * 100;
+
       return {
         id: idx,
         emoji: emojis[Math.floor(Math.random() * emojis.length)],
@@ -83,7 +87,7 @@ const EmojiConfirmPage = () => {
 
   const triggerFireworks = () => {
     setShowFireworks(true);
-    
+
     const animations = fireworksRain.map((item) => {
       item.anim.setValue(0);
       return Animated.timing(item.anim, {
@@ -129,7 +133,10 @@ const EmojiConfirmPage = () => {
       if (result.status === "success") {
         triggerFireworks();
       } else {
-        Alert.alert("Success recorded", "Waiting for the other person to confirm.");
+        Alert.alert(
+          "Success recorded",
+          "Waiting for the other person to confirm.",
+        );
       }
     },
     onError: (error: unknown) => {
@@ -143,7 +150,10 @@ const EmojiConfirmPage = () => {
   };
 
   const disableButton =
-    !userId || isStatusSuccess || hasConfirmed || confirmSuccessMutation.isPending;
+    !userId ||
+    isStatusSuccess ||
+    hasConfirmed ||
+    confirmSuccessMutation.isPending;
 
   if (isLoading) {
     return (
@@ -155,7 +165,10 @@ const EmojiConfirmPage = () => {
         scrollEnabled={false}
       >
         <View style={styles.loaderContainer}>
-          <ActivityIndicator color={isDark ? "#FBBF24" : "#D97706"} size="large" />
+          <ActivityIndicator
+            color={isDark ? "#FBBF24" : "#D97706"}
+            size="large"
+          />
         </View>
       </AnimatedPageFrame>
     );
@@ -244,7 +257,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // Ensure button is at bottom
-    justifyContent: 'space-between'
+    justifyContent: "space-between",
   },
   centerContent: {
     flex: 1,
@@ -261,7 +274,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   fireworkParticle: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     fontSize: 28, // Good size for particles
