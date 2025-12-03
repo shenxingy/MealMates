@@ -17,7 +17,7 @@ import { getStoredUserId } from "~/utils/user-storage";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 
 export default function Create() {
-  // const header = "New Post";
+  const header = "New Post";
   const baseColor = "255,178,0";
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -110,7 +110,7 @@ export default function Create() {
     <>
       <AnimatedPageFrame
         baseColor={baseColor}
-        headerTitle={undefined}
+        headerTitle={header}
         enableReturnButton={true}
         returnButtonText="Posts"
       >

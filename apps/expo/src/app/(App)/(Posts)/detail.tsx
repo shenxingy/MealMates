@@ -15,7 +15,7 @@ export default function PostDetails() {
   const baseColor = "255,178,0";
   const { id } = useLocalSearchParams<{ id: string }>();
   const postData = useQuery({
-    queryKey: ["post", "byId"],
+    queryKey: ["post", "byId", id],
     queryFn: () => trpcClient.post.byId.query({ id }),
     enabled: Boolean(id),
   });
@@ -76,7 +76,7 @@ export default function PostDetails() {
         headerRightSFSymbolName="plus"
         headerRightMaterialSymbolName="comment"
       >
-        {post ? <PostDetail props={post} /> : <Text>Loading...</Text>}
+        {post ? <PostDetail props={post} /> : <Text style={styles.text20}>Loading...</Text>}
         {post && <View style={styles.line}></View>}
         {post &&
           comments?.map((comment, idx) => (
