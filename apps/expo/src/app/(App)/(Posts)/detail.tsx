@@ -13,18 +13,16 @@ import PostDetail from "../../../../components/postpage/Post";
 export default function PostDetails() {
   const header = "Post Details";
   const baseColor = "255,178,0";
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const postData = useQuery({
     queryKey: ["post", "byId"],
-    queryFn: () => {
-      return trpcClient.post.byId.query({ id });
-    },
+    queryFn: () => trpcClient.post.byId.query({ id }),
+    enabled: Boolean(id),
   });
   const commentsData = useQuery({
     queryKey: ["comment", "byPost"],
-    queryFn: () => {
-      return trpcClient.comment.byPost.query({ postId: id });
-    },
+    queryFn: () => trpcClient.comment.byPost.query({ postId: id }),
+    enabled: Boolean(id),
   });
   const onRefresh = useCallback(() => {
     void postData.refetch();

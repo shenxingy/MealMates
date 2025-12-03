@@ -33,7 +33,7 @@ const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 const DEFAULT_AVATAR_COLOR = "#F5F7FB";
 
 const EventDetailsPage = () => {
-  const { eventId } = useLocalSearchParams<{ eventId?: string }>();
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const baseColor = isDark ? "70,70,70" : "255,140,0";
@@ -54,7 +54,7 @@ const EventDetailsPage = () => {
   } = useQuery({
     queryKey: ["eventDetails", eventId],
     queryFn: () => fetchDetailedEvent(eventId),
-    enabled: !!eventId,
+    enabled: Boolean(eventId),
   });
 
   const { data: joinStatus, refetch: refetchJoinStatus } = useQuery({

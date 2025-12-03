@@ -55,7 +55,8 @@ interface EventDetails {
 const PARTICLE_COUNT = 80;
 
 const createParticles = (eventEmoji: string): FireworkParticle[] => {
-  const emojis = ["🎉", "✨", "🎊", eventEmoji];
+  const baseEmoji = eventEmoji || "🍽️";
+  const emojis = ["🎉", "✨", "🎊", baseEmoji];
   return Array.from({ length: PARTICLE_COUNT }).map((_, idx) => {
     const startX = Math.random() * SCREEN_WIDTH;
     const startY = -Math.random() * (SCREEN_HEIGHT * 0.5) - 50;
@@ -63,7 +64,7 @@ const createParticles = (eventEmoji: string): FireworkParticle[] => {
 
     return {
       id: idx,
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+      emoji: emojis[Math.floor(Math.random() * emojis.length)] ?? baseEmoji,
       anim: new Animated.Value(0),
       delay: Math.random() * 1500,
       duration: 2500 + Math.random() * 1500,
@@ -98,10 +99,16 @@ const EmojiConfirmPage = () => {
   } = useQuery<EventDetails | null>({
     queryKey: ["eventDetails", eventId],
     queryFn: async () => {
+        if (!eventId) {
+          throw new Error("Missing event id");
+        }
       const response = await fetchDetailedEvent(eventId);
-      return response as EventDetails;
+      return {
+        ...response,
+        participants: response.participants ?? [],
+      } as EventDetails;
     },
-    enabled: !!eventId,
+    enabled: Boolean(eventId),
   });
 
   const eventEmoji = data?.emoji ?? "🍽️";
