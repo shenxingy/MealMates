@@ -10,6 +10,8 @@ import type { AppRouter } from "@mealmates/api";
 import type {
   ApiResponse,
   DetailedEventDTO,
+  Post,
+  PostComment,
   SimpleEventDTO,
 } from "~/definition";
 import { getBaseUrl } from "./base-url";
@@ -146,4 +148,38 @@ export const fetchDetailedEvent = async (eventId: string) => {
   );
   console.log(res.data.data);
   return res.data.data;
+};
+
+export const fetchPostList = async () => {
+  const res = await api.get<ApiResponse<Post[]>>("/api/posts");
+  return res.data.data;
+};
+
+export const fetchPost = async (id: number) => {
+  const res = await api.get<ApiResponse<Post>>("/api/posts/" + id);
+  return res.data.data;
+};
+
+export const likePost = async (id: number, like: boolean) => {
+  const data = { like: like };
+  const res = await api.put<ApiResponse<undefined>>("/api/posts/" + id, data);
+  return res.data.message;
+};
+
+export const fetchPostComments = async (id: number) => {
+  const res = await api.get<ApiResponse<PostComment[]>>(
+    "/api/posts/" + id + "/comments",
+  );
+  return res.data.data;
+};
+
+export const likeComment = async (
+  postId: number,
+  commentId: number,
+  like: boolean,
+) => {
+  const url: string = "/api/posts/" + postId + "/comments/" + commentId;
+  const data = { like: like };
+  const res = await api.put<ApiResponse<undefined>>(url, data);
+  return res.data.message;
 };

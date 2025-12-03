@@ -1,4 +1,4 @@
-import type { ComponentProps} from "react";
+import type { ComponentProps } from "react";
 import type React from "react";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -87,7 +87,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
   const scrollY = useMemo(() => new Animated.Value(0), []);
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   // Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -185,14 +185,19 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
 
   // Handle scroll begin
   const handleScrollBeginDrag = () => {
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === "ios") {
       isPulling.current = true;
     }
   };
 
   // Handle scroll end
   const handleScrollEndDrag = async () => {
-    if (Platform.OS === 'ios' && isPulling.current && scrollYValue.current < -100 && onRefresh) {
+    if (
+      Platform.OS === "ios" &&
+      isPulling.current &&
+      scrollYValue.current < -100 &&
+      onRefresh
+    ) {
       setIsRefreshing(true);
       try {
         await onRefresh();
@@ -206,7 +211,8 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
   // Handle scroll to detect when reaching end
   const handleScroll = (event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const distanceFromEnd = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    const distanceFromEnd =
+      contentSize.height - layoutMeasurement.height - contentOffset.y;
     const threshold = layoutMeasurement.height * onEndReachedThreshold;
 
     if (distanceFromEnd < threshold && !hasCalledOnEndReached.current) {
@@ -232,7 +238,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             contentContainerStyle={styles.container}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { 
+              {
                 useNativeDriver: true,
                 listener: handleScroll,
               },
@@ -241,53 +247,69 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             scrollEnabled={scrollEnabled}
             // Android uses RefreshControl
             refreshControl={
-              Platform.OS === 'android' && onRefresh ? (
+              Platform.OS === "android" && onRefresh ? (
                 <RefreshControl
                   refreshing={isRefreshing}
                   onRefresh={handleRefresh}
-                  colors={[isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)']}
+                  colors={[
+                    isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+                  ]}
                   progressViewOffset={insets.top}
                 />
               ) : undefined
             }
             // iOS uses manual pull detection
-            onScrollBeginDrag={Platform.OS === 'ios' && onRefresh ? handleScrollBeginDrag : undefined}
-            onScrollEndDrag={Platform.OS === 'ios' && onRefresh ? handleScrollEndDrag : undefined}
+            onScrollBeginDrag={
+              Platform.OS === "ios" && onRefresh
+                ? handleScrollBeginDrag
+                : undefined
+            }
+            onScrollEndDrag={
+              Platform.OS === "ios" && onRefresh
+                ? handleScrollEndDrag
+                : undefined
+            }
           >
             {/* Pull-down title at y = -50 */}
             <Animated.View
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: -50,
                 left: 0,
                 right: 0,
-                alignItems: 'center',
+                alignItems: "center",
                 opacity: pullDownTitleOpacity,
               }}
             >
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
                 <Image
-                  source={require('../../assets/icon-light.png')}
+                  source={require("../../assets/icon-light.png")}
                   style={{
                     width: 64,
                     height: 64,
                   }}
                   resizeMode="contain"
                 />
-                <Text style={{
-                  fontSize: 20,
-                  fontWeight: '600',
-                  color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.8)',
-                }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: isDark
+                      ? "rgba(255, 255, 255, 0.6)"
+                      : "rgba(0, 0, 0, 0.8)",
+                  }}
+                >
                   MealMate
                 </Text>
               </View>
             </Animated.View>
-            
+
             <View style={{ paddingTop: insets.top + 58 }}>
               <Animated.View
                 style={[
@@ -298,33 +320,43 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   },
                 ]}
               >
-                <Text style={[styles.contentHeader, isDark && styles.contentHeaderDark]}>{headerTitle ?? ""}</Text>
-                {headerRightSFSymbolName
-                  && headerRightMaterialSymbolName
-                  && headerRightOnPress
-                  && <Pressable
-                    onPress={headerRightOnPress}
-                    style={({ pressed }) => [
-                      styles.headerRightButtonContainer,
-                      styles.headerRightButton,
-                      isDark && styles.headerRightButtonDark,
-                      { opacity: pressed ? 0.5 : 1 }
-                    ]}
-                  >
-                    {Platform.OS === "ios" ? (
-                      <SymbolView
-                        name={headerRightSFSymbolName}
-                        size={23}
-                        tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
-                      />
-                    ) : (
-                      <MaterialIcons
-                        name={headerRightMaterialSymbolName}
-                        size={23}
-                        color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
-                      />
-                    )}
-                  </Pressable>}
+                <Text
+                  style={[
+                    styles.contentHeader,
+                    isDark && styles.contentHeaderDark,
+                  ]}
+                >
+                  {headerTitle ?? ""}
+                </Text>
+                {headerRightSFSymbolName &&
+                  headerRightMaterialSymbolName &&
+                  headerRightOnPress && (
+                    <Pressable
+                      onPress={headerRightOnPress}
+                      style={({ pressed }) => [
+                        styles.headerRightButtonContainer,
+                        styles.headerRightButton,
+                        isDark && styles.headerRightButtonDark,
+                        { opacity: pressed ? 0.5 : 1 },
+                      ]}
+                    >
+                      {Platform.OS === "ios" ? (
+                        <SymbolView
+                          name={headerRightSFSymbolName}
+                          size={23}
+                          tintColor={
+                            isDark ? "rgba(255, 255, 255, 0.85)" : "black"
+                          }
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name={headerRightMaterialSymbolName}
+                          size={23}
+                          color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
+                        />
+                      )}
+                    </Pressable>
+                  )}
               </Animated.View>
               {/* Actual Content Started */}
               <View style={{ paddingHorizontal: paddingHorizontal ?? 20 }}>
@@ -384,27 +416,41 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             }}
           >
             <View style={styles.topHeaderRow}>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: isDark ? 'rgba(255, 255, 255, 0.85)' : 'black' }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: isDark ? "rgba(255, 255, 255, 0.85)" : "black",
+                }}
+              >
                 {headerTitle ?? ""}
               </Text>
-              <Pressable 
-                onPress={headerRightOnPress} 
+              <Pressable
+                onPress={headerRightOnPress}
                 style={({ pressed }) => [
                   styles.headerRightButtonContainer,
                   styles.topHeaderRightButton,
-                  { opacity: pressed ? 0.5 : 1 }
+                  { opacity: pressed ? 0.5 : 1 },
                 ]}
               >
-                {Platform.OS === "ios"
-                  && headerRightSFSymbolName
-                  && headerRightOnPress
-                  && <SymbolView name={headerRightSFSymbolName} size={23} tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"} />
-                }
-                {Platform.OS === "android"
-                  && headerRightMaterialSymbolName
-                  && headerRightOnPress
-                  && <MaterialIcons name={headerRightMaterialSymbolName} size={23} color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"} />
-                }
+                {Platform.OS === "ios" &&
+                  headerRightSFSymbolName &&
+                  headerRightOnPress && (
+                    <SymbolView
+                      name={headerRightSFSymbolName}
+                      size={23}
+                      tintColor={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
+                    />
+                  )}
+                {Platform.OS === "android" &&
+                  headerRightMaterialSymbolName &&
+                  headerRightOnPress && (
+                    <MaterialIcons
+                      name={headerRightMaterialSymbolName}
+                      size={23}
+                      color={isDark ? "rgba(255, 255, 255, 0.85)" : "black"}
+                    />
+                  )}
               </Pressable>
             </View>
           </Animated.View>
@@ -441,12 +487,24 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                   />
                 )}
                 {returnButtonText && (
-                  <Text style={[styles.returnButtonText, isDark && styles.returnButtonTextDark]}>
+                  <Text
+                    style={[
+                      styles.returnButtonText,
+                      isDark && styles.returnButtonTextDark,
+                    ]}
+                  >
                     {returnButtonText}
                   </Text>
                 )}
                 {!returnButtonText && Platform.OS == "android" && (
-                  <Text style={[styles.returnButtonText, isDark && styles.returnButtonTextDark]}>Back</Text>
+                  <Text
+                    style={[
+                      styles.returnButtonText,
+                      isDark && styles.returnButtonTextDark,
+                    ]}
+                  >
+                    Back
+                  </Text>
                 )}
               </View>
             </GlassView>
@@ -468,7 +526,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
             style={({ pressed }) => [
               styles.scrollToTopButtonContainer,
               isDark && styles.scrollToTopButtonContainerDark,
-              { opacity: pressed ? 0.5 : 1 }
+              { opacity: pressed ? 0.5 : 1 },
             ]}
           >
             {Platform.OS === "ios" ? (
@@ -500,15 +558,15 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
           pointerEvents="none"
         >
           <LinearGradient
-            colors={isDark ? [
-              "rgba(0, 0, 0, 0)",
-              "rgba(0, 0, 0, 0.2)",
-              "rgba(0, 0, 0, 1)",
-            ] : [
-              "rgba(255, 255, 255, 0)",
-              "rgba(255, 255, 255, 0.7)",
-              "rgba(255, 255, 255, 1)",
-            ]}
+            colors={
+              isDark
+                ? ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.2)", "rgba(0, 0, 0, 1)"]
+                : [
+                    "rgba(255, 255, 255, 0)",
+                    "rgba(255, 255, 255, 0.7)",
+                    "rgba(255, 255, 255, 1)",
+                  ]
+            }
             locations={[0, 0.3, 1]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
