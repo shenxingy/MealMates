@@ -100,6 +100,19 @@ function handleUserJoinEvent(
     },
   });
 
+  // notify other participants/host in the same event
+  broadcastToEvent(
+    eventId,
+    {
+      type: "participant_joined",
+      payload: {
+        userId,
+        eventId,
+      },
+    },
+    ws, // exclude the newly joined client
+  );
+
   console.log(
     `[SocketManager] User ${userId} joined event ${eventId} successfully.`,
   );
