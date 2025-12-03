@@ -47,11 +47,14 @@ export function CreatePostForm() {
     defaultValues: {
       content: "",
       title: "",
+      image: "",
     },
     // validators: {
     //   onSubmit: CreatePostSchema,
     // },
-    // onSubmit: (data) => createPost.mutate(data.value),
+    onSubmit: ({ value }) => {
+      createPost.mutate(value);
+    },
   });
 
   return (
@@ -111,6 +114,30 @@ export function CreatePostForm() {
             );
           }}
         />
+        <form.Field
+          name="image"
+          children={(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field data-invalid={isInvalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor={field.name}>Image URL</FieldLabel>
+                </FieldContent>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  aria-invalid={isInvalid}
+                  placeholder="https://example.com/meal.jpg"
+                />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
+        />
       </FieldGroup>
       <Button type="submit">Create</Button>
     </form>
@@ -147,8 +174,6 @@ export function PostList() {
 export function PostCard(props: {
   post: RouterOutputs["post"]["all"][number];
 }) {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
   // const deletePost = useMutation(
   //   trpc.post.delete.mutationOptions({
   //     onSuccess: async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Text, useColorScheme } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -11,22 +11,20 @@ import PostList from "../../../../components/postpage/PostList";
 
 export default function PostPage() {
   const header = "Posts";
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["post", "all"],
     queryFn: () => {
       return trpcClient.post.all.query();
     },
   });
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     void refetch();
-  };
+  }, [refetch]);
 
-  const showData = () => {
-    const newPosts: Post[] = [];
-    data?.forEach((post) => {
-      const newPost: Post = {
+  const posts = useMemo(() => {
+    if (!data) return [];
+    return data.map(
+      (post): Post => ({
         id: post.id,
         title: post.title,
         content: post.content ?? "",
@@ -37,11 +35,9 @@ export default function PostPage() {
         time: post.createdAt.toString(),
         likes: 0,
         liked: false,
-      };
-      newPosts.push(newPost);
-    });
-    setPosts(newPosts);
-  };
+      }),
+    );
+  }, [data]);
 
   const router = useRouter();
   const create = () => {
@@ -51,13 +47,8 @@ export default function PostPage() {
   useFocusEffect(
     useCallback(() => {
       onRefresh();
-    }, [refetch]),
+    }, [onRefresh]),
   );
-
-  useEffect(() => {
-    setLoad(isLoading);
-    showData();
-  }, [data, isLoading, error]);
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -74,7 +65,9 @@ export default function PostPage() {
         headerRightMaterialSymbolName="restaurant"
       >
         <EmptySpace marginTop={30} />
-        {load ? (
+        {error ? (
+          <Text>Failed to load posts</Text>
+        ) : isLoading ? (
           <Text>Loading...</Text>
         ) : (
           <PostList data={posts} numColumns={2} />

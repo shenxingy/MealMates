@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { useQuery } from "@tanstack/react-query";
 
-import type { Post, PostComment } from "~/definition";
+import type { Post } from "~/definition";
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import Comment from "../../../../components/postpage/Comment";
@@ -13,11 +13,7 @@ import PostDetail from "../../../../components/postpage/Post";
 export default function PostDetails() {
   const header = "Post Details";
   const baseColor = "255,178,0";
-  const { id } = useLocalSearchParams() as { id: string };
-  const [post, setPost] = useState<Post | undefined>(undefined);
-  const [comments, setComments] = useState<PostComment[] | undefined>(
-    undefined,
-  );
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const postData = useQuery({
     queryKey: ["post", "byId"],
     queryFn: () => {
@@ -30,65 +26,48 @@ export default function PostDetails() {
       return trpcClient.comment.byPost.query({ postId: id });
     },
   });
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     void postData.refetch();
     void commentsData.refetch();
-  };
-  const showData = () => {
-    if (postData.data) {
-      const data = postData.data;
-      const newPost: Post = {
-        id: data.id,
-        title: data.title,
-        content: data.content ?? "",
-        image: data.image,
-        user: data.user ?? "unknown user",
-        userAvatar: data.userAvatar,
-        userColor: data.userColor ?? "#F5F7FB",
-        time: data.createdAt.toString(),
-        likes: 0,
-        liked: false,
-      };
-      setPost(newPost);
-    }
-    const newComments: PostComment[] = [];
-    commentsData.data?.forEach((comment) => {
-      const newComment: PostComment = {
-        id: comment.id,
-        postId: comment.postId,
-        content: comment.content ?? "",
-        image: comment.image ?? undefined,
-        user: comment.user ?? "unknown user",
-        userAvatar: comment.userAvatar,
-        userColor: comment.userColor ?? "#F5F7FB",
-        likes: 0,
-        liked: false,
-      };
-      newComments.push(newComment);
-    });
-    setComments(newComments);
-    // setPost(await fetchPost(idNum));
-    // setComments(await fetchPostComments(idNum));
-  };
-  const comment = () => {
-    router.push({ pathname: "/(App)/(Posts)/comment", params: { postId: id } });
-  };
+  }, [commentsData, postData]);
   const router = useRouter();
+  const post = useMemo(() => {
+    if (!postData.data) return undefined;
+    return {
+      id: postData.data.id,
+      title: postData.data.title,
+      content: postData.data.content ?? "",
+      image: postData.data.image,
+      user: postData.data.user ?? "unknown user",
+      userAvatar: postData.data.userAvatar,
+      userColor: postData.data.userColor ?? "#F5F7FB",
+      time: postData.data.createdAt.toString(),
+      likes: 0,
+      liked: false,
+    } satisfies Post;
+  }, [postData.data]);
+  const comments = useMemo(() => {
+    if (!commentsData.data) return undefined;
+    return commentsData.data.map((comment) => ({
+      id: comment.id,
+      postId: comment.postId,
+      content: comment.content ?? "",
+      image: comment.image ?? undefined,
+      user: comment.user ?? "unknown user",
+      userAvatar: comment.userAvatar,
+      userColor: comment.userColor ?? "#F5F7FB",
+      likes: 0,
+      liked: false,
+    }));
+  }, [commentsData.data]);
+  const comment = useCallback(() => {
+    router.push({ pathname: "/(App)/(Posts)/comment", params: { postId: id } });
+  }, [id, router]);
   useFocusEffect(
     useCallback(() => {
-      setPost(undefined);
-      setComments(undefined);
       onRefresh();
-    }, [postData.refetch, commentsData.refetch]),
+    }, [onRefresh]),
   );
-  useEffect(() => {
-    showData();
-  }, [
-    postData.data,
-    postData.isLoading,
-    commentsData.data,
-    commentsData.isLoading,
-  ]);
   return (
     <>
       <AnimatedPageFrame

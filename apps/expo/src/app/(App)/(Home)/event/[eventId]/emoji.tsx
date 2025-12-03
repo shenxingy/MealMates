@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,64 @@ import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFr
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+interface FireworkParticle {
+  id: number;
+  emoji: string;
+  anim: Animated.Value;
+  delay: number;
+  duration: number;
+  startX: number;
+  startY: number;
+  endXDelta: number;
+  rotateStart: string;
+  rotateEnd: string;
+  scale: number;
+}
+
+interface EventParticipant {
+  id: number;
+  userId: string;
+  name: string | null;
+  avatarUrl: string | null;
+  avatarColor: string | null;
+  successConfirmed: boolean;
+}
+
+interface EventDetails {
+  id: number;
+  userId: string;
+  status: string;
+  emoji: string;
+  hostSuccessConfirmed: boolean;
+  participantSuccessConfirmed: boolean;
+  participants: EventParticipant[];
+}
+
+const PARTICLE_COUNT = 80;
+
+const createParticles = (eventEmoji: string): FireworkParticle[] => {
+  const emojis = ["🎉", "✨", "🎊", eventEmoji];
+  return Array.from({ length: PARTICLE_COUNT }).map((_, idx) => {
+    const startX = Math.random() * SCREEN_WIDTH;
+    const startY = -Math.random() * (SCREEN_HEIGHT * 0.5) - 50;
+    const endXDelta = (Math.random() - 0.5) * 100;
+
+    return {
+      id: idx,
+      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+      anim: new Animated.Value(0),
+      delay: Math.random() * 1500,
+      duration: 2500 + Math.random() * 1500,
+      startX,
+      startY,
+      endXDelta,
+      rotateStart: `${Math.random() * 360}deg`,
+      rotateEnd: `${Math.random() * 360 + 360 * (Math.random() > 0.5 ? 1 : -1)}deg`,
+      scale: 0.8 + Math.random() * 0.7,
+    };
+  });
+};
+
 const EmojiConfirmPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const router = useRouter();
@@ -37,55 +95,54 @@ const EmojiConfirmPage = () => {
     data,
     isLoading,
     refetch: refetchDetails,
-  } = useQuery({
+  } = useQuery<EventDetails | null>({
     queryKey: ["eventDetails", eventId],
-    queryFn: () => fetchDetailedEvent(eventId),
+    queryFn: async () => {
+      const response = await fetchDetailedEvent(eventId);
+      return response as EventDetails;
+    },
     enabled: !!eventId,
   });
 
   const eventEmoji = data?.emoji ?? "🍽️";
   const status = data?.status;
   const isStatusSuccess = status === "success";
-  const hasConfirmed = useMemo(() => {
-    if (!data || !userId) return false;
-    if (data.status === "success") return true;
-    if (data.userId === userId) {
-      return Boolean(data.hostSuccessConfirmed);
+  const participantConfirm = useMemo(() => {
+    if (!data || !userId) {
+      return { hasConfirmed: false, isHost: false };
     }
-    return Boolean(data.participantSuccessConfirmed);
+    if (data.status === "success") {
+      return { hasConfirmed: true, isHost: data.userId === userId };
+    }
+    if (data.userId === userId) {
+      return { hasConfirmed: Boolean(data.hostSuccessConfirmed), isHost: true };
+    }
+    const participantRecord = data.participants.find(
+      (p) => p.userId === userId,
+    );
+    return {
+      hasConfirmed: Boolean(participantRecord?.successConfirmed),
+      isHost: false,
+    };
+  }, [data, userId]);
+
+  const canUserConfirm = useMemo(() => {
+    if (!data || !userId) return false;
+    if (data.userId === userId) return true;
+    return Boolean(
+      data.participants.some((participant) => participant.userId === userId),
+    );
   }, [data, userId]);
 
   // --- Fireworks Rain Animation Logic ---
   const [showFireworks, setShowFireworks] = useState(false);
-  const PARTICLE_COUNT = 80; // Increased count for a better rain effect
+  const [fireworksRain, setFireworksRain] = useState<FireworkParticle[]>([]);
 
-  const fireworksRain = useMemo(() => {
-    const emojis = ["🎉", "✨", "🎊", eventEmoji]; // Mix in the event emoji
-    return Array.from({ length: PARTICLE_COUNT }).map((_, idx) => {
-      const startX = Math.random() * SCREEN_WIDTH;
-      // Randomize start height above the screen
-      const startY = -Math.random() * (SCREEN_HEIGHT * 0.5) - 50;
-      // Add slight horizontal drift
-      const endXDelta = (Math.random() - 0.5) * 100;
-
-      return {
-        id: idx,
-        emoji: emojis[Math.floor(Math.random() * emojis.length)],
-        anim: new Animated.Value(0),
-        delay: Math.random() * 1500, // Spread out the start times
-        duration: 2500 + Math.random() * 1500, // Vary falling speed
-        startX,
-        startY,
-        endXDelta,
-        // Random initial rotation and direction
-        rotateStart: `${Math.random() * 360}deg`,
-        rotateEnd: `${Math.random() * 360 + 360 * (Math.random() > 0.5 ? 1 : -1)}deg`,
-        scale: 0.8 + Math.random() * 0.7, // Vary size
-      };
-    });
+  useEffect(() => {
+    setFireworksRain(createParticles(eventEmoji));
   }, [eventEmoji]);
 
-  const triggerFireworks = () => {
+  const triggerFireworks = useCallback(() => {
     setShowFireworks(true);
 
     const animations = fireworksRain.map((item) => {
@@ -105,14 +162,14 @@ const EmojiConfirmPage = () => {
         router.replace("/(App)/(Home)");
       }, 500);
     });
-  };
+  }, [fireworksRain, router]);
 
   useEffect(() => {
     // Trigger automatically if status is already success on load
     if (data?.status === "success" && !showFireworks) {
       triggerFireworks();
     }
-  }, [data?.status]);
+  }, [data?.status, showFireworks, triggerFireworks]);
 
   const confirmSuccessMutation = useMutation({
     mutationFn: async () => {
@@ -134,8 +191,8 @@ const EmojiConfirmPage = () => {
         triggerFireworks();
       } else {
         Alert.alert(
-          "Success recorded",
-          "Waiting for the other person to confirm.",
+          participantConfirm.hasConfirmed ? "Success removed" : "Success recorded",
+          "Waiting for everyone to confirm.",
         );
       }
     },
@@ -151,8 +208,8 @@ const EmojiConfirmPage = () => {
 
   const disableButton =
     !userId ||
+    !canUserConfirm ||
     isStatusSuccess ||
-    hasConfirmed ||
     confirmSuccessMutation.isPending;
 
   if (isLoading) {
@@ -242,7 +299,11 @@ const EmojiConfirmPage = () => {
             <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.confirmText}>
-              {hasConfirmed || isStatusSuccess ? "Waiting..." : "Success"}
+              {isStatusSuccess
+                ? "Waiting..."
+                : participantConfirm.hasConfirmed
+                  ? "Undo Success"
+                  : "Success"}
             </Text>
           )}
         </Pressable>

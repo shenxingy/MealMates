@@ -60,17 +60,14 @@ export const eventRouter = {
       },
     });
 
-    return events.map((row) => {
-      const { user, ...eventData } = row;
-      return {
-        ...eventData,
-        status: eventData.status ?? EVENT_STATUS.WAITING,
-        emoji: eventData.emoji ?? "🍽️",
-        username: user.name,
-        avatarUrl: user.image,
-        avatarColor: user.avatarColor,
-      };
-    });
+    return events.map(({ user, ...eventData }) => ({
+      ...eventData,
+      status: eventData.status,
+      emoji: eventData.emoji,
+      username: user.name,
+      avatarUrl: user.image,
+      avatarColor: user.avatarColor,
+    }));
   }),
 
   list: publicProcedure
@@ -83,6 +80,8 @@ export const eventRouter = {
       const pageSize = 20;
       const offset = (input.page - 1) * pageSize;
 
+      const sessionUserId = ctx.session?.user.id;
+
       const events = await ctx.db.query.event.findMany({
         where: or(
           ...OPEN_EVENT_STATUSES.map((status) =>
@@ -90,9 +89,9 @@ export const eventRouter = {
           ),
         ),
         orderBy:
-          ctx.session && ctx.session.user?.id
+          sessionUserId
             ? [
-                sql`CASE WHEN ${schema.event.userId} = ${ctx.session.user.id} THEN 0 ELSE 1 END`,
+                sql`CASE WHEN ${schema.event.userId} = ${sessionUserId} THEN 0 ELSE 1 END`,
                 desc(schema.event.createdAt),
               ]
             : desc(schema.event.createdAt),
@@ -103,17 +102,14 @@ export const eventRouter = {
         },
       });
 
-      return events.map((row) => {
-        const { user, ...eventData } = row;
-        return {
-          ...eventData,
-          status: eventData.status ?? EVENT_STATUS.WAITING,
-          emoji: eventData.emoji ?? "🍽️",
-          username: user.name,
-          avatarUrl: user.image,
-          avatarColor: user.avatarColor,
-        };
-      });
+      return events.map(({ user, ...eventData }) => ({
+        ...eventData,
+        status: eventData.status,
+        emoji: eventData.emoji,
+        username: user.name,
+        avatarUrl: user.image,
+        avatarColor: user.avatarColor,
+      }));
     }),
 
   create: publicProcedure
@@ -140,6 +136,9 @@ export const eventRouter = {
     .mutation(async ({ ctx, input }) => {
       const targetEvent = await ctx.db.query.event.findFirst({
         where: eq(schema.event.id, input.eventId),
+        with: {
+          participants: true,
+        },
       });
 
       if (!targetEvent) {
@@ -149,34 +148,51 @@ export const eventRouter = {
       const isHost = targetEvent.userId === input.userId;
 
       // If participant, ensure they actually joined
-      if (!isHost) {
-        const participant = await ctx.db.query.eventParticipant.findFirst({
-          where: and(
-            eq(schema.eventParticipant.eventId, input.eventId),
-            eq(schema.eventParticipant.userId, input.userId),
-          ),
-        });
-        if (!participant) {
-          throw new Error("You must join the event before confirming success.");
-        }
+      const participant = targetEvent.participants.find(
+        (p) => p.userId === input.userId,
+      );
+      if (!isHost && !participant) {
+        throw new Error("You must join the event before confirming success.");
       }
 
-      const nextHostConfirmed =
-        targetEvent.hostSuccessConfirmed || isHost ? true : false;
-      const nextParticipantConfirmed =
-        targetEvent.participantSuccessConfirmed || !isHost ? true : false;
+      const toggledParticipants = targetEvent.participants.map((p) => {
+        if (p.userId !== input.userId) return p;
+        return { ...p, successConfirmed: !p.successConfirmed };
+      });
+
+      if (!isHost && participant) {
+        await ctx.db
+          .update(schema.eventParticipant)
+          .set({ successConfirmed: !participant.successConfirmed })
+          .where(eq(schema.eventParticipant.id, participant.id));
+      }
+
+      const nextHostConfirmed = isHost
+        ? !targetEvent.hostSuccessConfirmed
+        : targetEvent.hostSuccessConfirmed;
+
+      const allParticipantsConfirmed =
+        toggledParticipants.length > 0 &&
+        toggledParticipants.every((p) => p.successConfirmed);
 
       const shouldMarkSuccess =
         nextHostConfirmed &&
-        nextParticipantConfirmed &&
+        allParticipantsConfirmed &&
+        toggledParticipants.length > 0 &&
         targetEvent.status !== EVENT_STATUS.DELETED;
+
+      const nextStatus = shouldMarkSuccess
+        ? EVENT_STATUS.SUCCESS
+        : toggledParticipants.length > 0
+          ? EVENT_STATUS.JOINED
+          : EVENT_STATUS.WAITING;
 
       const [updated] = await ctx.db
         .update(schema.event)
         .set({
           hostSuccessConfirmed: nextHostConfirmed,
-          participantSuccessConfirmed: nextParticipantConfirmed,
-          status: shouldMarkSuccess ? EVENT_STATUS.SUCCESS : targetEvent.status,
+          participantSuccessConfirmed: allParticipantsConfirmed,
+          status: nextStatus,
           updatedAt: new Date(),
         })
         .where(eq(schema.event.id, input.eventId))
@@ -225,10 +241,11 @@ export const eventRouter = {
       return participants.map((participant) => ({
         id: participant.id,
         userId: participant.userId,
-        name: participant.user?.name ?? "Unknown",
-        avatarUrl: participant.user?.image ?? null,
-        avatarColor: participant.user?.avatarColor ?? "#F5F7FB",
-        joinedAt: participant.joinedAt?.toISOString() ?? null,
+        name: participant.user.name,
+        avatarUrl: participant.user.image,
+        avatarColor: participant.user.avatarColor,
+        successConfirmed: participant.successConfirmed,
+        joinedAt: participant.joinedAt.toISOString(),
       }));
     }),
 
@@ -253,6 +270,23 @@ export const eventRouter = {
       await ctx.db
         .insert(schema.eventParticipant)
         .values({ eventId: input.eventId, userId: input.userId });
+
+      await ctx.db
+        .update(schema.event)
+        .set({
+          status: EVENT_STATUS.JOINED,
+          hostSuccessConfirmed: false,
+          participantSuccessConfirmed: false,
+        })
+        .where(
+          and(
+            eq(schema.event.id, input.eventId),
+            or(
+              eq(schema.event.status, EVENT_STATUS.WAITING),
+              eq(schema.event.status, EVENT_STATUS.JOINED),
+            ),
+          ),
+        );
 
       return { success: true, alreadyJoined: false };
     }),
