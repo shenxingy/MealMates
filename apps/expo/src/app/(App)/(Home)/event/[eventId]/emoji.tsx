@@ -193,7 +193,9 @@ const EmojiConfirmPage = () => {
         triggerFireworks();
       } else {
         Alert.alert(
-          participantConfirm.hasConfirmed ? "Success removed" : "Success recorded",
+          participantConfirm.hasConfirmed
+            ? "Success removed"
+            : "Success recorded",
           "Waiting for everyone to confirm.",
         );
       }

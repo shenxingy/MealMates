@@ -84,10 +84,7 @@ const EventDetailsPage = () => {
     enabled: !!numericEventId,
   });
 
-  const participants = useMemo(
-    () => participantList ?? [],
-    [participantList],
-  );
+  const participants = useMemo(() => participantList ?? [], [participantList]);
 
   const hasJoined = Boolean(joinStatus?.joined);
 

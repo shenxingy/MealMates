@@ -185,10 +185,9 @@ export default function YouPage() {
     },
   });
 
-  const {
-    data: profileStats,
-    refetch: refetchProfileStats,
-  } = useQuery<RouterOutputs["user"]["profileStats"]>({
+  const { data: profileStats, refetch: refetchProfileStats } = useQuery<
+    RouterOutputs["user"]["profileStats"]
+  >({
     queryKey: ["userProfileStats", storedUserId],
     enabled: Boolean(storedUserId),
     queryFn: async () => {
