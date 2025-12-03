@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 import { desc, ilike, or } from "@mealmates/db";
 import { event, post } from "@mealmates/db/schema";
 
-import { publicProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const searchRouter = {
   globalSearch: publicProcedure
@@ -71,5 +71,30 @@ export const searchRouter = {
       }
 
       return results;
+    }),
+
+  // Call AI Agent
+  genWithAI: protectedProcedure
+    .input(z.any())
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const response = await fetch("http://localhost:8080/events/ai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(input),
+        });
+
+        if (!response.ok) {
+          throw new Error(`AI service returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("AI service request failed:", error);
+        throw new Error("Failed to generate event with AI");
+      }
     }),
 } satisfies TRPCRouterRecord;
