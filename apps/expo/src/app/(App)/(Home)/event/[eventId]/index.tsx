@@ -26,6 +26,9 @@ import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../../../components/frame/EmptySpace";
 
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+const DEFAULT_AVATAR_COLOR = "#F5F7FB";
+
 const EventDetailsPage = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const colorScheme = useColorScheme();
@@ -107,6 +110,36 @@ const EventDetailsPage = () => {
     },
   });
 
+  const getInitials = (name: string) => {
+    return name.trim().charAt(0).toUpperCase();
+  };
+
+  const resolveAvatarDisplay = (
+    avatarValue: string | null | undefined,
+    fallbackName: string,
+  ) => {
+    const trimmed = avatarValue?.trim();
+    if (trimmed && trimmed.startsWith("http")) {
+      return { type: "image" as const, value: trimmed, isLetter: false };
+    }
+
+    const fallbackInitial = getInitials(fallbackName);
+    if (!trimmed) {
+      return { type: "text" as const, value: fallbackInitial, isLetter: true };
+    }
+
+    const isEmoji = EMOJI_REGEX.test(trimmed);
+    const displayText = isEmoji
+      ? trimmed
+      : trimmed.at(0)?.toUpperCase() ?? fallbackInitial;
+
+    return {
+      type: "text" as const,
+      value: displayText,
+      isLetter: !isEmoji,
+    };
+  };
+
   const restaurantCoord: Coordinates | undefined =
     data?.restaurantCoordinates ?? undefined;
   const restaurantLatitude = restaurantCoord?.latitude ?? 0;
@@ -114,9 +147,14 @@ const EventDetailsPage = () => {
   const restaurantName = data?.restaurantName ?? "Restaurant";
   const username = data?.username ?? "Unknown";
   const avatarUrl = data?.avatarUrl;
-  const avatarColor = data?.avatarColor ?? "#F5F7FB";
+  const avatarColor = data?.avatarColor ?? DEFAULT_AVATAR_COLOR;
   const scheduleTime = data?.scheduleTime ?? "TBD";
   const message = data?.message ?? "No message provided.";
+  const hostAvatar = resolveAvatarDisplay(avatarUrl, username);
+  const hostAvatarBg =
+    avatarColor && avatarColor.trim().length > 0
+      ? avatarColor
+      : DEFAULT_AVATAR_COLOR;
 
   const cardStyle = isLiquidGlassAvailable()
     ? [styles.glassCard, isDark && styles.glassCardDark]
@@ -142,10 +180,6 @@ const EventDetailsPage = () => {
     router.push(
       `/(App)/(Home)/event/${eventId}/map-modal?shared=false&restaurantName=${restaurantName}&restaurantLatitude=${restaurantLatitude}&restaurantLongitude=${restaurantLongitude}`,
     );
-  };
-
-  const getInitials = (name: string) => {
-    return name.trim().charAt(0).toUpperCase();
   };
 
   const joinMutation = useMutation<
@@ -438,20 +472,27 @@ const EventDetailsPage = () => {
       <GlassView style={cardStyle} glassEffectStyle="regular">
         <View style={styles.userCardContent}>
           <View style={styles.avatarContainer}>
-            {avatarUrl?.startsWith("http") ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+            {hostAvatar.type === "image" ? (
+              <Image source={{ uri: hostAvatar.value }} style={styles.avatar} />
             ) : (
               <View
                 style={[
                   styles.avatar,
                   {
-                    backgroundColor: avatarColor,
+                    backgroundColor: hostAvatarBg,
                     justifyContent: "center",
                     alignItems: "center",
                   },
                 ]}
               >
-                <Text style={{ fontSize: 20, color: '#202020' }}>{getInitials(username)}</Text>
+                <Text
+                  style={[
+                    styles.avatarText,
+                    hostAvatar.isLetter && styles.avatarLetter,
+                  ]}
+                >
+                  {hostAvatar.value}
+                </Text>
               </View>
             )}
           </View>
@@ -561,46 +602,64 @@ const EventDetailsPage = () => {
             No participants yet.
           </Text>
         ) : (
-          participants.map((participant) => (
-            <View key={participant.id} style={styles.participantRow}>
-              {participant.avatarUrl ? (
-                <Image
-                  source={{ uri: participant.avatarUrl || DEFAULT_USER_AVATAR }}
-                  style={styles.participantAvatar}
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.participantAvatar,
-                    {
-                      backgroundColor: participant.avatarColor ?? "#F5F7FB",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    },
-                  ]}
-                >
-                  <Text style={styles.participantInitial}>
-                    {getInitials(participant.name)}
+          participants.map((participant) => {
+            const participantAvatar = resolveAvatarDisplay(
+              participant.avatarUrl,
+              participant.name,
+            );
+            const participantAvatarBg =
+              participant.avatarColor && participant.avatarColor.trim().length > 0
+                ? participant.avatarColor
+                : DEFAULT_AVATAR_COLOR;
+
+            return (
+              <View key={participant.id} style={styles.participantRow}>
+                {participantAvatar.type === "image" ? (
+                  <Image
+                    source={{
+                      uri: participantAvatar.value || DEFAULT_USER_AVATAR,
+                    }}
+                    style={styles.participantAvatar}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.participantAvatar,
+                      {
+                        backgroundColor: participantAvatarBg,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.participantAvatarText,
+                        participantAvatar.isLetter && styles.participantAvatarLetter,
+                      ]}
+                    >
+                      {participantAvatar.value}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.participantTextBlock}>
+                  <Text
+                    style={[styles.participantName, isDark && styles.participantNameDark]}
+                  >
+                    {participant.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.participantJoinedText,
+                      isDark && styles.participantJoinedTextDark,
+                    ]}
+                  >
+                    joined!
                   </Text>
                 </View>
-              )}
-              <View style={styles.participantTextBlock}>
-                <Text
-                  style={[styles.participantName, isDark && styles.participantNameDark]}
-                >
-                  {participant.name}
-                </Text>
-                <Text
-                  style={[
-                    styles.participantJoinedText,
-                    isDark && styles.participantJoinedTextDark,
-                  ]}
-                >
-                  joined!
-                </Text>
               </View>
-            </View>
-          ))
+            );
+          })
         )}
       </GlassView>
 
@@ -666,6 +725,13 @@ const styles = StyleSheet.create({
   avatar: {
     width: "100%",
     height: "100%",
+  },
+  avatarText: {
+    fontSize: 24,
+    color: "#202020",
+  },
+  avatarLetter: {
+    fontWeight: "700",
   },
   userName: {
     fontSize: 18,
@@ -777,8 +843,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#F5F7FB",
   },
-  participantInitial: {
+  participantAvatarText: {
     color: "#202020",
+    fontSize: 18,
+  },
+  participantAvatarLetter: {
     fontWeight: "700",
   },
   participantTextBlock: {
