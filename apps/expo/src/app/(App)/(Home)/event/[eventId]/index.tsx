@@ -359,21 +359,49 @@ const EventDetailsPage = () => {
 
     return (
       <View style={styles.actionContainer}>
-        <Pressable
-          style={[
-            styles.actionButton,
-            styles.leaveButton,
-            isDark && styles.leaveButtonDark,
-          ]}
-          onPress={handleLeave}
-          disabled={leaveMutation.isPending}
-        >
-          <Text
-            style={[styles.leaveButtonText, isDark && styles.leaveButtonTextDark]}
+        <View style={styles.dualButtonRow}>
+          <Pressable
+            style={[
+              styles.actionButton,
+              styles.emojiButton,
+              isDark && styles.emojiButtonDark,
+            ]}
+            onPress={() => console.log("Show Emoji TODO")}
           >
-            {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
-          </Text>
-        </Pressable>
+            <Ionicons
+              name="happy-outline"
+              size={24}
+              color={isDark ? "#FBBF24" : "#D97706"}
+            />
+            <Text
+              style={[
+                styles.emojiButtonText,
+                isDark && styles.emojiButtonTextDark,
+              ]}
+            >
+              Emoji
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.actionButton,
+              styles.leaveButton,
+              isDark && styles.leaveButtonDark,
+            ]}
+            onPress={handleLeave}
+            disabled={leaveMutation.isPending}
+          >
+            <Text
+              style={[
+                styles.leaveButtonText,
+                isDark && styles.leaveButtonTextDark,
+              ]}
+            >
+              {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
     );
   };
@@ -848,7 +876,7 @@ const styles = StyleSheet.create({
     color: "#60A5FA",
   },
   leaveButton: {
-    width: "100%",
+    flex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderWidth: 2,
     borderColor: "#F87171",
