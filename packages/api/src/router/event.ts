@@ -88,13 +88,12 @@ export const eventRouter = {
             eq(schema.event.status, status),
           ),
         ),
-        orderBy:
-          sessionUserId
-            ? [
-                sql`CASE WHEN ${schema.event.userId} = ${sessionUserId} THEN 0 ELSE 1 END`,
-                desc(schema.event.createdAt),
-              ]
-            : desc(schema.event.createdAt),
+        orderBy: sessionUserId
+          ? [
+              sql`CASE WHEN ${schema.event.userId} = ${sessionUserId} THEN 0 ELSE 1 END`,
+              desc(schema.event.createdAt),
+            ]
+          : desc(schema.event.createdAt),
         limit: pageSize,
         offset: offset,
         with: {
@@ -312,9 +311,7 @@ export const eventRouter = {
         .update(schema.event)
         .set({
           status:
-            remaining.length > 0
-              ? EVENT_STATUS.JOINED
-              : EVENT_STATUS.WAITING,
+            remaining.length > 0 ? EVENT_STATUS.JOINED : EVENT_STATUS.WAITING,
           hostSuccessConfirmed: false,
           participantSuccessConfirmed: false,
           updatedAt: new Date(),

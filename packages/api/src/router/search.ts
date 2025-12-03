@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, desc, ilike, or, eq } from "@mealmates/db";
-import { event, post, EVENT_STATUS } from "@mealmates/db/schema";
+import { and, desc, eq, ilike, or } from "@mealmates/db";
+import { event, EVENT_STATUS, post } from "@mealmates/db/schema";
 
 import { publicProcedure } from "../trpc";
 

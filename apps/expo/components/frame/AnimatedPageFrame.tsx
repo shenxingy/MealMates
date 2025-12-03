@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
 import type React from "react";
-import { useMemo, useRef, useState } from "react";
 import type {
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
 } from "react-native";
+import { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Image,
@@ -29,8 +29,8 @@ import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaskedView from "@react-native-masked-view/masked-view";
 
-import LinearGradientBackground from "../background/LinearGradientBackground";
 import iconLight from "../../assets/icon-light.png";
+import LinearGradientBackground from "../background/LinearGradientBackground";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 

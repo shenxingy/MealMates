@@ -14,11 +14,7 @@ export default function Like({
 }) {
   return (
     <View style={border ? [styles.like, styles.border] : styles.like}>
-      {liked ? (
-        <Image source={filledHeart} />
-      ) : (
-        <Image source={emptyHeart} />
-      )}
+      {liked ? <Image source={filledHeart} /> : <Image source={emptyHeart} />}
       <Text> {likes}</Text>
     </View>
   );

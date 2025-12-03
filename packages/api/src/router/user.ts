@@ -5,10 +5,10 @@ import { and, eq, sql } from "@mealmates/db";
 import {
   account,
   event,
+  EVENT_STATUS,
   eventParticipant,
   post,
   user,
-  EVENT_STATUS,
 } from "@mealmates/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";

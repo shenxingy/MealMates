@@ -152,16 +152,16 @@ export default function HomePage() {
               handleEventPress(event.id);
             }}
           >
-              <EventView
-                scheduleTime={event.scheduleTime}
-                username={event.username ?? "Anonymous"}
-                avatarUrl={event.avatarUrl ?? undefined}
-                avatarColor={event.avatarColor ?? undefined}
-                mood={event.mood ?? undefined}
-                restaurantName={event.restaurantName}
-                message={event.message ?? undefined}
-                isLoading={false}
-              />
+            <EventView
+              scheduleTime={event.scheduleTime}
+              username={event.username ?? "Anonymous"}
+              avatarUrl={event.avatarUrl ?? undefined}
+              avatarColor={event.avatarColor ?? undefined}
+              mood={event.mood ?? undefined}
+              restaurantName={event.restaurantName}
+              message={event.message ?? undefined}
+              isLoading={false}
+            />
           </Pressable>
         </View>
       ))}
