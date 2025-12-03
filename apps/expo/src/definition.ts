@@ -34,6 +34,20 @@ export interface JoinSuccessPayload {
   message: string;
 }
 
+export interface ParticipantJoinedPayload {
+  userId: string;
+  eventId: number;
+}
+
+export interface EventParticipantDTO {
+  id: number;
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  avatarColor: string | null;
+  joinedAt: string | null;
+}
+
 export interface LocationUpdatePayload {
   userId: string;
   username: string;
@@ -53,6 +67,7 @@ export interface ErrorPayload {
 
 export interface MessageHandlers {
   onJoinSuccess?: (message: JoinSuccessPayload) => void;
+  onParticipantJoined?: (message: ParticipantJoinedPayload) => void;
   onLocationUpdate?: (message: LocationUpdatePayload) => void;
   onUserLeft?: (message: UserLeftPayload) => void;
   onError?: (message: ErrorPayload) => void;
@@ -66,9 +81,15 @@ export interface UseApiSocketOptions {
 }
 
 export interface ServerMessage {
-  type: "join_success" | "location_update" | "user_left" | "error";
+  type:
+    | "join_success"
+    | "participant_joined"
+    | "location_update"
+    | "user_left"
+    | "error";
   payload:
     | JoinSuccessPayload
+    | ParticipantJoinedPayload
     | LocationUpdatePayload
     | UserLeftPayload
     | ErrorPayload;

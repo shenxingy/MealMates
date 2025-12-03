@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, desc, eq, schema, sql } from "@mealmates/db";
+import { and, asc, desc, eq, schema, sql } from "@mealmates/db";
 
 import { publicProcedure } from "../trpc";
 
@@ -102,6 +102,27 @@ export const eventRouter = {
         .limit(1);
 
       return { joined: existingRows.length > 0 };
+    }),
+
+  participants: publicProcedure
+    .input(z.object({ eventId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const participants = await ctx.db.query.eventParticipant.findMany({
+        where: eq(schema.eventParticipant.eventId, input.eventId),
+        with: {
+          user: true,
+        },
+        orderBy: asc(schema.eventParticipant.joinedAt),
+      });
+
+      return participants.map((participant) => ({
+        id: participant.id,
+        userId: participant.userId,
+        name: participant.user?.name ?? "Unknown",
+        avatarUrl: participant.user?.image ?? null,
+        avatarColor: participant.user?.avatarColor ?? "#F5F7FB",
+        joinedAt: participant.joinedAt?.toISOString() ?? null,
+      }));
     }),
 
   join: publicProcedure

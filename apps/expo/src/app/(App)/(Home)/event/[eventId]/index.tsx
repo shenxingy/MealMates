@@ -16,7 +16,10 @@ import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { EventParticipantDTO } from "~/definition";
+import { useApiSocket } from "~/hooks/useApiSocket";
 import type { RouterOutputs } from "~/utils/api";
+import { DEFAULT_USER_AVATAR } from "~/utils/api";
 import { fetchDetailedEvent, trpcClient } from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
@@ -28,22 +31,28 @@ const EventDetailsPage = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const baseColor = isDark ? "70,70,70" : "255,140,0";
+  const numericEventId = eventId ? Number(eventId) : null;
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<EventParticipantDTO[]>([]);
 
   useEffect(() => {
     void getStoredUserId().then(setCurrentUserId);
   }, []);
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    refetch: refetchDetails,
+  } = useQuery({
     queryKey: ["eventDetails", eventId],
     queryFn: () => fetchDetailedEvent(eventId),
     enabled: !!eventId,
   });
 
-  const { data: joinStatus } = useQuery({
+  const { data: joinStatus, refetch: refetchJoinStatus } = useQuery({
     queryKey: ["eventJoinStatus", eventId, currentUserId],
     queryFn: async () => {
       if (!currentUserId) return { joined: false };
@@ -55,9 +64,48 @@ const EventDetailsPage = () => {
     enabled: !!eventId && !!currentUserId,
   });
 
+  const {
+    data: participantList,
+    isLoading: participantsLoading,
+    refetch: refetchParticipants,
+  } = useQuery<EventParticipantDTO[]>({
+    queryKey: ["eventParticipants", eventId],
+    queryFn: async () => {
+      if (!numericEventId) return [];
+      return await trpcClient.event.participants.query({
+        eventId: numericEventId,
+      });
+    },
+    enabled: !!numericEventId,
+  });
+
+  useEffect(() => {
+    if (participantList) {
+      setParticipants(participantList);
+    }
+  }, [participantList]);
+
   const hasJoined = Boolean(joinStatus?.joined);
 
   const creatorId = data?.userId;
+
+  const socketEnabled =
+    !!numericEventId && !!currentUserId && currentUserId === creatorId;
+
+  useApiSocket({
+    userId: currentUserId ?? "",
+    eventId: eventId ?? "",
+    enabled: socketEnabled,
+    handlers: {
+      onParticipantJoined: (payload) => {
+        if (numericEventId && payload.eventId === numericEventId) {
+          void queryClient.invalidateQueries({
+            queryKey: ["eventParticipants", eventId],
+          });
+        }
+      },
+    },
+  });
 
   const restaurantCoord: Coordinates | undefined =
     data?.restaurantCoordinates ?? undefined;
@@ -113,6 +161,9 @@ const EventDetailsPage = () => {
       void queryClient.invalidateQueries({
         queryKey: ["eventJoinStatus", eventId, currentUserId],
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["eventParticipants", eventId],
+      });
     },
     onError: (error) => {
       Alert.alert("Error", "Failed to join event: " + error.message);
@@ -131,6 +182,9 @@ const EventDetailsPage = () => {
       Alert.alert("Left", "You have left the event.");
       void queryClient.invalidateQueries({
         queryKey: ["eventJoinStatus", eventId, currentUserId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["eventParticipants", eventId],
       });
     },
     onError: (error) => {
@@ -194,6 +248,127 @@ const EventDetailsPage = () => {
     ]);
   };
 
+  const handleRefreshPage = async () => {
+    const tasks: Array<Promise<unknown>> = [];
+    if (eventId) {
+      tasks.push(refetchDetails());
+      tasks.push(refetchParticipants());
+    }
+    if (currentUserId && eventId) {
+      tasks.push(refetchJoinStatus());
+    }
+    await Promise.all(tasks);
+  };
+
+  const renderActionButtons = () => {
+    if (!currentUserId || !creatorId) {
+      return null;
+    }
+
+    if (currentUserId === creatorId) {
+      const hasParticipants = participants.length > 0;
+      if (hasParticipants) {
+        return (
+          <View style={[styles.joinButtonContainer, styles.hostButtonRow]}>
+            <Pressable
+              style={[styles.emojiButton, isDark && styles.emojiButtonDark]}
+              onPress={() => console.log("Show Emoji TODO")}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons
+                  name="happy-outline"
+                  size={22}
+                  color={isDark ? "#FBBF24" : "#D97706"}
+                  style={styles.buttonIcon}
+                />
+                <Text
+                  style={[
+                    styles.emojiButtonText,
+                    isDark && styles.emojiButtonTextDark,
+                  ]}
+                >
+                  Emoji
+                </Text>
+              </View>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.cancelButton,
+                styles.hostCancelButton,
+                isDark && styles.cancelButtonDark,
+              ]}
+              onPress={handleCancel}
+              disabled={cancelMutation.isPending}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={22}
+                  color="#FECACA"
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.cancelButtonText}>
+                  {cancelMutation.isPending ? "Cancelling..." : "Cancel"}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        );
+      }
+      return (
+        <View style={styles.joinButtonContainer}>
+          <Pressable
+            style={[
+              styles.cancelButton,
+              styles.hostSingleCancelButton,
+              isDark && styles.cancelButtonDark,
+            ]}
+            onPress={handleCancel}
+            disabled={cancelMutation.isPending}
+          >
+            <Text style={styles.cancelButtonText}>
+              {cancelMutation.isPending ? "Cancelling..." : "Cancel Event"}
+            </Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    if (!hasJoined) {
+      return (
+        <View style={styles.joinButtonContainer}>
+          <Pressable
+            style={[styles.joinButton, isDark && styles.joinButtonDark]}
+            onPress={handleJoin}
+            disabled={joinMutation.isPending}
+          >
+            <Text
+              style={[styles.joinButtonText, isDark && styles.joinButtonTextDark]}
+            >
+              {joinMutation.isPending ? "Joining..." : "Join"}
+            </Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.joinButtonContainer}>
+        <Pressable
+          style={[styles.leaveButton, isDark && styles.leaveButtonDark]}
+          onPress={handleLeave}
+          disabled={leaveMutation.isPending}
+        >
+          <Text
+            style={[styles.leaveButtonText, isDark && styles.leaveButtonTextDark]}
+          >
+            {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
   if (isLoading) {
     return (
       <>
@@ -216,6 +391,7 @@ const EventDetailsPage = () => {
       baseColor={baseColor}
       headerTitle="Meet with"
       scrollEnabled={true}
+      onRefresh={handleRefreshPage}
       enableReturnButton={true}
       returnButtonText="Home"
     >
@@ -310,6 +486,87 @@ const EventDetailsPage = () => {
         <Text style={[styles.messageText, isDark && styles.messageTextDark]}>{message}</Text>
       </GlassView>
 
+      {/* Participants */}
+      <GlassView style={cardStyle} glassEffectStyle="regular">
+        <View style={styles.participantsHeader}>
+          {Platform.OS === "ios" ? (
+            <SymbolView
+              name="person.2.fill"
+              size={18}
+              tintColor={isDark ? "#60A5FA" : "#3B82F6"}
+            />
+          ) : (
+            <Ionicons name="people" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
+          )}
+          <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>
+            Participants
+          </Text>
+          <Text style={[styles.participantCount, isDark && styles.participantCountDark]}>
+            {participants.length}
+          </Text>
+        </View>
+        {participantsLoading ? (
+          <Text
+            style={[
+              styles.participantStatusText,
+              isDark && styles.participantStatusTextDark,
+            ]}
+          >
+            Loading participants...
+          </Text>
+        ) : participants.length === 0 ? (
+          <Text
+            style={[
+              styles.participantStatusText,
+              isDark && styles.participantStatusTextDark,
+            ]}
+          >
+            No participants yet.
+          </Text>
+        ) : (
+          participants.map((participant) => (
+            <View key={participant.id} style={styles.participantRow}>
+              {participant.avatarUrl ? (
+                <Image
+                  source={{ uri: participant.avatarUrl || DEFAULT_USER_AVATAR }}
+                  style={styles.participantAvatar}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.participantAvatar,
+                    {
+                      backgroundColor: participant.avatarColor ?? "#F5F7FB",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    },
+                  ]}
+                >
+                  <Text style={styles.participantInitial}>
+                    {getInitials(participant.name)}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.participantTextBlock}>
+                <Text
+                  style={[styles.participantName, isDark && styles.participantNameDark]}
+                >
+                  {participant.name}
+                </Text>
+                <Text
+                  style={[
+                    styles.participantJoinedText,
+                    isDark && styles.participantJoinedTextDark,
+                  ]}
+                >
+                  joined!
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
+      </GlassView>
+
       <EmptySpace marginTop={15} />
 
       {/* Map */}
@@ -326,48 +583,7 @@ const EventDetailsPage = () => {
       <EmptySpace marginTop={100} />
 
       {/* Buttons */}
-      {currentUserId && creatorId && (
-        <View style={styles.joinButtonContainer}>
-          {/* Show Join button if not creator and not joined */}
-          {currentUserId !== creatorId && !hasJoined && (
-            <Pressable
-              style={[styles.joinButton, isDark && styles.joinButtonDark]}
-              onPress={handleJoin}
-              disabled={joinMutation.isPending}
-            >
-              <Text style={[styles.joinButtonText, isDark && styles.joinButtonTextDark]}>
-                {joinMutation.isPending ? "Joining..." : "Join"}
-              </Text>
-            </Pressable>
-          )}
-
-          {/* Show Leave button if already joined */}
-          {currentUserId !== creatorId && hasJoined && (
-            <Pressable
-              style={[styles.leaveButton, isDark && styles.leaveButtonDark]}
-              onPress={handleLeave}
-              disabled={leaveMutation.isPending}
-            >
-              <Text style={[styles.leaveButtonText, isDark && styles.leaveButtonTextDark]}>
-                {leaveMutation.isPending ? "Leaving..." : "Leave Event"}
-              </Text>
-            </Pressable>
-          )}
-
-          {/* Show Cancel button for event creator */}
-          {currentUserId === creatorId && (
-            <Pressable
-              style={[styles.cancelButton, isDark && styles.cancelButtonDark]}
-              onPress={handleCancel}
-              disabled={cancelMutation.isPending}
-            >
-              <Text style={styles.cancelButtonText}>
-                {cancelMutation.isPending ? "Cancelling..." : "Cancel Event"}
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      )}
+      {renderActionButtons()}
     </AnimatedPageFrame>
   );
 };
@@ -490,6 +706,65 @@ const styles = StyleSheet.create({
   messageTextDark: {
     color: "rgba(255, 255, 255, 0.7)",
   },
+  participantsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  participantCount: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6B7280",
+  },
+  participantCountDark: {
+    color: "rgba(255, 255, 255, 0.7)",
+  },
+  participantStatusText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  participantStatusTextDark: {
+    color: "rgba(255, 255, 255, 0.6)",
+  },
+  participantRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 6,
+  },
+  participantAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F5F7FB",
+  },
+  participantInitial: {
+    color: "#202020",
+    fontWeight: "700",
+  },
+  participantTextBlock: {
+    flex: 1,
+    flexDirection: "column",
+    gap: 2,
+  },
+  participantName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1F2937",
+  },
+  participantNameDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
+  participantJoinedText: {
+    fontSize: 13,
+    color: "#10B981",
+    fontWeight: "600",
+  },
+  participantJoinedTextDark: {
+    color: "#34D399",
+  },
   joinButtonContainer: {
     position: "absolute",
     bottom: 15,
@@ -573,5 +848,68 @@ const styles = StyleSheet.create({
   },
   leaveButtonTextDark: {
     color: "#F87171",
+  },
+  hostButtonRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "space-between",
+    gap: 10,
+    paddingHorizontal: 12,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  buttonIcon: {
+    marginTop: 2,
+  },
+  buttonTextGroup: {
+    flexDirection: "column",
+    gap: 2,
+    flexShrink: 1,
+  },
+  buttonSubText: {
+    fontSize: 12,
+    color: "#4B5563",
+  },
+  buttonSubTextDark: {
+    color: "rgba(255, 255, 255, 0.65)",
+  },
+  emojiButton: {
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 28,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  emojiButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+  },
+  emojiButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333333",
+  },
+  emojiButtonTextDark: {
+    color: "rgba(255, 255, 255, 0.85)",
+  },
+  hostCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+  },
+  hostSingleCancelButton: {
+    width: "80%",
   },
 });
