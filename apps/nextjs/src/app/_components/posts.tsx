@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "@mealmates/api";
-import { CreatePostSchema } from "@mealmates/db/schema";
+// import { CreatePostSchema } from "@mealmates/db/";
 import { cn } from "@mealmates/ui";
 import { Button } from "@mealmates/ui/button";
 import {
@@ -47,11 +47,14 @@ export function CreatePostForm() {
     defaultValues: {
       content: "",
       title: "",
+      image: "",
     },
-    validators: {
-      onSubmit: CreatePostSchema,
+    // validators: {
+    //   onSubmit: CreatePostSchema,
+    // },
+    onSubmit: ({ value }) => {
+      createPost.mutate(value);
     },
-    onSubmit: (data) => createPost.mutate(data.value),
   });
 
   return (
@@ -111,6 +114,30 @@ export function CreatePostForm() {
             );
           }}
         />
+        <form.Field
+          name="image"
+          children={(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field data-invalid={isInvalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor={field.name}>Image URL</FieldLabel>
+                </FieldContent>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  aria-invalid={isInvalid}
+                  placeholder="https://example.com/meal.jpg"
+                />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
+        />
       </FieldGroup>
       <Button type="submit">Create</Button>
     </form>
@@ -147,22 +174,20 @@ export function PostList() {
 export function PostCard(props: {
   post: RouterOutputs["post"]["all"][number];
 }) {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  const deletePost = useMutation(
-    trpc.post.delete.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(trpc.post.pathFilter());
-      },
-      onError: (err) => {
-        toast.error(
-          err.data?.code === "UNAUTHORIZED"
-            ? "You must be logged in to delete a post"
-            : "Failed to delete post",
-        );
-      },
-    }),
-  );
+  // const deletePost = useMutation(
+  //   trpc.post.delete.mutationOptions({
+  //     onSuccess: async () => {
+  //       await queryClient.invalidateQueries(trpc.post.pathFilter());
+  //     },
+  //     onError: (err) => {
+  //       toast.error(
+  //         err.data?.code === "UNAUTHORIZED"
+  //           ? "You must be logged in to delete a post"
+  //           : "Failed to delete post",
+  //       );
+  //     },
+  //   }),
+  // );
 
   return (
     <div className="bg-muted flex flex-row rounded-lg p-4">
@@ -174,7 +199,7 @@ export function PostCard(props: {
         <Button
           variant="ghost"
           className="text-primary cursor-pointer text-sm font-bold uppercase hover:bg-transparent hover:text-white"
-          onClick={() => deletePost.mutate(props.post.id)}
+          // onClick={() => deletePost.mutate(props.post.id)}
         >
           Delete
         </Button>

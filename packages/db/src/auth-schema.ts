@@ -6,6 +6,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  avatarColor: text("avatar_color").default("#F5F7FB").notNull(),
   // Duke-specific fields
   dukeNetID: text("duke_net_id"),
   dukeUniqueID: text("duke_unique_id"),

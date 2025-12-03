@@ -18,9 +18,6 @@ export const DUKE_AUTH_CONFIG = {
 
   // Scopes
   scopes: ["openid", "email", "profile", "offline_access"],
-
-  // Redirect URI (must match the scheme in app.config.ts)
-  redirectUri: "mealmates://auth/callback",
 };
 
 export interface DukeUserInfo {

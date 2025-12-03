@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useColorScheme, View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -16,6 +16,8 @@ const Skeleton = (props: {
   duration?: number;
 }) => {
   const { isLoading, start, end, duration = 1000 } = props;
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   // Shimmer animation
   const shimmerPosition = useSharedValue(-1);
@@ -45,14 +47,18 @@ const Skeleton = (props: {
     <View style={styles.shimmerContainer}>
       <Animated.View style={[styles.shimmerGradient, animatedGradientStyle]}>
         <LinearGradient
-          colors={["#E6E6E6", "#F2F2F2", "#E6E6E6"]}
+          colors={
+            isDark
+              ? ["#2a2a2a", "#3a3a3a", "#2a2a2a"]
+              : ["#E6E6E6", "#F2F2F2", "#E6E6E6"]
+          }
           style={styles.shimmerOverlay}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           locations={[0, 0.5, 1]}
         />
       </Animated.View>
-      <View style={styles.shimmerBase} />
+      <View style={[styles.shimmerBase, isDark && styles.shimmerBaseDark]} />
     </View>
   );
 };
@@ -72,6 +78,9 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#E6E6E6",
     borderRadius: 24,
+  },
+  shimmerBaseDark: {
+    backgroundColor: "#2a2a2a",
   },
   shimmerGradient: {
     position: "absolute",

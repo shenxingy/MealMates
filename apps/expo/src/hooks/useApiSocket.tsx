@@ -1,12 +1,11 @@
-import { useEffect, useRef } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-
-
+import { useEffect, useRef } from "react";
+import useWebSocket, { ReadyState } from "react-use-websocket";
 
 import type {
   ErrorPayload,
   JoinSuccessPayload,
   LocationUpdatePayload,
+  ParticipantJoinedPayload,
   ServerMessage,
   UseApiSocketOptions,
   UserJoinEventMessage,
@@ -15,7 +14,6 @@ import type {
   UserShareLocationMessage,
 } from "~/definition";
 import { getStoredUsername } from "~/utils/user-storage";
-
 
 const WS_BASE_URL =
   process.env.EXPO_PUBLIC_WEBSOCKET_URL ?? "ws://localhost:3001";
@@ -42,9 +40,9 @@ export function useApiSocket({
     const loadUsername = async () => {
       const usernameFromStorage = await getStoredUsername();
       username.current = usernameFromStorage ?? "Anonymous";
-    }
+    };
     void loadUsername();
-  })
+  });
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
     WS_BASE_URL,
@@ -60,14 +58,14 @@ export function useApiSocket({
   useEffect(() => {
     if (readyState === ReadyState.OPEN && shouldConnect && !hasJoined.current) {
       const message: UserJoinEventMessage = {
-        type: 'join_event',
+        type: "join_event",
         payload: {
           userId,
           eventId: parseInt(eventId, 10),
         },
       };
       sendJsonMessage(message);
-      console.log('[useApiSocket] WebSocket connected, sending join_event');
+      console.log("[useApiSocket] WebSocket connected, sending join_event");
       hasJoined.current = true;
     }
 
@@ -80,23 +78,32 @@ export function useApiSocket({
   useEffect(() => {
     if (lastJsonMessage) {
       const message = lastJsonMessage as ServerMessage;
-      console.log('[useApiSocket] Received message:', message);
+      console.log("[useApiSocket] Received message:", message);
 
       switch (message.type) {
-        case 'join_success':
-          handlersRef.current?.onJoinSuccess?.(message.payload as JoinSuccessPayload);
+        case "join_success":
+          handlersRef.current?.onJoinSuccess?.(
+            message.payload as JoinSuccessPayload,
+          );
           break;
-        case 'location_update':
-          handlersRef.current?.onLocationUpdate?.(message.payload as LocationUpdatePayload);
+        case "participant_joined":
+          handlersRef.current?.onParticipantJoined?.(
+            message.payload as ParticipantJoinedPayload,
+          );
           break;
-        case 'user_left':
+        case "location_update":
+          handlersRef.current?.onLocationUpdate?.(
+            message.payload as LocationUpdatePayload,
+          );
+          break;
+        case "user_left":
           handlersRef.current?.onUserLeft?.(message.payload as UserLeftPayload);
           break;
-        case 'error':
+        case "error":
           handlersRef.current?.onError?.(message.payload as ErrorPayload);
           break;
         default:
-          console.warn('[useApiSocket] Unknown message type:', message);
+          console.warn("[useApiSocket] Unknown message type:", message);
       }
     }
   }, [lastJsonMessage]);
@@ -105,16 +112,16 @@ export function useApiSocket({
   const shareLocation = (latitude: number, longitude: number) => {
     if (readyState === ReadyState.OPEN && shouldConnect) {
       const message: UserShareLocationMessage = {
-        type: 'share_location',
+        type: "share_location",
         payload: {
           username: username.current,
           latitude,
           longitude,
           timestamp: new Date().toISOString(),
         },
-      }
+      };
       sendJsonMessage(message);
-      console.log('[useApiSocket] Sharing location:', message);
+      console.log("[useApiSocket] Sharing location:", message);
     }
   };
 
@@ -122,11 +129,11 @@ export function useApiSocket({
   const leaveEvent = () => {
     if (readyState === ReadyState.OPEN && shouldConnect) {
       const message: UserLeaveEventMessage = {
-        type: 'leave_event',
+        type: "leave_event",
         payload: {},
-      }
+      };
       sendJsonMessage(message);
-      console.log('[useApiSocket] Leaving event');
+      console.log("[useApiSocket] Leaving event");
     }
   };
 

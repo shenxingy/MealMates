@@ -10,10 +10,12 @@ import type { AppRouter } from "@mealmates/api";
 import type {
   ApiResponse,
   DetailedEventDTO,
+  Post,
+  PostComment,
   SimpleEventDTO,
 } from "~/definition";
-import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
+import { getStoredUserId } from "./user-storage";
 
 export const DEFAULT_USER_AVATAR =
   "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_default.png";
@@ -98,13 +100,20 @@ export const trpcClient = createTRPCClient<AppRouter>({
     httpBatchLink({
       transformer: superjson,
       url: `${getBaseUrl()}/api/trpc`,
-      headers() {
+      async headers() {
         const headers = new Map<string, string>();
         headers.set("x-trpc-source", "expo-react");
 
-        const cookies = authClient.getCookie();
-        if (cookies) {
-          headers.set("Cookie", cookies);
+        try {
+          const dukeUserId = await getStoredUserId();
+          if (dukeUserId) {
+            headers.set("x-duke-user-id", dukeUserId);
+          }
+        } catch (error) {
+          console.warn(
+            "[tRPC] Failed to read Duke user id from storage",
+            error,
+          );
         }
         return Object.fromEntries(headers);
       },
@@ -139,4 +148,38 @@ export const fetchDetailedEvent = async (eventId: string) => {
   );
   console.log(res.data.data);
   return res.data.data;
+};
+
+export const fetchPostList = async () => {
+  const res = await api.get<ApiResponse<Post[]>>("/api/posts");
+  return res.data.data;
+};
+
+export const fetchPost = async (id: number) => {
+  const res = await api.get<ApiResponse<Post>>("/api/posts/" + id);
+  return res.data.data;
+};
+
+export const likePost = async (id: number, like: boolean) => {
+  const data = { like: like };
+  const res = await api.put<ApiResponse<undefined>>("/api/posts/" + id, data);
+  return res.data.message;
+};
+
+export const fetchPostComments = async (id: number) => {
+  const res = await api.get<ApiResponse<PostComment[]>>(
+    "/api/posts/" + id + "/comments",
+  );
+  return res.data.data;
+};
+
+export const likeComment = async (
+  postId: number,
+  commentId: number,
+  like: boolean,
+) => {
+  const url: string = "/api/posts/" + postId + "/comments/" + commentId;
+  const data = { like: like };
+  const res = await api.put<ApiResponse<undefined>>(url, data);
+  return res.data.message;
 };

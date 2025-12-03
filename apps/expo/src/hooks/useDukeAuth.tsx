@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import * as AuthSession from "expo-auth-session";
 import {
   exchangeCodeAsync,
@@ -11,7 +12,12 @@ import * as SecureStore from "expo-secure-store";
 import type { DukeUserInfo } from "~/config";
 import { DUKE_AUTH_CONFIG } from "~/config";
 import { trpcClient } from "~/utils/api";
-import { clearStoredUserId, clearStoredUsername, setStoredUserId, setStoredUsername } from "~/utils/user-storage";
+import {
+  clearStoredUserId,
+  clearStoredUsername,
+  setStoredUserId,
+  setStoredUsername,
+} from "~/utils/user-storage";
 
 const TOKEN_KEY = "duke_access_token";
 const REFRESH_TOKEN_KEY = "duke_refresh_token";
@@ -22,8 +28,15 @@ const extractNetIdFromSub = (sub: string) => {
   return separatorIndex === -1 ? undefined : sub.slice(0, separatorIndex);
 };
 
-export function useDukeAuth() {
-  const [isLoading, setIsLoading] = useState(false);
+type DukeAuthContextValue = ReturnType<typeof useProvideDukeAuth>;
+
+const DukeAuthContext = createContext<DukeAuthContextValue | undefined>(
+  undefined,
+);
+
+function useProvideDukeAuth() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthHydrated, setIsAuthHydrated] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<DukeUserInfo | null>(null);
@@ -36,6 +49,12 @@ export function useDukeAuth() {
     revocationEndpoint: DUKE_AUTH_CONFIG.revocationEndpoint,
   };
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: "mealmates://auth/callback",
+    scheme: "mealmates",
+    path: "auth/callback",
+  });
+
   // Set up the auth request
   const [_request, response, promptAsync] = AuthSession.useAuthRequest(
     {
@@ -43,7 +62,7 @@ export function useDukeAuth() {
       clientId: DUKE_AUTH_CONFIG.clientId,
       clientSecret: DUKE_AUTH_CONFIG.clientSecret,
       scopes: DUKE_AUTH_CONFIG.scopes,
-      redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+      redirectUri,
       usePKCE: false,
     },
     discovery,
@@ -59,18 +78,23 @@ export function useDukeAuth() {
     } else if (response?.type === "error") {
       setError(response.error?.message ?? "Authentication failed");
       setIsLoading(false);
+    } else if (response?.type === "dismiss" || response?.type === "cancel") {
+      // User backed out of the auth flow, so reset to initial state
+      setIsLoading(false);
+      setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response]);
 
   // Load stored tokens on mount
   useEffect(() => {
-    void loadStoredTokens();
+    void hydrateFromStorage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load tokens from secure storage
-  const loadStoredTokens = async () => {
+  const hydrateFromStorage = async () => {
+    setIsLoading(true);
     try {
       const storedAccessToken = await SecureStore.getItemAsync(TOKEN_KEY);
       const storedRefreshToken =
@@ -107,6 +131,9 @@ export function useDukeAuth() {
       }
     } catch (err) {
       console.error("Error loading stored tokens:", err);
+    } finally {
+      setIsAuthHydrated(true);
+      setIsLoading(false);
     }
   };
 
@@ -141,7 +168,7 @@ export function useDukeAuth() {
           clientId: DUKE_AUTH_CONFIG.clientId,
           clientSecret: DUKE_AUTH_CONFIG.clientSecret,
           code,
-          redirectUri: DUKE_AUTH_CONFIG.redirectUri,
+          redirectUri,
         },
         discovery,
       );
@@ -260,7 +287,7 @@ export function useDukeAuth() {
           "[DUKE AUTH] Tokens stored in database for server-side access",
         );
         await setStoredUserId(result.user.id);
-        await setStoredUsername(result.user.name)
+        await setStoredUsername(result.user.name);
       } else if (fallbackId) {
         await setStoredUserId(fallbackId);
         await setStoredUsername("Unknown User");
@@ -371,17 +398,19 @@ export function useDukeAuth() {
         }
       }
 
-      // Clear tokens from state
+      // Clear tokens from secure storage
+      await Promise.all([
+        SecureStore.deleteItemAsync(TOKEN_KEY),
+        SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
+        SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY),
+        clearStoredUserId(),
+        clearStoredUsername(),
+      ]);
+
+      // Clear tokens from state and user info
       setAccessToken(null);
       setRefreshToken(null);
       setUserInfo(null);
-
-      // Clear tokens from secure storage
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
-      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
-      await clearStoredUserId();
-      await clearStoredUsername();
     } catch (err: unknown) {
       console.error("Error during logout:", err);
       const errorMessage =
@@ -395,6 +424,7 @@ export function useDukeAuth() {
   return {
     // State
     isLoading,
+    isAuthHydrated,
     isAuthenticated: !!accessToken && !!userInfo,
     accessToken,
     refreshToken,
@@ -407,4 +437,19 @@ export function useDukeAuth() {
     refreshAccessToken,
     fetchUserInfo,
   };
+}
+
+export function DukeAuthProvider({ children }: { children: ReactNode }) {
+  const auth = useProvideDukeAuth();
+  return (
+    <DukeAuthContext.Provider value={auth}>{children}</DukeAuthContext.Provider>
+  );
+}
+
+export function useDukeAuth() {
+  const context = useContext(DukeAuthContext);
+  if (!context) {
+    throw new Error("useDukeAuth must be used within a DukeAuthProvider");
+  }
+  return context;
 }
