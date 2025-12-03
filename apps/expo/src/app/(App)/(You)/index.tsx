@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, useColorScheme } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -125,12 +125,6 @@ export default function YouPage() {
     isAuthenticated,
   } = useDukeAuth();
 
-  const stats: ProfileStat[] = [
-    { label: "Invitations", value: 10, icon: "mail-open-outline" },
-    { label: "Acceptances", value: 8, icon: "checkmark-circle-outline" },
-    { label: "Posts", value: 5, icon: "planet-outline" },
-  ];
-
   const loadUserId = useCallback(async () => {
     setIsLoadingUserId(true);
     try {
@@ -183,6 +177,58 @@ export default function YouPage() {
     },
   });
 
+  const { data: profileStats, refetch: refetchProfileStats } = useQuery<
+    RouterOutputs["user"]["profileStats"]
+  >({
+    queryKey: ["userProfileStats", storedUserId],
+    enabled: Boolean(storedUserId),
+    queryFn: async () => {
+      if (!storedUserId) {
+        throw new Error("Missing user id");
+      }
+      return trpcClient.user.profileStats.query({ userId: storedUserId });
+    },
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!storedUserId) return;
+      void refetchProfile();
+      void refetchProfileStats();
+    }, [storedUserId, refetchProfile, refetchProfileStats]),
+  );
+
+  const stats: ProfileStat[] = useMemo(
+    () => [
+      {
+        label: "Invitations",
+        value: profileStats?.invitations ?? 0,
+        icon: "mail-open-outline",
+      },
+      {
+        label: "Acceptances",
+        value: profileStats?.acceptances ?? 0,
+        icon: "checkmark-circle-outline",
+      },
+      {
+        label: "Posts",
+        value: profileStats?.posts ?? 0,
+        icon: "planet-outline",
+      },
+    ],
+    [profileStats],
+  );
+
+  const handleRefresh = useCallback(async () => {
+    const refreshedId = await getStoredUserId();
+    if (refreshedId) {
+      setStoredUserIdState(refreshedId);
+      await Promise.all([refetchProfile(), refetchProfileStats()]);
+    } else {
+      await loadUserId();
+    }
+  }, [loadUserId, refetchProfile, refetchProfileStats]);
+
   const updateProfileMutation = useMutation({
     mutationFn: (input: UpdateProfileInput) =>
       trpcClient.user.updateProfileById.mutate(input),
@@ -214,7 +260,7 @@ export default function YouPage() {
   };
 
   const handleOpenSettings = () => {
-    // TODO: Navigate to settings page
+    Alert.alert("Settings", "No settings are available yet.");
   };
 
   const handleSelectColor = (color: string) => {
@@ -362,7 +408,7 @@ export default function YouPage() {
       <AnimatedPageFrame
         baseColor={baseColor}
         headerTitle={header}
-        scrollEnabled={false}
+        onRefresh={handleRefresh}
       >
         <ProfileSummarySection
           isFetchingProfile={isFetchingProfile}

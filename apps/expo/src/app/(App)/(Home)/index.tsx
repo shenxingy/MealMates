@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -8,26 +8,23 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import type { RouterOutputs } from "~/utils/api";
 import { trpcClient } from "~/utils/api";
 import AnimatedPageFrame from "../../../../components/frame/AnimatedPageFrame";
 import EmptySpace from "../../../../components/frame/EmptySpace";
 import EventView from "../../../../components/homepage/EventView";
 
-interface Event {
-  id: number;
-  userId: string;
-  restaurantName: string;
-  scheduleTime: string;
-  mood: string | null;
-  message: string | null;
+type EventFromApi = RouterOutputs["event"]["list"][number];
+type Event = Omit<
+  EventFromApi,
+  "username" | "avatarUrl" | "avatarColor" | "mood" | "message"
+> & {
   username: string | null;
   avatarUrl: string | null;
   avatarColor: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  restaurantCoordinates: { latitude: number; longitude: number };
-  meetPointCoordinates: { latitude: number; longitude: number };
-}
+  mood: string | null;
+  message: string | null;
+};
 
 export default function HomePage() {
   const header = "MealMate";
@@ -43,12 +40,7 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Initial load
-  useEffect(() => {
-    loadEvents(1);
-  }, []);
-
-  const loadEvents = async (pageNum: number) => {
+  const loadEvents = useCallback(async (pageNum: number) => {
     try {
       if (pageNum === 1) {
         setIsLoading(true);
@@ -56,7 +48,7 @@ export default function HomePage() {
         setIsLoadingMore(true);
       }
 
-      const data = await (trpcClient.event as any).list.query({
+      const data = await trpcClient.event.list.query({
         page: pageNum,
       });
 
@@ -70,18 +62,26 @@ export default function HomePage() {
       setHasMore(data.length === 20);
       setPage(pageNum);
     } catch (err) {
-      setError(err as Error);
+      const unknownError = err instanceof Error ? err : new Error("Error");
+      setError(unknownError);
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  };
+  }, []);
 
-  const handleLoadMore = () => {
+  // Initial load
+  useEffect(() => {
+    void loadEvents(1);
+  }, [loadEvents]);
+
+  const handleLoadMore = useCallback(() => {
     if (!isLoadingMore && hasMore) {
-      loadEvents(page + 1);
+      void loadEvents(page + 1);
     }
-  };
+  }, [hasMore, isLoadingMore, loadEvents, page]);
+
+  const handleRefresh = useCallback(() => loadEvents(1), [loadEvents]);
 
   const handleEventPress = (eventId: number) => {
     console.log("Event", eventId, "Pressed!");
@@ -139,7 +139,7 @@ export default function HomePage() {
       headerRightSFSymbolName="plus"
       headerRightMaterialSymbolName="add"
       headerRightOnPress={handleCreateEvent}
-      onRefresh={() => loadEvents(1)}
+      onRefresh={handleRefresh}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.5}
     >

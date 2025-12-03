@@ -10,6 +10,14 @@ export interface SimpleEventDTO {
   username: string;
   scheduleTime: string;
   mood?: string;
+  emoji?: string;
+  status?:
+    | "waiting_for_participant"
+    | "participant_joined"
+    | "success"
+    | "deleted";
+  hostSuccessConfirmed?: boolean;
+  participantSuccessConfirmed?: boolean;
   meetPoint: string;
   restaurantName: string;
   message?: string;
@@ -26,12 +34,28 @@ export interface DetailedEventDTO extends SimpleEventDTO {
     latitude: number;
     longitude: number;
   };
+  participants?: EventParticipantDTO[];
 }
 
 export interface JoinSuccessPayload {
   userId: string;
   eventId: number;
   message: string;
+}
+
+export interface ParticipantJoinedPayload {
+  userId: string;
+  eventId: number;
+}
+
+export interface EventParticipantDTO {
+  id: number;
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  avatarColor: string | null;
+  joinedAt: string | null;
+  successConfirmed?: boolean;
 }
 
 export interface LocationUpdatePayload {
@@ -53,6 +77,7 @@ export interface ErrorPayload {
 
 export interface MessageHandlers {
   onJoinSuccess?: (message: JoinSuccessPayload) => void;
+  onParticipantJoined?: (message: ParticipantJoinedPayload) => void;
   onLocationUpdate?: (message: LocationUpdatePayload) => void;
   onUserLeft?: (message: UserLeftPayload) => void;
   onError?: (message: ErrorPayload) => void;
@@ -66,9 +91,15 @@ export interface UseApiSocketOptions {
 }
 
 export interface ServerMessage {
-  type: "join_success" | "location_update" | "user_left" | "error";
+  type:
+    | "join_success"
+    | "participant_joined"
+    | "location_update"
+    | "user_left"
+    | "error";
   payload:
     | JoinSuccessPayload
+    | ParticipantJoinedPayload
     | LocationUpdatePayload
     | UserLeftPayload
     | ErrorPayload;

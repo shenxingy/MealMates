@@ -5,6 +5,7 @@ import type {
   ErrorPayload,
   JoinSuccessPayload,
   LocationUpdatePayload,
+  ParticipantJoinedPayload,
   ServerMessage,
   UseApiSocketOptions,
   UserJoinEventMessage,
@@ -83,6 +84,11 @@ export function useApiSocket({
         case "join_success":
           handlersRef.current?.onJoinSuccess?.(
             message.payload as JoinSuccessPayload,
+          );
+          break;
+        case "participant_joined":
+          handlersRef.current?.onParticipantJoined?.(
+            message.payload as ParticipantJoinedPayload,
           );
           break;
         case "location_update":
