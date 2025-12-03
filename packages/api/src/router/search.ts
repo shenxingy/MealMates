@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { desc, ilike, or } from "@mealmates/db";
-import { event, post } from "@mealmates/db/schema";
+import { and, desc, ilike, or, eq } from "@mealmates/db";
+import { event, post, EVENT_STATUS } from "@mealmates/db/schema";
 
 import { publicProcedure } from "../trpc";
 
@@ -35,12 +35,18 @@ export const searchRouter = {
           .select()
           .from(event)
           .where(
-            or(
-              ilike(event.message, pattern),
-              ilike(event.restaurantName, pattern),
-              ilike(event.scheduleTime, pattern),
-              ilike(event.mood, pattern),
-              ilike(event.userId, pattern),
+            and(
+              or(
+                ilike(event.message, pattern),
+                ilike(event.restaurantName, pattern),
+                ilike(event.scheduleTime, pattern),
+                ilike(event.mood, pattern),
+                ilike(event.userId, pattern),
+              ),
+              or(
+                eq(event.status, EVENT_STATUS.WAITING),
+                eq(event.status, EVENT_STATUS.JOINED),
+              ),
             ),
           )
           .orderBy(desc(event.createdAt))

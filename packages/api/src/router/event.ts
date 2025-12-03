@@ -303,6 +303,24 @@ export const eventRouter = {
           ),
         );
 
+      const remaining = await ctx.db.query.eventParticipant.findMany({
+        where: eq(schema.eventParticipant.eventId, input.eventId),
+        limit: 1,
+      });
+
+      await ctx.db
+        .update(schema.event)
+        .set({
+          status:
+            remaining.length > 0
+              ? EVENT_STATUS.JOINED
+              : EVENT_STATUS.WAITING,
+          hostSuccessConfirmed: false,
+          participantSuccessConfirmed: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.event.id, input.eventId));
+
       return { success: true };
     }),
 
@@ -322,7 +340,11 @@ export const eventRouter = {
       }
 
       await ctx.db
-        .delete(schema.event)
+        .update(schema.event)
+        .set({
+          status: EVENT_STATUS.DELETED,
+          updatedAt: new Date(),
+        })
         .where(eq(schema.event.id, input.eventId));
       return { success: true };
     }),
