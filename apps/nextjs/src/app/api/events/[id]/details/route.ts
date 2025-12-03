@@ -43,6 +43,7 @@ export async function GET(
 
     const responseData = {
       ...eventData,
+      emoji: eventData.emoji ?? "🍽️",
       restaurantCoordinates,
       username: user.name as unknown as string | null,
       avatarUrl: user.image as unknown as string | null,

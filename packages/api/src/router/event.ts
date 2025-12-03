@@ -5,6 +5,26 @@ import { and, asc, desc, eq, schema, sql } from "@mealmates/db";
 
 import { publicProcedure } from "../trpc";
 
+const EVENT_EMOJI_CHOICES = [
+  "🍣",
+  "🍜",
+  "🥡",
+  "🍕",
+  "🍝",
+  "🥗",
+  "🍔",
+  "🌮",
+  "🥪",
+  "🍩",
+  "🍪",
+  "🍰",
+  "🍦",
+  "🍫",
+  "☕",
+  "🧋",
+  "🍹",
+];
+
 const CreateEventSchema = z.object({
   userId: z.string(),
   restaurantName: z.string(),
@@ -35,6 +55,7 @@ export const eventRouter = {
       const { user, ...eventData } = row;
       return {
         ...eventData,
+        emoji: eventData.emoji ?? "🍽️",
         username: user.name,
         avatarUrl: user.image,
         avatarColor: user.avatarColor,
@@ -70,6 +91,7 @@ export const eventRouter = {
         const { user, ...eventData } = row;
         return {
           ...eventData,
+          emoji: eventData.emoji ?? "🍽️",
           username: user.name,
           avatarUrl: user.image,
           avatarColor: user.avatarColor,
@@ -80,9 +102,16 @@ export const eventRouter = {
   create: publicProcedure
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }) => {
+      const emojiIndex = Math.floor(Math.random() * EVENT_EMOJI_CHOICES.length);
+      const selectedEmoji =
+        EVENT_EMOJI_CHOICES[emojiIndex] ?? "🍽️";
+
       const [newEvent] = await ctx.db
         .insert(schema.event)
-        .values(input)
+        .values({
+          ...input,
+          emoji: selectedEmoji,
+        })
         .returning();
       return newEvent;
     }),

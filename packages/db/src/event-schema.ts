@@ -13,6 +13,7 @@ export const event = pgTable("event", {
   restaurantName: text("restaurant_name").notNull(),
   scheduleTime: text("schedule_time").notNull(),
   mood: text("mood"),
+  emoji: text("emoji").notNull().default("🙂"),
   message: text("message"),
 
   restaurantCoordinates: json("restaurant_coordinates")

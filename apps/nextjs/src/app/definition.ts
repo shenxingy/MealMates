@@ -4,6 +4,7 @@ export interface SimpleEventDTO {
   username: string;
   scheduleTime: string;
   mood?: string;
+  emoji?: string;
   restaurantName: string;
   message?: string;
 }
