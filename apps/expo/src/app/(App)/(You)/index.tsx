@@ -161,6 +161,14 @@ export default function YouPage() {
     }, [loadUserId]),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!storedUserId) return;
+      void refetchProfile();
+      void refetchProfileStats();
+    }, [storedUserId, refetchProfile, refetchProfileStats]),
+  );
+
   const {
     data: userProfile,
     isLoading: isProfileLoading,
