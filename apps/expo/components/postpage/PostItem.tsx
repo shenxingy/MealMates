@@ -33,14 +33,14 @@ export default function PostItem({ props }: { props: Post }) {
       return trpcClient.postLike.liked.query({ postId: props.id });
     },
   });
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     await likedRefetch();
     await likesRefetch();
-  };
+  }, [likedRefetch, likesRefetch]);
   useFocusEffect(
     useCallback(() => {
       void onRefresh();
-    }, [likesRefetch, likesRefetch]),
+    }, [onRefresh]),
   );
   useEffect(() => {
     if (likedData !== undefined) setLiked(likedData);
@@ -48,11 +48,11 @@ export default function PostItem({ props }: { props: Post }) {
   useEffect(() => {
     if (likesData !== undefined) setThumbsup(likesData);
   }, [likesData]);
-  const getSize = async () => {
+  const getSize = useCallback(async () => {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
-  };
+  }, [props.image]);
   const router = useRouter();
   const seeDetails = () => {
     router.push({
@@ -99,7 +99,7 @@ export default function PostItem({ props }: { props: Post }) {
   };
   useEffect(() => {
     void getSize();
-  }, []);
+  }, [getSize]);
   return (
     <Pressable
       style={[styles.container]}

@@ -1,5 +1,10 @@
 import type { ComponentProps } from "react";
 import type React from "react";
+import type {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+} from "react-native";
 import { useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -24,8 +29,8 @@ import { SymbolView } from "expo-symbols";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaskedView from "@react-native-masked-view/masked-view";
 
+import iconLight from "../../assets/icon-light.png";
 import LinearGradientBackground from "../background/LinearGradientBackground";
-import SymbolButton from "./SymbolButton";
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -166,7 +171,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
     router.back();
   };
 
-  const scrollViewRef = useRef<any>(null);
+  const scrollViewRef = useRef<ScrollView | null>(null);
   const handleScrollToTop = () => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
@@ -209,7 +214,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
   };
 
   // Handle scroll to detect when reaching end
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const distanceFromEnd =
       contentSize.height - layoutMeasurement.height - contentOffset.y;
@@ -289,7 +294,7 @@ export default function AnimatedPageFrame(props: PageFrameProps) {
                 }}
               >
                 <Image
-                  source={require("../../assets/icon-light.png")}
+                  source={iconLight}
                   style={{
                     width: 64,
                     height: 64,

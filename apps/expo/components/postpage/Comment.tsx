@@ -1,5 +1,5 @@
 import type { ImageSize } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 
@@ -46,12 +46,12 @@ export default function Comment({ props }: { props: PostComment }) {
     if (likedData.data !== undefined) setLiked(likedData.data);
   }, [likedData.data]);
 
-  const getSize = async () => {
+  const getSize = useCallback(async () => {
     if (!props.image) return;
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
-  };
+  }, [props.image]);
 
   const like = async () => {
     if (!storedUserId) {
@@ -90,10 +90,7 @@ export default function Comment({ props }: { props: PostComment }) {
   };
 
   useEffect(() => {
-    const func = async () => {
-      await getSize();
-    };
-    void func();
+    void getSize();
   }, [getSize]);
   return (
     <View style={[styles.container]}>

@@ -1,7 +1,21 @@
 import { relations } from "drizzle-orm";
-import { integer, json, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  json,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
+
+export const EVENT_STATUS = {
+  WAITING: "waiting_for_participant",
+  JOINED: "participant_joined",
+  SUCCESS: "success",
+  DELETED: "deleted",
+} as const;
 
 export const event = pgTable("event", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -13,7 +27,15 @@ export const event = pgTable("event", {
   restaurantName: text("restaurant_name").notNull(),
   scheduleTime: text("schedule_time").notNull(),
   mood: text("mood"),
+  emoji: text("emoji").notNull().default("🙂"),
   message: text("message"),
+  status: text("status").notNull().default(EVENT_STATUS.WAITING),
+  hostSuccessConfirmed: boolean("host_success_confirmed")
+    .notNull()
+    .default(false),
+  participantSuccessConfirmed: boolean("participant_success_confirmed")
+    .notNull()
+    .default(false),
 
   restaurantCoordinates: json("restaurant_coordinates")
     .$type<{ latitude: number; longitude: number }>()
@@ -38,6 +60,7 @@ export const eventParticipant = pgTable("event_participant", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  successConfirmed: boolean("success_confirmed").notNull().default(false),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 

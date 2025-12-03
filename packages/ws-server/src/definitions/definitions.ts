@@ -55,6 +55,17 @@ export interface JoinSuccessMessage {
     userId: string;
     eventId: number;
     message: string;
+ };
+}
+
+/**
+ * server notifies that a participant joined the event
+ */
+export interface ParticipantJoinedMessage {
+  type: "participant_joined";
+  payload: {
+    userId: string;
+    eventId: number;
   };
 }
 
@@ -98,6 +109,7 @@ export interface ErrorMessage {
  */
 export type ServerMessage =
   | JoinSuccessMessage
+  | ParticipantJoinedMessage
   | LocationUpdateMessage
   | UserLeftMessage
   | ErrorMessage;

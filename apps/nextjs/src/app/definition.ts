@@ -4,6 +4,14 @@ export interface SimpleEventDTO {
   username: string;
   scheduleTime: string;
   mood?: string;
+  status?:
+    | "waiting_for_participant"
+    | "participant_joined"
+    | "success"
+    | "deleted";
+  hostSuccessConfirmed?: boolean;
+  participantSuccessConfirmed?: boolean;
+  emoji?: string;
   restaurantName: string;
   message?: string;
 }
