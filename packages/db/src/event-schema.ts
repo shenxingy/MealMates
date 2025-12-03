@@ -29,9 +29,7 @@ export const event = pgTable("event", {
   mood: text("mood"),
   emoji: text("emoji").notNull().default("🙂"),
   message: text("message"),
-  status: text("status")
-    .notNull()
-    .default(EVENT_STATUS.WAITING),
+  status: text("status").notNull().default(EVENT_STATUS.WAITING),
   hostSuccessConfirmed: boolean("host_success_confirmed")
     .notNull()
     .default(false),

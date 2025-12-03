@@ -17,10 +17,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { EventParticipantDTO } from "~/definition";
-import { useApiSocket } from "~/hooks/useApiSocket";
 import type { RouterOutputs } from "~/utils/api";
-import { DEFAULT_USER_AVATAR } from "~/utils/api";
-import { fetchDetailedEvent, trpcClient } from "~/utils/api";
+import { useApiSocket } from "~/hooks/useApiSocket";
+import {
+  DEFAULT_USER_AVATAR,
+  fetchDetailedEvent,
+  trpcClient,
+} from "~/utils/api";
 import { getStoredUserId } from "~/utils/user-storage";
 import MiniMap from "../../../../../../components/eventpage/MiniMap";
 import AnimatedPageFrame from "../../../../../../components/frame/AnimatedPageFrame";
@@ -131,7 +134,7 @@ const EventDetailsPage = () => {
     const isEmoji = EMOJI_REGEX.test(trimmed);
     const displayText = isEmoji
       ? trimmed
-      : trimmed.at(0)?.toUpperCase() ?? fallbackInitial;
+      : (trimmed.at(0)?.toUpperCase() ?? fallbackInitial);
 
     return {
       type: "text" as const,
@@ -344,7 +347,11 @@ const EventDetailsPage = () => {
                 onPress={handleCancel}
                 disabled={cancelMutation.isPending}
               >
-                <Ionicons name="alert-circle-outline" size={24} color="#FECACA" />
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={24}
+                  color="#FECACA"
+                />
                 <Text style={styles.cancelButtonText}>
                   {cancelMutation.isPending ? "..." : "Cancel"}
                 </Text>
@@ -387,7 +394,10 @@ const EventDetailsPage = () => {
             disabled={joinMutation.isPending}
           >
             <Text
-              style={[styles.joinButtonText, isDark && styles.joinButtonTextDark]}
+              style={[
+                styles.joinButtonText,
+                isDark && styles.joinButtonTextDark,
+              ]}
             >
               {joinMutation.isPending ? "Joining..." : "Join Event"}
             </Text>
@@ -619,9 +629,15 @@ const EventDetailsPage = () => {
               color={isDark ? "#60A5FA" : "#3B82F6"}
             />
           )}
-          <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>Message</Text>
+          <Text
+            style={[styles.locationLabel, isDark && styles.locationLabelDark]}
+          >
+            Message
+          </Text>
         </View>
-        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>{message}</Text>
+        <Text style={[styles.messageText, isDark && styles.messageTextDark]}>
+          {message}
+        </Text>
       </GlassView>
 
       {/* Participants */}
@@ -634,12 +650,23 @@ const EventDetailsPage = () => {
               tintColor={isDark ? "#60A5FA" : "#3B82F6"}
             />
           ) : (
-            <Ionicons name="people" size={18} color={isDark ? "#60A5FA" : "#3B82F6"} />
+            <Ionicons
+              name="people"
+              size={18}
+              color={isDark ? "#60A5FA" : "#3B82F6"}
+            />
           )}
-          <Text style={[styles.locationLabel, isDark && styles.locationLabelDark]}>
+          <Text
+            style={[styles.locationLabel, isDark && styles.locationLabelDark]}
+          >
             Participants
           </Text>
-          <Text style={[styles.participantCount, isDark && styles.participantCountDark]}>
+          <Text
+            style={[
+              styles.participantCount,
+              isDark && styles.participantCountDark,
+            ]}
+          >
             {participants.length}
           </Text>
         </View>
@@ -668,7 +695,8 @@ const EventDetailsPage = () => {
               participant.name,
             );
             const participantAvatarBg =
-              participant.avatarColor && participant.avatarColor.trim().length > 0
+              participant.avatarColor &&
+              participant.avatarColor.trim().length > 0
                 ? participant.avatarColor
                 : DEFAULT_AVATAR_COLOR;
 
@@ -695,7 +723,8 @@ const EventDetailsPage = () => {
                     <Text
                       style={[
                         styles.participantAvatarText,
-                        participantAvatar.isLetter && styles.participantAvatarLetter,
+                        participantAvatar.isLetter &&
+                          styles.participantAvatarLetter,
                       ]}
                     >
                       {participantAvatar.value}
@@ -704,7 +733,10 @@ const EventDetailsPage = () => {
                 )}
                 <View style={styles.participantTextBlock}>
                   <Text
-                    style={[styles.participantName, isDark && styles.participantNameDark]}
+                    style={[
+                      styles.participantName,
+                      isDark && styles.participantNameDark,
+                    ]}
                   >
                     {participant.name}
                   </Text>
