@@ -11,6 +11,7 @@ interface ProfileInfoCardProps {
   avatarEmoji?: string | null;
   fallbackLabel?: string;
   avatarColor?: string;
+  isDark?: boolean;
 }
 
 const ProfileInfoCard: ElementType<ProfileInfoCardProps> = ({
@@ -19,6 +20,7 @@ const ProfileInfoCard: ElementType<ProfileInfoCardProps> = ({
   avatarEmoji,
   fallbackLabel,
   avatarColor,
+  isDark = false,
 }) => {
   const trimmedName = name.trim();
   const trimmedLabel = fallbackLabel?.trim();
@@ -44,7 +46,7 @@ const ProfileInfoCard: ElementType<ProfileInfoCardProps> = ({
       : DEFAULT_AVATAR_BG;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDark && styles.containerDark]}>
       <View
         style={[
           styles.avatarContainer,
@@ -58,8 +60,8 @@ const ProfileInfoCard: ElementType<ProfileInfoCardProps> = ({
         </Text>
       </View>
       <View>
-        <Text style={styles.nameText}>{name}</Text>
-        <Text style={styles.emailText}>{email}</Text>
+        <Text style={[styles.nameText, isDark && styles.nameTextDark]}>{name}</Text>
+        <Text style={[styles.emailText, isDark && styles.emailTextDark]}>{email}</Text>
       </View>
     </View>
   );
@@ -81,6 +83,9 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
     elevation: 4,
+  },
+  containerDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
   },
   avatarContainer: {
     width: 64,
@@ -105,9 +110,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
   },
+  nameTextDark: {
+    color: "rgba(255, 255, 255, 0.95)",
+  },
   emailText: {
     marginTop: 4,
     fontSize: 16,
     color: "#374151",
+  },
+  emailTextDark: {
+    color: "rgba(255, 255, 255, 0.7)",
   },
 });

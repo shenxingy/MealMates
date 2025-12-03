@@ -120,7 +120,7 @@ export default function MiniMap(props: MiniMapProps) {
                 style={
                   isLiquidGlassAvailable()
                     ? styles.glassContainer
-                    : styles.androidContainer
+                    : isDark ? styles.nonGlassDarkContainer : styles.nonGlassContainer
                 }
                 glassEffectStyle="regular"
                 isInteractive
@@ -148,7 +148,7 @@ export default function MiniMap(props: MiniMapProps) {
               style={styles.shareLocationButton}
               onPress={shareLocationCallback}
             >
-              <View style={styles.androidContainer}>
+              <View style={styles.nonGlassContainer}>
                 <Text style={styles.shareLocationText}>Share Location</Text>
               </View>
             </Pressable>
@@ -193,8 +193,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  androidContainer: {
+  nonGlassContainer: {
     backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 25,
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  nonGlassDarkContainer: {
+    backgroundColor: "rgba(60,60,60,0.9)",
     borderRadius: 25,
     overflow: "hidden",
     justifyContent: "center",

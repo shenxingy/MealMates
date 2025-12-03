@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 
@@ -52,6 +53,9 @@ const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
   disableSave,
   defaultAvatarLabel,
 }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
   const trimmedEmojiValue = emojiValue.trim();
   const normalizedLabel = defaultAvatarLabel.trim();
   const fallbackAvatar =
@@ -67,29 +71,31 @@ const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalCard}>
-          <Text style={styles.modalTitle}>Edit Profile</Text>
-          <Text style={styles.sectionHeading}>Display Name</Text>
-          <Text style={styles.sectionSubtitle}>
+        <View style={[styles.modalCard, isDark && styles.modalCardDark]}>
+          <Text style={[styles.modalTitle, isDark && styles.modalTitleDark]}>Edit Profile</Text>
+          <Text style={[styles.sectionHeading, isDark && styles.sectionHeadingDark]}>Display Name</Text>
+          <Text style={[styles.sectionSubtitle, isDark && styles.sectionSubtitleDark]}>
             This name appears across MealMates.
           </Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDark && styles.textInputDark]}
             value={nameValue}
             placeholder="Display name"
+            placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
             onChangeText={onNameChange}
           />
           {nameError ? (
             <Text style={styles.inputErrorText}>{nameError}</Text>
           ) : null}
-          <Text style={styles.sectionHeading}>Avatar Icon</Text>
-          <Text style={styles.sectionSubtitle}>
+          <Text style={[styles.sectionHeading, isDark && styles.sectionHeadingDark]}>Avatar Icon</Text>
+          <Text style={[styles.sectionSubtitle, isDark && styles.sectionSubtitleDark]}>
             Enter a single emoji or letter to use inside the avatar.
           </Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDark && styles.textInputDark]}
             value={emojiValue}
             placeholder="Favorite emoji (e.g., 🍣)"
+            placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
             onChangeText={onEmojiChange}
             autoCapitalize="none"
             autoCorrect={false}
@@ -99,21 +105,22 @@ const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
             <Text style={styles.inputErrorText}>{emojiError}</Text>
           ) : null}
           <View style={styles.emojiPreviewRow}>
-            <Text style={styles.previewLabel}>Preview</Text>
+            <Text style={[styles.previewLabel, isDark && styles.previewLabelDark]}>Preview</Text>
             <View
               style={[styles.previewCircle, { backgroundColor: selectedColor }]}
             >
               <Text style={styles.previewEmoji}>{previewAvatar}</Text>
             </View>
           </View>
-          <Text style={styles.sectionHeading}>Avatar Background</Text>
-          <Text style={styles.sectionSubtitle}>
+          <Text style={[styles.sectionHeading, isDark && styles.sectionHeadingDark]}>Avatar Background</Text>
+          <Text style={[styles.sectionSubtitle, isDark && styles.sectionSubtitleDark]}>
             Pick a color from the palette or enter your own hex code.
           </Text>
           <TextInput
-            style={styles.colorTextInput}
+            style={[styles.colorTextInput, isDark && styles.colorTextInputDark]}
             value={colorInputValue}
             placeholder="#FF5733"
+            placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
             autoCapitalize="characters"
             onChangeText={onCustomColorInputChange}
           />
@@ -129,7 +136,7 @@ const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
                   style={[
                     styles.colorSwatch,
                     { backgroundColor: color },
-                    isSelected && styles.colorSwatchSelected,
+                    isSelected && [styles.colorSwatchSelected, isDark && styles.colorSwatchSelectedDark],
                   ]}
                   onPress={() => onColorChange(color)}
                 >
@@ -145,11 +152,11 @@ const ProfileEditModal: ElementType<ProfileEditModalProps> = ({
           ) : null}
           <View style={styles.modalActions}>
             <Pressable
-              style={[styles.button, styles.secondaryButton]}
+              style={[styles.button, styles.secondaryButton, isDark && styles.secondaryButtonDark]}
               onPress={onClose}
               disabled={isSaving}
             >
-              <Text style={styles.secondaryButtonText}>Cancel</Text>
+              <Text style={[styles.secondaryButtonText, isDark && styles.secondaryButtonTextDark]}>Cancel</Text>
             </Pressable>
             <Pressable
               style={[
@@ -186,10 +193,16 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
+  modalCardDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
+  },
   modalTitle: {
     fontSize: 20,
     fontWeight: "700",
     color: "#111827",
+  },
+  modalTitleDark: {
+    color: "rgba(255, 255, 255, 0.95)",
   },
   textInput: {
     borderWidth: 1,
@@ -200,16 +213,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#111827",
   },
+  textInputDark: {
+    borderColor: "rgba(75, 75, 75, 0.8)",
+    backgroundColor: "rgba(30, 30, 30, 0.5)",
+    color: "rgba(255, 255, 255, 0.95)",
+  },
   sectionHeading: {
     marginTop: 4,
     fontSize: 16,
     fontWeight: "700",
     color: "#111827",
   },
+  sectionHeadingDark: {
+    color: "rgba(255, 255, 255, 0.95)",
+  },
   sectionSubtitle: {
     fontSize: 13,
     color: "#6B7280",
     marginBottom: 6,
+  },
+  sectionSubtitleDark: {
+    color: "#9CA3AF",
   },
   inputErrorText: {
     marginTop: -2,
@@ -226,6 +250,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#475569",
+  },
+  previewLabelDark: {
+    color: "rgba(255, 255, 255, 0.75)",
   },
   previewCircle: {
     width: 52,
@@ -248,6 +275,11 @@ const styles = StyleSheet.create({
     color: "#111827",
     textTransform: "uppercase",
   },
+  colorTextInputDark: {
+    borderColor: "rgba(75, 75, 75, 0.8)",
+    backgroundColor: "rgba(30, 30, 30, 0.5)",
+    color: "rgba(255, 255, 255, 0.95)",
+  },
   colorGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -264,6 +296,9 @@ const styles = StyleSheet.create({
   },
   colorSwatchSelected: {
     borderColor: "#111827",
+  },
+  colorSwatchSelectedDark: {
+    borderColor: "rgba(255, 255, 255, 0.85)",
   },
   colorSwatchCheck: {
     color: "#111827",
@@ -289,9 +324,15 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "#E2E8F0",
   },
+  secondaryButtonDark: {
+    backgroundColor: "rgba(75, 75, 75, 0.6)",
+  },
   secondaryButtonText: {
     color: "#1F2937",
     fontWeight: "600",
+  },
+  secondaryButtonTextDark: {
+    color: "rgba(255, 255, 255, 0.95)",
   },
   primaryButton: {
     backgroundColor: "#2563EB",
