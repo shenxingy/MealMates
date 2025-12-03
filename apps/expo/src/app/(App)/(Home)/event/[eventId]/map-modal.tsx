@@ -127,7 +127,7 @@ export default function MapModalPage() {
           latitude: location.latitude,
           longitude: location.longitude,
         },
-        title: `User ${uid.slice(0, 8)}`, // Show first 8 chars of userId
+        title: location.username,
         systemImage: "person.fill",
         id: `user-${uid}`,
       });
@@ -154,7 +154,7 @@ export default function MapModalPage() {
           latitude: location.latitude,
           longitude: location.longitude,
         },
-        title: `User ${uid.slice(0, 8)}`,
+        title: location.username,
       });
     });
 
