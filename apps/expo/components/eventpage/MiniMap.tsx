@@ -2,7 +2,7 @@ import type { AppleMapsMarker } from "expo-maps/build/apple/AppleMaps.types";
 import type { GoogleMapsMarker } from "expo-maps/build/google/GoogleMaps.types";
 import type { Coordinates } from "expo-maps/src/shared.types";
 import { useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { AppleMaps, GoogleMaps } from "expo-maps";
 import { AppleMapPointOfInterestCategory } from "expo-maps/build/apple/AppleMaps.types";
@@ -53,6 +53,8 @@ export default function MiniMap(props: MiniMapProps) {
   const [zoom, setZoom] = useState<number>(15);
   const [appleMarker, setAppleMarker] = useState<AppleMapsMarker[]>([]);
   const [googleMarker, setGoogleMarker] = useState<GoogleMapsMarker[]>([]);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     const configMap = () => {
@@ -123,7 +125,7 @@ export default function MiniMap(props: MiniMapProps) {
                 glassEffectStyle="regular"
                 isInteractive
               >
-                <Text style={styles.shareLocationText}>Share Location</Text>
+                <Text style={isDark ? styles.shareLocationTextDark : styles.shareLocationText}>Share Location</Text>
               </GlassView>
             </Pressable>
           )}
@@ -204,6 +206,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     color: "#000",
+    paddingVertical: 15,
+    paddingHorizontal: 18,
+  },
+  shareLocationTextDark: {
+    width: "100%",
+    height: "100%",
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#FFF",
     paddingVertical: 15,
     paddingHorizontal: 18,
   },
