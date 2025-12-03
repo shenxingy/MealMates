@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
 import { db } from "@mealmates/db";
-import { event } from "@mealmates/db/schema";
+import { event, eventParticipant } from "@mealmates/db/schema";
 
 // Hardcoded coordinates from mock data (as fallback)
 const DEFAULT_RESTAURANT = { latitude: 36.01126, longitude: -78.92182 };
@@ -33,6 +33,27 @@ export async function GET(
       );
     }
 
+    const participants = await db.query.eventParticipant.findMany({
+      where: eq(eventParticipant.eventId, eventId),
+      with: {
+        user: true,
+      },
+    });
+
+    /* eslint-disable @typescript-eslint/no-unnecessary-condition */
+    const participantDetails = participants.map((participant) => ({
+      id: participant.id,
+      userId: participant.userId,
+      name: participant.user.name ?? null,
+      avatarUrl: participant.user.image ?? null,
+      avatarColor: participant.user.avatarColor ?? null,
+      successConfirmed: participant.successConfirmed,
+    }));
+
+    const allParticipantsConfirmed =
+      participantDetails.length > 0 &&
+      participantDetails.every((p) => p.successConfirmed);
+
     // Ensure coordinates are present, using fallback if necessary.
     // We cast to unknown to bypass linter believing restaurantCoordinates is never null (due to schema),
     // protecting against runtime data issues or old records.
@@ -43,16 +64,18 @@ export async function GET(
 
     const responseData = {
       ...eventData,
-      status: eventData.status ?? "waiting_for_participant",
-      emoji: eventData.emoji ?? "🍽️",
-      hostSuccessConfirmed: eventData.hostSuccessConfirmed ?? false,
+      status: eventData.status,
+      emoji: eventData.emoji,
+      hostSuccessConfirmed: eventData.hostSuccessConfirmed,
       participantSuccessConfirmed:
-        eventData.participantSuccessConfirmed ?? false,
+        eventData.participantSuccessConfirmed || allParticipantsConfirmed,
       restaurantCoordinates,
-      username: user.name as unknown as string | null,
-      avatarUrl: user.image as unknown as string | null,
-      avatarColor: user.avatarColor as unknown as string | null,
+      username: user.name ?? null,
+      avatarUrl: user.image ?? null,
+      avatarColor: user.avatarColor ?? null,
+      participants: participantDetails,
     };
+    /* eslint-enable @typescript-eslint/no-unnecessary-condition */
 
     return NextResponse.json({
       data: responseData,

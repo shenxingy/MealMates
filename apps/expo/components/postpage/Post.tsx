@@ -1,5 +1,5 @@
 import type { ImageSize } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 
@@ -43,11 +43,11 @@ export default function PostDetail({ props }: { props: Post }) {
     if (likedData !== undefined) setLiked(likedData);
   }, [likedData]);
 
-  const getSize = async (): Promise<void> => {
+  const getSize = useCallback(async (): Promise<void> => {
     const size: ImageSize = await Image.getSize(props.image);
     setWidth(size.width);
     setHeight(size.height);
-  };
+  }, [props.image]);
 
   const timePassed = () => {
     const date1: Date = new Date();
@@ -106,10 +106,7 @@ export default function PostDetail({ props }: { props: Post }) {
     }
   };
   useEffect(() => {
-    const func = async () => {
-      await getSize();
-    };
-    void func();
+    void getSize();
   }, [getSize]);
   return (
     <View style={[styles.container]}>

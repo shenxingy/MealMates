@@ -1,5 +1,5 @@
 import type { Coordinates } from "expo-maps/src/shared.types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -33,7 +33,7 @@ const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 const DEFAULT_AVATAR_COLOR = "#F5F7FB";
 
 const EventDetailsPage = () => {
-  const { eventId } = useLocalSearchParams<{ eventId: string }>();
+  const { eventId } = useLocalSearchParams<{ eventId?: string }>();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const baseColor = isDark ? "70,70,70" : "255,140,0";
@@ -42,7 +42,6 @@ const EventDetailsPage = () => {
   const queryClient = useQueryClient();
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [participants, setParticipants] = useState<EventParticipantDTO[]>([]);
 
   useEffect(() => {
     void getStoredUserId().then(setCurrentUserId);
@@ -85,11 +84,10 @@ const EventDetailsPage = () => {
     enabled: !!numericEventId,
   });
 
-  useEffect(() => {
-    if (participantList) {
-      setParticipants(participantList);
-    }
-  }, [participantList]);
+  const participants = useMemo(
+    () => participantList ?? [],
+    [participantList],
+  );
 
   const hasJoined = Boolean(joinStatus?.joined);
 
@@ -122,7 +120,7 @@ const EventDetailsPage = () => {
     fallbackName: string,
   ) => {
     const trimmed = avatarValue?.trim();
-    if (trimmed && trimmed.startsWith("http")) {
+    if (trimmed?.startsWith("http")) {
       return { type: "image" as const, value: trimmed, isLetter: false };
     }
 
@@ -143,8 +141,7 @@ const EventDetailsPage = () => {
     };
   };
 
-  const restaurantCoord: Coordinates | undefined =
-    data?.restaurantCoordinates ?? undefined;
+  const restaurantCoord: Coordinates | undefined = data?.restaurantCoordinates;
   const restaurantLatitude = restaurantCoord?.latitude ?? 0;
   const restaurantLongitude = restaurantCoord?.longitude ?? 0;
   const restaurantName = data?.restaurantName ?? "Restaurant";
@@ -286,7 +283,7 @@ const EventDetailsPage = () => {
   };
 
   const handleRefreshPage = async () => {
-    const tasks: Array<Promise<unknown>> = [];
+    const tasks: Promise<unknown>[] = [];
     if (eventId) {
       tasks.push(refetchDetails());
       tasks.push(refetchParticipants());

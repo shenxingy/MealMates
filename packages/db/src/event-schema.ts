@@ -60,6 +60,7 @@ export const eventParticipant = pgTable("event_participant", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  successConfirmed: boolean("success_confirmed").notNull().default(false),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
