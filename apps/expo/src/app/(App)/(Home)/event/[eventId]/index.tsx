@@ -265,21 +265,26 @@ const EventDetailsPage = () => {
       return null;
     }
 
+    // Host
     if (currentUserId === creatorId) {
       const hasParticipants = participants.length > 0;
+
       if (hasParticipants) {
         return (
-          <View style={[styles.joinButtonContainer, styles.hostButtonRow]}>
-            <Pressable
-              style={[styles.emojiButton, isDark && styles.emojiButtonDark]}
-              onPress={() => console.log("Show Emoji TODO")}
-            >
-              <View style={styles.buttonContent}>
+          <View style={styles.actionContainer}>
+            <View style={styles.dualButtonRow}>
+              <Pressable
+                style={[
+                  styles.actionButton,
+                  styles.emojiButton,
+                  isDark && styles.emojiButtonDark,
+                ]}
+                onPress={() => console.log("Show Emoji TODO")}
+              >
                 <Ionicons
                   name="happy-outline"
-                  size={22}
+                  size={24}
                   color={isDark ? "#FBBF24" : "#D97706"}
-                  style={styles.buttonIcon}
                 />
                 <Text
                   style={[
@@ -289,38 +294,33 @@ const EventDetailsPage = () => {
                 >
                   Emoji
                 </Text>
-              </View>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.cancelButton,
-                styles.hostCancelButton,
-                isDark && styles.cancelButtonDark,
-              ]}
-              onPress={handleCancel}
-              disabled={cancelMutation.isPending}
-            >
-              <View style={styles.buttonContent}>
-                <Ionicons
-                  name="alert-circle-outline"
-                  size={22}
-                  color="#FECACA"
-                  style={styles.buttonIcon}
-                />
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.actionButton,
+                  styles.cancelButton,
+                  isDark && styles.cancelButtonDark,
+                ]}
+                onPress={handleCancel}
+                disabled={cancelMutation.isPending}
+              >
+                <Ionicons name="alert-circle-outline" size={24} color="#FECACA" />
                 <Text style={styles.cancelButtonText}>
-                  {cancelMutation.isPending ? "Cancelling..." : "Cancel"}
+                  {cancelMutation.isPending ? "..." : "Cancel"}
                 </Text>
-              </View>
-            </Pressable>
+              </Pressable>
+            </View>
           </View>
         );
       }
+
       return (
-        <View style={styles.joinButtonContainer}>
+        <View style={styles.actionContainer}>
           <Pressable
             style={[
-              styles.cancelButton,
-              styles.hostSingleCancelButton,
+              styles.actionButton,
+              styles.singleCancelButton,
               isDark && styles.cancelButtonDark,
             ]}
             onPress={handleCancel}
@@ -334,18 +334,23 @@ const EventDetailsPage = () => {
       );
     }
 
+    // Guest
     if (!hasJoined) {
       return (
-        <View style={styles.joinButtonContainer}>
+        <View style={styles.actionContainer}>
           <Pressable
-            style={[styles.joinButton, isDark && styles.joinButtonDark]}
+            style={[
+              styles.actionButton,
+              styles.joinButton,
+              isDark && styles.joinButtonDark,
+            ]}
             onPress={handleJoin}
             disabled={joinMutation.isPending}
           >
             <Text
               style={[styles.joinButtonText, isDark && styles.joinButtonTextDark]}
             >
-              {joinMutation.isPending ? "Joining..." : "Join"}
+              {joinMutation.isPending ? "Joining..." : "Join Event"}
             </Text>
           </Pressable>
         </View>
@@ -353,9 +358,13 @@ const EventDetailsPage = () => {
     }
 
     return (
-      <View style={styles.joinButtonContainer}>
+      <View style={styles.actionContainer}>
         <Pressable
-          style={[styles.leaveButton, isDark && styles.leaveButtonDark]}
+          style={[
+            styles.actionButton,
+            styles.leaveButton,
+            isDark && styles.leaveButtonDark,
+          ]}
           onPress={handleLeave}
           disabled={leaveMutation.isPending}
         >
@@ -765,136 +774,43 @@ const styles = StyleSheet.create({
   participantJoinedTextDark: {
     color: "#34D399",
   },
-  joinButtonContainer: {
+  actionContainer: {
     position: "absolute",
-    bottom: 15,
+    bottom: 34,
     left: 0,
     right: 0,
+    paddingHorizontal: 20,
     alignItems: "center",
     zIndex: 100,
-    gap: 10,
   },
-  joinButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  joinButtonText: {
-    color: "#3B82F6",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  joinButtonDark: {
-    backgroundColor: "rgba(45, 45, 45, 0.9)",
-  },
-  joinButtonTextDark: {
-    color: "#60A5FA",
-  },
-  cancelButton: {
-    backgroundColor: "#EF4444",
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  cancelButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  cancelButtonDark: {
-    backgroundColor: "#DC2626",
-  },
-  leaveButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "#F87171",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  leaveButtonText: {
-    color: "#EF4444",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  leaveButtonDark: {
-    backgroundColor: "rgba(45, 45, 45, 0.9)",
-    borderColor: "#F87171",
-  },
-  leaveButtonTextDark: {
-    color: "#F87171",
-  },
-  hostButtonRow: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    justifyContent: "space-between",
-    gap: 10,
-    paddingHorizontal: 12,
-  },
-  buttonContent: {
+  actionButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    paddingVertical: 16,
+    borderRadius: 30,
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  buttonIcon: {
-    marginTop: 2,
+  singleCancelButton: {
+    width: "100%",
+    backgroundColor: "#EF4444",
   },
-  buttonTextGroup: {
-    flexDirection: "column",
-    gap: 2,
-    flexShrink: 1,
-  },
-  buttonSubText: {
-    fontSize: 12,
-    color: "#4B5563",
-  },
-  buttonSubTextDark: {
-    color: "rgba(255, 255, 255, 0.65)",
+  dualButtonRow: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 15,
   },
   emojiButton: {
     flex: 1,
     backgroundColor: "#F3F4F6",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderRadius: 28,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
   },
   emojiButtonDark: {
-    backgroundColor: "rgba(45, 45, 45, 0.9)",
+    backgroundColor: "rgba(60, 60, 60, 0.9)",
   },
   emojiButtonText: {
     fontSize: 16,
@@ -902,14 +818,51 @@ const styles = StyleSheet.create({
     color: "#333333",
   },
   emojiButtonTextDark: {
-    color: "rgba(255, 255, 255, 0.85)",
+    color: "#E5E7EB",
   },
-  hostCancelButton: {
+  cancelButton: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    backgroundColor: "#EF4444",
   },
-  hostSingleCancelButton: {
-    width: "80%",
+  cancelButtonDark: {
+    backgroundColor: "#DC2626",
+  },
+  cancelButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  joinButton: {
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
+  joinButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.95)",
+  },
+  joinButtonText: {
+    color: "#3B82F6",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  joinButtonTextDark: {
+    color: "#60A5FA",
+  },
+  leaveButton: {
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderWidth: 2,
+    borderColor: "#F87171",
+  },
+  leaveButtonDark: {
+    backgroundColor: "rgba(45, 45, 45, 0.9)",
+    borderColor: "#F87171",
+  },
+  leaveButtonText: {
+    color: "#EF4444",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  leaveButtonTextDark: {
+    color: "#F87171",
   },
 });
