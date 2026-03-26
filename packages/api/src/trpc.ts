@@ -49,7 +49,12 @@ export const createTRPCContext = async (opts: {
     );
   }
 
-  // Duke auth fallback: trust the Duke user id header and create a lightweight session record
+  // Duke auth fallback: resolve the Duke user id from the session token stored in the
+  // x-duke-user-id header.
+  // IMPORTANT: This header MUST NOT be reachable from the public internet — ensure your
+  // reverse proxy (Vercel/Nginx) strips any client-supplied x-duke-user-id header before
+  // forwarding requests. Without that protection, any client can impersonate any user.
+  // TODO: Replace with a signed session token or cookie-based verification.
   if (!session) {
     const dukeUserId = opts.headers.get("x-duke-user-id");
     if (dukeUserId) {

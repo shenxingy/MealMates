@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 import { and, asc, desc, eq, or, schema, sql } from "@mealmates/db";
 import { EVENT_STATUS } from "@mealmates/db/schema";
 
-import { publicProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 const EVENT_EMOJI_CHOICES = [
   "🍣",
@@ -32,7 +32,6 @@ const OPEN_EVENT_STATUSES = [
 ] as const;
 
 const CreateEventSchema = z.object({
-  userId: z.string(),
   restaurantName: z.string(),
   scheduleTime: z.string(),
   mood: z.string().optional(),
@@ -111,7 +110,7 @@ export const eventRouter = {
       }));
     }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }) => {
       const emojiIndex = Math.floor(Math.random() * EVENT_EMOJI_CHOICES.length);
@@ -121,6 +120,7 @@ export const eventRouter = {
         .insert(schema.event)
         .values({
           ...input,
+          userId: ctx.session.user.id,
           emoji: selectedEmoji,
           status: EVENT_STATUS.WAITING,
           hostSuccessConfirmed: false,
@@ -130,9 +130,10 @@ export const eventRouter = {
       return newEvent;
     }),
 
-  confirmSuccess: publicProcedure
-    .input(z.object({ eventId: z.number(), userId: z.string() }))
+  confirmSuccess: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       const targetEvent = await ctx.db.query.event.findFirst({
         where: eq(schema.event.id, input.eventId),
         with: {
@@ -144,18 +145,18 @@ export const eventRouter = {
         throw new Error("Event not found");
       }
 
-      const isHost = targetEvent.userId === input.userId;
+      const isHost = targetEvent.userId === userId;
 
       // If participant, ensure they actually joined
       const participant = targetEvent.participants.find(
-        (p) => p.userId === input.userId,
+        (p) => p.userId === userId,
       );
       if (!isHost && !participant) {
         throw new Error("You must join the event before confirming success.");
       }
 
       const toggledParticipants = targetEvent.participants.map((p) => {
-        if (p.userId !== input.userId) return p;
+        if (p.userId !== userId) return p;
         return { ...p, successConfirmed: !p.successConfirmed };
       });
 
@@ -209,16 +210,17 @@ export const eventRouter = {
       };
     }),
 
-  checkJoined: publicProcedure
-    .input(z.object({ eventId: z.number(), userId: z.string() }))
+  checkJoined: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
     .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       const existingRows = await ctx.db
         .select()
         .from(schema.eventParticipant)
         .where(
           and(
             eq(schema.eventParticipant.eventId, input.eventId),
-            eq(schema.eventParticipant.userId, input.userId),
+            eq(schema.eventParticipant.userId, userId),
           ),
         )
         .limit(1);
@@ -248,16 +250,17 @@ export const eventRouter = {
       }));
     }),
 
-  join: publicProcedure
-    .input(z.object({ eventId: z.number(), userId: z.string() }))
+  join: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       const existingRows = await ctx.db
         .select()
         .from(schema.eventParticipant)
         .where(
           and(
             eq(schema.eventParticipant.eventId, input.eventId),
-            eq(schema.eventParticipant.userId, input.userId),
+            eq(schema.eventParticipant.userId, userId),
           ),
         )
         .limit(1);
@@ -268,7 +271,7 @@ export const eventRouter = {
 
       await ctx.db
         .insert(schema.eventParticipant)
-        .values({ eventId: input.eventId, userId: input.userId });
+        .values({ eventId: input.eventId, userId });
 
       await ctx.db
         .update(schema.event)
@@ -290,15 +293,16 @@ export const eventRouter = {
       return { success: true, alreadyJoined: false };
     }),
 
-  leave: publicProcedure
-    .input(z.object({ eventId: z.number(), userId: z.string() }))
+  leave: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       await ctx.db
         .delete(schema.eventParticipant)
         .where(
           and(
             eq(schema.eventParticipant.eventId, input.eventId),
-            eq(schema.eventParticipant.userId, input.userId),
+            eq(schema.eventParticipant.userId, userId),
           ),
         );
 
@@ -321,9 +325,10 @@ export const eventRouter = {
       return { success: true };
     }),
 
-  cancel: publicProcedure
-    .input(z.object({ eventId: z.number(), userId: z.string() }))
+  cancel: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       const targetEvent = await ctx.db.query.event.findFirst({
         where: eq(schema.event.id, input.eventId),
       });
@@ -332,7 +337,7 @@ export const eventRouter = {
         throw new Error("Event not found");
       }
 
-      if (targetEvent.userId !== input.userId) {
+      if (targetEvent.userId !== userId) {
         throw new Error("Not authorized to cancel this event");
       }
 
