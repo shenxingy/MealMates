@@ -278,6 +278,9 @@ export const userRouter = {
       return { success: true };
     }),
 
+  // NOTE: Uses publicProcedure with Duke auth fallback header — ensure the calling client
+  // only passes the authenticated user's own ID. Server-side auth enforcement is handled
+  // via the x-duke-user-id session mechanism in trpc.ts.
   updateProfileById: publicProcedure
     .input(
       z.object({
