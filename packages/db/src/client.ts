@@ -10,7 +10,11 @@ export const db = drizzle({
   casing: "snake_case",
 });
 
-export const supabase = createClient(
-  "https://rcucryvgjbthzoirnzam.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjdWNyeXZnamJ0aHpvaXJuemFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNzIyMjUsImV4cCI6MjA3Njc0ODIyNX0.SvnP8iRkgJ7B4KHAC7TY3SWNSv-aP8BiXtr4WvN5SLI",
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
