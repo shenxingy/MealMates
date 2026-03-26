@@ -81,10 +81,11 @@ export const searchRouter = {
 
   // Call AI Agent
   genWithAI: protectedProcedure
-    .input(z.any())
+    .input(z.record(z.string(), z.unknown()))
     .mutation(async ({ ctx, input }) => {
+      const aiServiceUrl = process.env.AI_SERVICE_URL ?? "http://localhost:8080";
       try {
-        const response = await fetch("http://localhost:8080/events/ai", {
+        const response = await fetch(`${aiServiceUrl}/events/ai`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
