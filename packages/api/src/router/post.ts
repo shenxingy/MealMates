@@ -19,13 +19,6 @@ export const CreatePostSchema = z.object({
 });
 
 export const postRouter = {
-  // all: publicProcedure.query(({ ctx }) => {
-  //   return ctx.db.query.post.findMany({
-  //     orderBy: desc(post.createdAt),
-  //     // limit
-  //   });
-  // }),
-
   all: publicProcedure.query(({ ctx }) => {
     return ctx.db
       .select({
@@ -82,11 +75,6 @@ export const postRouter = {
       return newPost[0];
     }),
 
-  // delete: protectedProcedure
-  //   .input(z.string())
-  //   .mutation(({ ctx, input }) => {
-  //     return ctx.db.delete(post).where(eq(post.id, input));
-  //   }),
 } satisfies TRPCRouterRecord;
 
 export const CreateCommentSchema = z.object({
@@ -96,15 +84,6 @@ export const CreateCommentSchema = z.object({
 });
 
 export const commentRouter = {
-  // byPost: publicProcedure
-  //   .input(z.object({ postId: z.string() }))
-  //   .query(({ ctx, input }) => {
-  //     return ctx.db.query.comment.findMany({
-  //       where: eq(comment.postId, input.postId),
-  //       orderBy: desc(comment.createdAt),
-  //     });
-  //   }),
-
   byPost: publicProcedure
     .input(z.object({ postId: z.string() }))
     .query(({ ctx, input }) => {

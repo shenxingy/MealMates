@@ -18,7 +18,8 @@ import { getBaseUrl } from "./base-url";
 import { getStoredUserId } from "./user-storage";
 
 export const DEFAULT_USER_AVATAR =
-  "https://rcucryvgjbthzoirnzam.supabase.co/storage/v1/object/public/Avatar/avatar_default.png";
+  process.env.EXPO_PUBLIC_DEFAULT_AVATAR_URL ??
+  `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/Avatar/avatar_default.png`;
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -132,21 +133,14 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 export { type RouterInputs, type RouterOutputs } from "@mealmates/api";
 
 export const fetchSimpleEventList = async () => {
-  // await new Promise((resolve) => {
-  //   setTimeout(resolve, 3000);
-  // });
   const res = await api.get<ApiResponse<SimpleEventDTO[]>>("/api/events/list");
   return res.data.data;
 };
 
 export const fetchDetailedEvent = async (eventId: string) => {
-  // await new Promise((resolve) => {
-  //   setTimeout(resolve, 2000);
-  // });
   const res = await api.get<ApiResponse<DetailedEventDTO>>(
     `/api/events/${eventId}/details`,
   );
-  console.log(res.data.data);
   return res.data.data;
 };
 
